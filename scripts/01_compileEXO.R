@@ -54,6 +54,9 @@ names(BEGI_EXOz[["VDOW"]]) == names(BEGI_EXOz[["SLOC"]])
 
 #### Compile bursts within 1 min ####
 
+BEGI_EXOz <- lapply(BEGI_EXOz, function(x) {x[5:22] <- lapply(x[5:22], as.numeric);x})
+
+
 BEGI_EXO.stz = list()
 for(i in siteIDz){
   min<-cut(BEGI_EXOz[[i]]$datetimeMT, breaks="1 min")
@@ -113,10 +116,11 @@ BEGI_EXO.stz = readRDS("EXO_compiled/BEGI_EXO.rds")
 # service dates
 
 service = c("2023-09-15 12:00:00","2023-09-22 16:00:00", "2023-09-29 10:00:00", 
-            "2023-10-06 10:00:00","2023-10-13 10:00:00","2023-10-20 10:00:00","2023-10-27 10:00:00")
+            "2023-10-06 10:00:00","2023-10-13 10:00:00","2023-10-20 10:00:00",
+            "2023-10-27 10:00:00","2023-11-03 10:00:00","2023-11-10 10:00:00")
 
 suntimes = 
-  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2023-10-28"), by = 1),
+  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2023-11-11"), by = 1),
                  keep = c("sunrise", "sunset"),
                  lat = 34.9, lon = -106.7, tz = "US/Mountain")
 
@@ -207,6 +211,15 @@ lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz
 abline(v=as.POSIXct(service), col="red")
 axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Specific Conductance (us/cm)")
+
+plot(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$Battery.V.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=2000, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$Battery.V.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Battery (volts)")
 
 dev.off()
 
@@ -348,6 +361,15 @@ abline(v=as.POSIXct(service), col="red")
 axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Specific Conductance (us/cm)")
 
+plot(ymd_hms(BEGI_EXO.stz[["SLOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOW"]]$Battery.V.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=2000, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOW"]]$Battery.V.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Battery (volts)")
+
 dev.off()
 
 
@@ -423,6 +445,15 @@ abline(v=as.POSIXct(service), col="red")
 axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOS"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Specific Conductance (us/cm)")
 
+plot(ymd_hms(BEGI_EXO.stz[["VDOS"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOS"]]$Battery.V.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=2000, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["VDOS"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOS"]]$Battery.V.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOS"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Battery (volts)")
+
 dev.off()
 
 
@@ -497,6 +528,15 @@ lines(ymd_hms(BEGI_EXO.stz[["VDOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz
 abline(v=as.POSIXct(service), col="red")
 axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Specific Conductance (us/cm)")
+
+plot(ymd_hms(BEGI_EXO.stz[["VDOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOW"]]$Battery.V.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=2000, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["VDOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOW"]]$Battery.V.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Battery (volts)")
 
 dev.off()
 
