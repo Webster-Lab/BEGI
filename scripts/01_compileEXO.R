@@ -117,10 +117,10 @@ BEGI_EXO.stz = readRDS("EXO_compiled/BEGI_EXO.rds")
 
 service = c("2023-09-15 12:00:00","2023-09-22 16:00:00", "2023-09-29 10:00:00", 
             "2023-10-06 10:00:00","2023-10-13 10:00:00","2023-10-20 10:00:00",
-            "2023-10-27 10:00:00","2023-11-03 10:00:00","2023-11-10 10:00:00")
+            "2023-10-27 10:00:00","2023-11-03 10:00:00","2023-11-10 10:00:00","2023-11-17 10:00:00")
 
 suntimes = 
-  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2023-11-11"), by = 1),
+  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2023-11-18"), by = 1),
                  keep = c("sunrise", "sunset"),
                  lat = 34.9, lon = -106.7, tz = "US/Mountain")
 
