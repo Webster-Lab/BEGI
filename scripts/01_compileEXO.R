@@ -117,10 +117,11 @@ BEGI_EXO.stz = readRDS("EXO_compiled/BEGI_EXO.rds")
 
 service = c("2023-09-15 12:00:00","2023-09-22 16:00:00", "2023-09-29 10:00:00", 
             "2023-10-06 10:00:00","2023-10-13 10:00:00","2023-10-20 10:00:00",
-            "2023-10-27 10:00:00","2023-11-03 10:00:00","2023-11-10 10:00:00","2023-11-17 10:00:00")
+            "2023-10-27 10:00:00","2023-11-03 10:00:00","2023-11-10 10:00:00",
+            "2023-11-17 10:00:00","2023-11-22 10:00:00","2023-12-01 10:00:00","2023-12-08 10:00:00")
 
 suntimes = 
-  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2023-11-18"), by = 1),
+  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2023-12-09"), by = 1),
                  keep = c("sunrise", "sunset"),
                  lat = 34.9, lon = -106.7, tz = "US/Mountain")
 
@@ -260,34 +261,6 @@ dev.off()
 # title(main="fDOM (QSU)")
 # 
 # 
-# # smoothed DO close up
-# BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm = 
-#   c(rollmean(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn, 4, align="left"), 
-#     NA,NA,NA)
-# 
-# BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc = 
-#   BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm + 
-#   abs(min(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm, na.rm = T))
-# 
-# BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c = BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc
-# 
-# BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c[BEGI_EXO.stz[["SLOC"]]$datetimeMT >
-#                                              as.POSIXct("2023-10-06 08:00:00") &
-#                                              BEGI_EXO.stz[["SLOC"]]$datetimeMT <
-#                                              as.POSIXct("2023-10-06 15:00:00")   ] = NA
-# plot.new()
-# par(mfrow=c(1,1), mar=c(7,4,2,1.5))
-# plot(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),
-#      BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c,
-#      pch=20,col="black", xlab="", xaxt = "n",ylim=c(0,0.8), type="n", ylab="",
-#      xlim=c(as.POSIXct("2023-10-03"),as.POSIXct("2023-10-14")))
-# rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
-# lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),
-#       BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c,
-#       pch=20,col="black", xlab="", xaxt = "n", type="o")
-# #abline(v=as.POSIXct(service), col="red")
-# axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d %R", las=2)
-# title(main="Dissolved Oxygen (mg/L)")
 
 
 ## SLOW ##
@@ -586,4 +559,37 @@ points(ymd_hms(BEGI_EXO.stz[["SLOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.st
 abline(h=0, col="green")
 axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="SLO West")
+
+
+#### extra plots ####
+
+# smoothed DO close up
+BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm =
+  c(rollmean(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn, 4, align="left"),
+    NA,NA,NA)
+
+BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc =
+  BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm +
+  abs(min(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm, na.rm = T))
+
+BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c = BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc
+
+# BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c[BEGI_EXO.stz[["SLOC"]]$datetimeMT >
+#                                              as.POSIXct("2023-11-01 08:00:00") &
+#                                              BEGI_EXO.stz[["SLOC"]]$datetimeMT <
+#                                              as.POSIXct("2023-12-09 15:00:00")   ] = NA
+plot.new()
+par(mfrow=c(1,1), mar=c(7,4,2,1.5))
+plot(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),
+     BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c,
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(0,0.8), type="n", ylab="",
+     xlim=c(as.POSIXct("2023-11-01"),as.POSIXct("2023-12-09")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),
+      BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c,
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+#abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d %R", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+
 
