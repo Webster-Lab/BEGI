@@ -584,7 +584,7 @@ par(mfrow=c(1,1), mar=c(7,4,2,1.5))
 plot(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),
      BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c,
      pch=20,col="black", xlab="", xaxt = "n",ylim=c(0,0.8), type="n", ylab="",
-     xlim=c(as.POSIXct("2023-11-01"),as.POSIXct("2023-12-09")))
+     xlim=c(as.POSIXct("2023-11-01"),as.POSIXct("2024-01-06")))
 rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
 lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),
       BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn_sm_bc_c,
