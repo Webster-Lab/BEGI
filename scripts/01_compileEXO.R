@@ -122,7 +122,7 @@ service = c("2023-09-15 12:00:00","2023-09-22 16:00:00", "2023-09-29 10:00:00",
             "2023-12-08 10:00:00","2023-12-21 10:00:00","2024-01-05 10:00:00")
 
 suntimes = 
-  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2023-12-09"), by = 1),
+  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2024-01-09"), by = 1),
                  keep = c("sunrise", "sunset"),
                  lat = 34.9, lon = -106.7, tz = "US/Mountain")
 
