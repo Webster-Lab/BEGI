@@ -142,6 +142,26 @@ am.pts = suntimes$sunrise[-1]
 #     by = "24 hours" ))
 
 
+## Plotting ONLY SLOC DO, zoomed in ##
+
+#save plot
+
+jpeg("plots/SLOC_DO.jpg", width = 20, height = 8, units="in", res=1000)
+
+plot.new()
+
+plot(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,.2), type="n", ylab="")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+
+
+dev.off()
+
 
 ## SLOC ##
 
@@ -432,7 +452,7 @@ dev.off()
 
 
 
-
+## VDOW ##
 
 # Save plot 
 jpeg("plots/VDOW.jpg", width = 12, height = 8, units="in", res=1000)
