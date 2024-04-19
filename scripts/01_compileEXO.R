@@ -24,16 +24,101 @@ for (file_id in ls_tibble$id) {
 
 #### load and stitch EXO data ####
 
+# import data
 siteIDz = c("VDOW", "VDOS", "SLOW", "SLOC")
 BEGI_EXOz = list()
 for(i in siteIDz){
   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
-  BEGI_EXOz[[i]] = do.call("rbind", lapply(file_list, 
-                                    read.csv, 
-                                    stringsAsFactors=FALSE, skip=8,header=T))
+  BEGI_EXOz[[i]] = lapply(file_list, read.csv, 
+                          stringsAsFactors=FALSE, skip=8,header=T)
 }
 
+# use one file as a template and match columns in all other files to that one
+# here, BEGI_EXOz[["VDOS"]][[19]] is the template because it does not have the "Depth.m", "Pressure.psi.a", and "Vertical.Position.m" columns
+for(i in siteIDz){
+  for(n in 1:20){
+    BEGI_EXOz[[i]][[n]] = 
+      BEGI_EXOz[[i]][[n]] [, intersect(names(BEGI_EXOz[["VDOS"]][[19]] ), names(BEGI_EXOz[[i]][[n]] )), drop=FALSE]
+  }
+}
 
+# bind files within sites into one dataframe per site
+for(i in siteIDz){
+  BEGI_EXOz[[i]] = do.call("rbind", BEGI_EXOz[[i]])
+}
+
+## import and stitch data in one step - only works if all column headers are always the same!! ##
+# siteIDz = c("VDOW", "VDOS", "SLOW", "SLOC")
+# BEGI_EXOz = list()
+# for(i in siteIDz){
+#   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
+#   BEGI_EXOz[[i]] = do.call("rbind", lapply(file_list, 
+#                                            read.csv, 
+#                                            stringsAsFactors=FALSE, skip=8,header=T))
+# }
+# 
+# ## if stitching doesn't work, check column matching in each site ##
+# siteIDz = c("VDOS")
+# VDOS_EXOz = list()
+# for(i in siteIDz){
+#   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
+#   VDOS_EXOz[[i]] = lapply(file_list, read.csv, 
+#                                            stringsAsFactors=FALSE, skip=8,header=T)
+# }
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[2]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[3]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[4]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[5]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[6]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[7]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[8]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[9]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[10]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[11]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[12]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[13]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[14]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[15]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[16]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[17]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[18]] )
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[19]] ) #this one doesn't match!
+# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[20]] ) #this one doesn't match!
+# 
+# VDOS_EXOz[["VDOS"]][[1]] = VDOS_EXOz[["VDOS"]][[1]] [, intersect(names(VDOS_EXOz[["VDOS"]][[19]] ), names(VDOS_EXOz[["VDOS"]][[1]] )), drop=FALSE]
+# 
+# 
+# siteIDz = c("VDOW")
+# VDOW_EXOz = list()
+# for(i in siteIDz){
+#   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
+#   VDOW_EXOz[[i]] = lapply(file_list, read.csv, 
+#                           stringsAsFactors=FALSE, skip=8,header=T)
+# }
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[2]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[3]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[4]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[5]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[6]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[7]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[8]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[9]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[10]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[11]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[12]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[13]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[14]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[15]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[16]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[17]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[18]] )
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[19]] ) #this one doesn't match!
+# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[20]] ) #this one doesn't match!
+
+
+
+
+#
 #### format dates ####
 
 for(i in siteIDz){
@@ -54,18 +139,19 @@ names(BEGI_EXOz[["VDOW"]]) == names(BEGI_EXOz[["SLOC"]])
 
 #### Compile bursts within 1 min ####
 
-BEGI_EXOz <- lapply(BEGI_EXOz, function(x) {x[5:22] <- lapply(x[5:22], as.numeric);x})
+# make sure all columns with numeric data data are numeric
+BEGI_EXOz <- lapply(BEGI_EXOz, function(x) {x[5:19] <- lapply(x[5:19], as.numeric);x})
 
-
+# get means and standard deviations of numeric burst values
 BEGI_EXO.stz = list()
 for(i in siteIDz){
   min<-cut(BEGI_EXOz[[i]]$datetimeMT, breaks="1 min")
-  BEGI_EXO.stz[[i]] <- as.data.frame(as.list(aggregate(cbind(Cond.µS.cm, Depth.m, fDOM.QSU, fDOM.RFU,
+  BEGI_EXO.stz[[i]] <- as.data.frame(as.list(aggregate(cbind(Cond.µS.cm, fDOM.QSU, fDOM.RFU,
                                                    nLF.Cond.µS.cm,
                                                    ODO...sat,ODO...local,ODO.mg.L,
-                                                   Pressure.psi.a,Sal.psu,SpCond.µS.cm,
+                                                   Sal.psu,SpCond.µS.cm,
                                                    TDS.mg.L,Turbidity.FNU,TSS.mg.L,Temp..C,
-                                                   Vertical.Position.m,Battery.V,Cable.Pwr.V) 
+                                                   Battery.V,Cable.Pwr.V) 
                                              ~ min, data=BEGI_EXOz[[i]], na.action=na.pass, FUN=function(x) c(mn=mean(x), SD=sd(x)))))
   BEGI_EXO.stz[[i]]$datetimeMT<-as.POSIXct(BEGI_EXO.stz[[i]]$min, "%Y-%m-%d %H:%M:%S", tz="US/Mountain")
 }
