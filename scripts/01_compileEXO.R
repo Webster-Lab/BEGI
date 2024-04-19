@@ -47,76 +47,6 @@ for(i in siteIDz){
   BEGI_EXOz[[i]] = do.call("rbind", BEGI_EXOz[[i]])
 }
 
-## import and stitch data in one step - only works if all column headers are always the same!! ##
-# siteIDz = c("VDOW", "VDOS", "SLOW", "SLOC")
-# BEGI_EXOz = list()
-# for(i in siteIDz){
-#   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
-#   BEGI_EXOz[[i]] = do.call("rbind", lapply(file_list, 
-#                                            read.csv, 
-#                                            stringsAsFactors=FALSE, skip=8,header=T))
-# }
-# 
-# ## if stitching doesn't work, check column matching in each site ##
-# siteIDz = c("VDOS")
-# VDOS_EXOz = list()
-# for(i in siteIDz){
-#   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
-#   VDOS_EXOz[[i]] = lapply(file_list, read.csv, 
-#                                            stringsAsFactors=FALSE, skip=8,header=T)
-# }
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[2]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[3]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[4]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[5]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[6]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[7]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[8]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[9]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[10]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[11]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[12]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[13]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[14]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[15]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[16]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[17]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[18]] )
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[19]] ) #this one doesn't match!
-# names(VDOS_EXOz[["VDOS"]][[1]]) == names(VDOS_EXOz[["VDOS"]][[20]] ) #this one doesn't match!
-# 
-# VDOS_EXOz[["VDOS"]][[1]] = VDOS_EXOz[["VDOS"]][[1]] [, intersect(names(VDOS_EXOz[["VDOS"]][[19]] ), names(VDOS_EXOz[["VDOS"]][[1]] )), drop=FALSE]
-# 
-# 
-# siteIDz = c("VDOW")
-# VDOW_EXOz = list()
-# for(i in siteIDz){
-#   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
-#   VDOW_EXOz[[i]] = lapply(file_list, read.csv, 
-#                           stringsAsFactors=FALSE, skip=8,header=T)
-# }
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[2]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[3]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[4]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[5]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[6]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[7]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[8]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[9]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[10]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[11]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[12]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[13]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[14]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[15]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[16]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[17]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[18]] )
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[19]] ) #this one doesn't match!
-# names(VDOW_EXOz[["VDOW"]][[1]]) == names(VDOW_EXOz[["VDOW"]][[20]] ) #this one doesn't match!
-
-
-
 
 #
 #### format dates ####
@@ -125,9 +55,18 @@ for(i in siteIDz){
   # put date and time in same column
   BEGI_EXOz[[i]]$datetime = paste( BEGI_EXOz[[i]]$Date..MM.DD.YYYY.,  BEGI_EXOz[[i]]$Time..HH.mm.ss., sep = " ")
   # convert to POIXct and set timezone
-  BEGI_EXOz[[i]]$datetimeMT<-as.POSIXct( BEGI_EXOz[[i]]$datetime, "%m/%d/%Y %H:%M:%S", tz="US/Mountain")
+  BEGI_EXOz[[i]]$datetimeMT<-as.POSIXct( BEGI_EXOz[[i]]$datetime, 
+                                         format = "%m/%d/%Y %H:%M:%S",
+                                         tz="US/Mountain")
+  # replace two digit years that are converted incorrectly
+  BEGI_EXOz[[i]]$year = year(BEGI_EXOz[[i]]$datetimeMT)
+  BEGI_EXOz[[i]]$year[BEGI_EXOz[[i]]$year==0023] = 2023
+  BEGI_EXOz[[i]]$year[BEGI_EXOz[[i]]$year==0024] = 2024
+  year(BEGI_EXOz[[i]]$datetimeMT) = BEGI_EXOz[[i]]$year
 }
 
+
+#
 #### Check variable names ####
 #check the variable order for each sonde and edit names if necessary
 
@@ -145,7 +84,7 @@ BEGI_EXOz <- lapply(BEGI_EXOz, function(x) {x[5:19] <- lapply(x[5:19], as.numeri
 # get means and standard deviations of numeric burst values
 BEGI_EXO.stz = list()
 for(i in siteIDz){
-  min<-cut(BEGI_EXOz[[i]]$datetimeMT, breaks="1 min")
+  min<-round_date(BEGI_EXOz[[i]]$datetimeMT, "minute") # note rounding instead of using the function cut()!! cut was what was causing our memory issues!!
   BEGI_EXO.stz[[i]] <- as.data.frame(as.list(aggregate(cbind(Cond.µS.cm, fDOM.QSU, fDOM.RFU,
                                                    nLF.Cond.µS.cm,
                                                    ODO...sat,ODO...local,ODO.mg.L,
@@ -201,31 +140,15 @@ BEGI_EXO.stz = readRDS("EXO_compiled/BEGI_EXO.rds")
 
 # service dates
 
-service = c("2023-09-15 12:00:00","2023-09-22 16:00:00", "2023-09-29 10:00:00", 
-            "2023-10-06 10:00:00","2023-10-13 10:00:00","2023-10-20 10:00:00",
-            "2023-10-27 10:00:00","2023-11-03 10:00:00","2023-11-10 10:00:00",
-            "2023-11-17 10:00:00","2023-11-22 10:00:00","2023-12-01 10:00:00",
-            "2023-12-08 10:00:00","2023-12-21 10:00:00","2024-01-05 10:00:00")
+service = as.POSIXct(paste ( unique(beeper$date), "12:00:00"), tz="US/Mountain")
 
 suntimes = 
-  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2024-01-09"), by = 1),
+  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2024-04-17"), by = 1),
                  keep = c("sunrise", "sunset"),
                  lat = 34.9, lon = -106.7, tz = "US/Mountain")
 
 pm.pts = suntimes$sunset[-(nrow(suntimes))]
 am.pts = suntimes$sunrise[-1]
-
-# pm.pts <- data.frame(
-#   datetimeMT = seq.POSIXt(
-#     from = ISOdatetime(2023,09,13,20,0,0, tz = "US/Mountain"),
-#     to = ISOdatetime(2023,10,14,20,0,0, tz= "US/Mountain"),
-#     by = "24 hours" ))
-# 
-# am.pts <- data.frame(
-#   datetimeMT = seq.POSIXt(
-#     from = ISOdatetime(2023,09,14,05,0,0, tz = "US/Mountain"),
-#     to = ISOdatetime(2023,10,15,05,0,0, tz= "US/Mountain"),
-#     by = "24 hours" ))
 
 
 ## Plotting ONLY SLOC DO, zoomed in ##
@@ -698,5 +621,105 @@ lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),
 #abline(v=as.POSIXct(service), col="red")
 axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d %R", las=2)
 title(main="Dissolved Oxygen (mg/L)")
+
+
+### just latest DO and fDOM ###
+
+# SLOC
+plot.new()
+par(mfrow=c(2,1), mar=c(7,4,2,1.5))
+# DO
+plot(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,3), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$ODO.mg.L.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+# fDOM
+plot(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(40,100), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOC"]]$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+# SLOW
+plot.new()
+par(mfrow=c(2,1), mar=c(7,4,2,1.5))
+# DO
+plot(ymd_hms(BEGI_EXO.stz[["SLOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOW"]]$ODO.mg.L.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,3), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOW"]]$ODO.mg.L.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+# fDOM
+plot(ymd_hms(BEGI_EXO.stz[["SLOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOW"]]$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(40,100), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["SLOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["SLOW"]]$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["SLOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+# VDOW
+plot.new()
+par(mfrow=c(2,1), mar=c(7,4,2,1.5))
+# DO
+plot(ymd_hms(BEGI_EXO.stz[["VDOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOW"]]$ODO.mg.L.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,3), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["VDOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOW"]]$ODO.mg.L.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+# fDOM
+plot(ymd_hms(BEGI_EXO.stz[["VDOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOW"]]$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(40,100), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["VDOW"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOW"]]$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOW"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+
+# VDOS
+plot.new()
+par(mfrow=c(2,1), mar=c(7,4,2,1.5))
+# DO
+plot(ymd_hms(BEGI_EXO.stz[["VDOS"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOS"]]$ODO.mg.L.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,3), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["VDOS"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOS"]]$ODO.mg.L.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOS"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+# fDOM
+plot(ymd_hms(BEGI_EXO.stz[["VDOS"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOS"]]$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n",ylim=c(40,100), type="n", ylab="",
+     xlim=c(as.POSIXct("2024-03-01"),as.POSIXct("2024-04-18")))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(BEGI_EXO.stz[["VDOS"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.stz[["VDOS"]]$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,1), type="o")
+abline(v=as.POSIXct(service), col="red")
+axis.POSIXct(side=1,at=cut(BEGI_EXO.stz[["VDOS"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
 
 
