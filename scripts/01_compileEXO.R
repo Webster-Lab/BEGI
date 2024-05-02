@@ -30,15 +30,16 @@ BEGI_EXOz = list()
 for(i in siteIDz){
   file_list <- list.files(recursive=F, pattern=paste(i, ".csv", sep=""))
   BEGI_EXOz[[i]] = lapply(file_list, read.csv, 
-                          stringsAsFactors=FALSE, skip=8,header=T)
+                          stringsAsFactors=FALSE, skip=8,header=T,
+                          fileEncoding="utf-8") # this line makes it such that if there are any offending utf-16 encodings, it will show the offending file in the error message. If any utf-16 files are found, be sure to fix them in the Google Drive, not just your locally saved file!!
 }
 
 # use one file as a template and match columns in all other files to that one
 # here, BEGI_EXOz[["VDOS"]][[19]] is the template because it does not have the "Depth.m", "Pressure.psi.a", and "Vertical.Position.m" columns
 for(i in siteIDz){
-  for(n in 1:20){
+  for(n in 1:length(BEGI_EXOz[[i]])){
     BEGI_EXOz[[i]][[n]] = 
-      BEGI_EXOz[[i]][[n]] [, intersect(names(BEGI_EXOz[["VDOS"]][[19]] ), names(BEGI_EXOz[[i]][[n]] )), drop=FALSE]
+      BEGI_EXOz[[i]][[n]] [, intersect(names(BEGI_EXOz[["VDOS"]][[5]] ), names(BEGI_EXOz[[i]][[n]] )), drop=FALSE]
   }
 }
 
@@ -87,7 +88,7 @@ for(i in siteIDz){
   min<-round_date(BEGI_EXOz[[i]]$datetimeMT, "minute") # note rounding instead of using the function cut()!! cut was what was causing our memory issues!!
   BEGI_EXO.stz[[i]] <- as.data.frame(as.list(aggregate(cbind(Cond.µS.cm, fDOM.QSU, fDOM.RFU,
                                                    nLF.Cond.µS.cm,
-                                                   ODO...sat,ODO...local,ODO.mg.L,
+                                                   ODO...sat,ODO.mg.L,
                                                    Sal.psu,SpCond.µS.cm,
                                                    TDS.mg.L,Turbidity.FNU,TSS.mg.L,Temp..C,
                                                    Battery.V,Cable.Pwr.V) 
