@@ -237,6 +237,14 @@ BEGI_EXO.or[["VDOS"]][BEGI_EXO.or[["VDOS"]]$datetimeMT>as.POSIXct("2025-01-01 01
 
 #
 
+#### save and re-add data with servicing times removed ####
+
+saveRDS(BEGI_EXO.or, "EXO_compiled/BEGI_EXO.rds")
+#rm(list = ls())
+BEGI_EXO.or = readRDS("EXO_compiled/BEGI_EXO.rds")
+
+
+
 #### get service times and sunrise/sunset for plotting ####
 
 # service dates
