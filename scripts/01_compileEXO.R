@@ -2,6 +2,10 @@
 
 # the purpose of this script is to compile and plot EXO1 files from the Webster Lab BEGI project
 
+# NOTE: It is STRONGLY recommended that you delete all your local EXO1 files from the last time you downloaded them from google drive, then use the script below to import them anew EACH TIME you run this script. 
+# As some point, I should write this into the script!
+# DO NOT push raw EXO1 files to the github repo! there are too many to push all at once. THe purpose of the google drive is to handle all these files, whereas github handles the script :)
+
 #### libraries ####
 library(googledrive)
 library(tidyverse)
@@ -12,6 +16,10 @@ library(suncalc)
 
 
 #### load data from google drive ####
+
+# NOTE: It is STRONGLY recommended that you delete all your local EXO1 files from the last time you downloaded them from google drive, then use the script below to import them anew EACH TIME you run this script. 
+# As some point, I should write this into the script!
+# DO NOT push raw EXO1 files to the github repo! there are too many to push all at once. THe purpose of the google drive is to handle all these files, whereas github handles the script :)
 
 ls_tibble <- googledrive::drive_ls("https://drive.google.com/drive/folders/1w9mhxwI4FU7Nu9HEFmrdH56FufOrv3Lp")
 2
