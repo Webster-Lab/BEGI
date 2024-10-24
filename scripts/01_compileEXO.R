@@ -21,7 +21,7 @@ library(suncalc)
 # As some point, I should write this into the script!
 # DO NOT push raw EXO1 files to the github repo! there are too many to push all at once. THe purpose of the google drive is to handle all these files, whereas github handles the script :)
 
-ls_tibble <- googledrive::drive_ls("https://drive.google.com/drive/folders/1w9mhxwI4FU7Nu9HEFmrdH56FufOrv3Lp")
+ls_tibble <- googledrive::drive_ls("https://drive.google.com/drive/folders/1qsjKPD5T4opFas37clgFX8CqV5R1PHxn")
 2
 for (file_id in ls_tibble$id) {
   try({googledrive::drive_download(as_id(file_id))})
