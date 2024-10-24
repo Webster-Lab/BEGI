@@ -262,7 +262,7 @@ service = unique(service$date)
 # sunrise/sunset
 
 suntimes = 
-  getSunlightTimes(date = seq.Date(from = as.Date(service[1]), to = as.Date(service[length(service)]), by = 1),
+  getSunlightTimes(date = seq.Date(from = as.Date(service[1]), to = as.Date("2024-09-1"), by = 1),
                    keep = c("sunrise", "sunset"),
                    lat = 34.9, lon = -106.7, tz = "US/Mountain")
 
@@ -273,24 +273,26 @@ am.pts = suntimes$sunrise[-1]
 #### plot to check - SLOC ####
 
 ## SLOC last month ##
-tempdat = BEGI_EXO.or[["SLOC"]][BEGI_EXO.or[["SLOC"]]$datetimeMT > Sys.time()-days(30),]
+tempdat = BEGI_EXO.or[["SLOC"]][BEGI_EXO.or[["SLOC"]]$datetimeMT < as.POSIXct("2024-09-15 00:00:01 MDT") &
+                                  BEGI_EXO.or[["SLOC"]]$datetimeMT > as.POSIXct("2024-08-15 00:00:01 MDT"),]
 
 # Save plot 
 jpeg("plots/SLOC_lastmonth.jpg", width = 12, height = 8, units="in", res=1000)
 
 plot.new()
-par(mfrow=c(4,2), mar=c(4,4,2,1.5))
+par(mfrow=c(3,2), mar=c(4,4,2,1.5))
 
-plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$waterlevelbelowsurface_cm*-1),
-     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
-rect(xleft=pm.pts,xright=am.pts,ybottom=-350, ytop=100, col="lightgrey", lwd = 0)
-lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$waterlevelbelowsurface_cm*-1),
-      pch=20,col="black", xlab="", xaxt = "n", type="b")
-abline(v=as.POSIXct(service), col="red")
-#abline(h=-300, col="red")
-abline(h=0, col="green")
-axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
-title(main="Water depth below surface (cm)")
+#need BEGI_beeper data updated before I can plot this
+# plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$waterlevelbelowsurface_cm*-1),
+#      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+# rect(xleft=pm.pts,xright=am.pts,ybottom=-350, ytop=100, col="lightgrey", lwd = 0)
+# lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$waterlevelbelowsurface_cm*-1),
+#       pch=20,col="black", xlab="", xaxt = "n", type="b")
+# abline(v=as.POSIXct(service), col="red")
+# #abline(h=-300, col="red")
+# abline(h=0, col="green")
+# axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+# title(main="Water depth below surface (cm)")
 
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
@@ -300,13 +302,6 @@ lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
 abline(v=as.POSIXct(service), col="red")
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Turbidity (FNU)")
-
-plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Depth.m.mn),pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
-rect(xleft=pm.pts,xright=am.pts,ybottom=0, ytop=2000, col="lightgrey", lwd = 0)
-lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),pch=20,col="black", xlab="", xaxt = "n", type="o")
-abline(v=as.POSIXct(service), col="red")
-axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
-title(main="Uncorrected Depth")
 
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
@@ -363,18 +358,18 @@ dev.off()
 jpeg("plots/SLOC.jpg", width = 12, height = 8, units="in", res=1000)
 
 plot.new()
-par(mfrow=c(4,2), mar=c(4,4,2,1.5))
+par(mfrow=c(3,2), mar=c(4,4,2,1.5))
 
-plot(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$waterlevelbelowsurface_cm*-1),
-     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="", ylim=c(-10, 10))
-rect(xleft=pm.pts,xright=am.pts,ybottom=-350, ytop=100, col="lightgrey", lwd = 0)
-lines(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$waterlevelbelowsurface_cm*-1),
-      pch=20,col="black", xlab="", xaxt = "n", type="b")
-abline(v=as.POSIXct(service), col="red")
-#abline(h=-300, col="red")
-abline(h=0, col="green")
-axis.POSIXct(side=1,at=cut(BEGI_EXO.or[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
-title(main="Water depth below surface (cm)")
+# plot(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$waterlevelbelowsurface_cm*-1),
+#      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="", ylim=c(-10, 10))
+# rect(xleft=pm.pts,xright=am.pts,ybottom=-350, ytop=100, col="lightgrey", lwd = 0)
+# lines(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$waterlevelbelowsurface_cm*-1),
+#       pch=20,col="black", xlab="", xaxt = "n", type="b")
+# abline(v=as.POSIXct(service), col="red")
+# #abline(h=-300, col="red")
+# abline(h=0, col="green")
+# axis.POSIXct(side=1,at=cut(BEGI_EXO.or[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+# title(main="Water depth below surface (cm)")
 
 plot(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$Turbidity.FNU.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
@@ -385,12 +380,12 @@ abline(v=as.POSIXct(service), col="red")
 axis.POSIXct(side=1,at=cut(BEGI_EXO.or[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Turbidity (FNU)")
 
-plot(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$Depth.m.mn),pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="", ylim = c(0,30))
-rect(xleft=pm.pts,xright=am.pts,ybottom=0, ytop=2000, col="lightgrey", lwd = 0)
-lines(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$Temp..C.mn),pch=20,col="black", xlab="", xaxt = "n", type="o")
-abline(v=as.POSIXct(service), col="red")
-axis.POSIXct(side=1,at=cut(BEGI_EXO.or[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
-title(main="Uncorrected Depth")
+# plot(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$Depth.m.mn),pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="", ylim = c(0,30))
+# rect(xleft=pm.pts,xright=am.pts,ybottom=0, ytop=2000, col="lightgrey", lwd = 0)
+# lines(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$Temp..C.mn),pch=20,col="black", xlab="", xaxt = "n", type="o")
+# abline(v=as.POSIXct(service), col="red")
+# axis.POSIXct(side=1,at=cut(BEGI_EXO.or[["SLOC"]]$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+# title(main="Uncorrected Depth")
 
 plot(ymd_hms(BEGI_EXO.or[["SLOC"]]$datetimeMT, tz="US/Mountain"),(BEGI_EXO.or[["SLOC"]]$ODO.mg.L.mn),
      pch=20,col="black", xlab="", xaxt = "n",ylim=c(-.4,10), type="n", ylab="")
