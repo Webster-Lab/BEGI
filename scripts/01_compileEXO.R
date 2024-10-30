@@ -355,6 +355,13 @@ service.VDOS = servicetimes$datetimeMT[servicetimes$observation=="removed" & ser
 service.SLOC = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOC"]
 service.SLOW = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOW"]
 
+#### save service date/times to repo ####
+
+write.csv(service.VDOW, "EXO_compiled/service.VDOW.csv")
+write.csv(service.VDOS, "EXO_compiled/service.VDOS.csv")
+write.csv(service.SLOC, "EXO_compiled/service.SLOC.csv")
+write.csv(service.SLOW, "EXO_compiled/service.SLOW.csv")
+
 # sunrise/sunset
 
 suntimes = 
