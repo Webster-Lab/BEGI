@@ -42,25 +42,27 @@ am.pts = suntimes$sunrise[-1]
 
 #### Vector of dates ####
 
-date <- data.frame(
+date <- (
   datetimeMT = seq.POSIXt(
     from = ISOdatetime(2023,09,15,0,0,0, tz = "US/Mountain"),
     to = ISOdatetime(2024,09,04,0,0,0, tz= "US/Mountain"),
     by = "24 h" ))
 
-date = as.Date(date$datetimeMT)
+date = as.Date(date)
 
 #### plot to check ####
 
+#test data
+i<-date[1]
 ## SLOC 24 h ##
-for (i in date) {
-
-tempdat = BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct(i, "00:00:01 MDT") &
-                                   BEGI_EXO.or2[["SLOC"]]$datetimeMT < (as.POSIXct(i, "00:00:01 MDT") +(60*60*24)),]
+for (i in c(1:10)) {
+  dz = date[i]
+  tempdat = BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT < (as.POSIXct(dz, "00:00:01 MDT") +(60*60*24))&
+                                   BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct(dz,"00:00:01 MDT"),]
 
 #save plot 
-file_name = paste("plots/delineations/SLOC_", i, ".png", sep="")
-png(file_name)
+file_name = paste("plots/delineations/SLOC_", dz, ".pdf", sep="")
+pdf(file_name)
 
 par(mfrow=c(2,1))
 
@@ -68,7 +70,7 @@ plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
 rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
-      pch=20,col="black", xlab="", xaxt = "n", type="o")
+      pch=20,col="black", xlab="", xaxt = "n", type="o") #,ylim=c(-0.2,10))
 abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Dissolved Oxygen (mg/L)")
@@ -77,11 +79,10 @@ plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
 rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
-      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+      pch=20,col="black", xlab="", xaxt = "n", type="o") #,ylim=c(22.5,24.5))
 abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="fDOM (QSU)")
 
 dev.off()
 }
-
