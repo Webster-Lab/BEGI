@@ -53,36 +53,137 @@ date = as.Date(date)
 #### plot to check ####
 
 #test data
-i<-date[1]
+#i<-date[1]
+
 ## SLOC 24 h ##
-for (i in c(1:10)) {
+for (i in c(1:length(date))) {
   dz = date[i]
   tempdat = BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT < (as.POSIXct(dz, "00:00:01 MDT") +(60*60*24))&
                                    BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct(dz,"00:00:01 MDT"),]
 
 #save plot 
-file_name = paste("plots/delineations/SLOC_", dz, ".pdf", sep="")
+file_name = paste("plots/delineations/SLOC/SLOC_", dz, ".pdf", sep="")
 pdf(file_name)
 
 par(mfrow=c(2,1))
 
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
-     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,10))
 rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
-      pch=20,col="black", xlab="", xaxt = "n", type="o") #,ylim=c(-0.2,10))
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
 abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="Dissolved Oxygen (mg/L)")
 
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
-     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(22.5,80))
 rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
-      pch=20,col="black", xlab="", xaxt = "n", type="o") #,ylim=c(22.5,24.5))
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
 abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
 title(main="fDOM (QSU)")
 
 dev.off()
 }
+
+## SLOW 24 h ##
+for (i in c(1:length(date))) {
+  dz = date[i]
+  tempdat = BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT < (as.POSIXct(dz, "00:00:01 MDT") +(60*60*24))&
+                                     BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct(dz,"00:00:01 MDT"),]
+  
+  #save plot 
+  file_name = paste("plots/delineations/SLOW/SLOW_", dz, ".pdf", sep="")
+  pdf(file_name)
+  
+  par(mfrow=c(2,1))
+  
+  plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,10))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="Dissolved Oxygen (mg/L)")
+  
+  plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(22.5,80))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="fDOM (QSU)")
+  
+  dev.off()
+}
+
+## VDOW 24 h ##
+for (i in c(1:length(date))) {
+  dz = date[i]
+  tempdat = BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT < (as.POSIXct(dz, "00:00:01 MDT") +(60*60*24))&
+                                     BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct(dz,"00:00:01 MDT"),]
+  
+  #save plot 
+  file_name = paste("plots/delineations/VDOW/VDOW_", dz, ".pdf", sep="")
+  pdf(file_name)
+  
+  par(mfrow=c(2,1))
+  
+  plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,10))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="Dissolved Oxygen (mg/L)")
+  
+  plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(22.5,80))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="fDOM (QSU)")
+  
+  dev.off()
+}
+
+## VDOS 24 h ##
+for (i in c(1:length(date))) {
+  dz = date[i]
+  tempdat = BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT < (as.POSIXct(dz, "00:00:01 MDT") +(60*60*24))&
+                                     BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct(dz,"00:00:01 MDT"),]
+  
+  #save plot 
+  file_name = paste("plots/delineations/VDOS/VDOS_", dz, ".pdf", sep="")
+  pdf(file_name)
+  
+  par(mfrow=c(2,1))
+  
+  plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,10))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="Dissolved Oxygen (mg/L)")
+  
+  plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(22.5,80))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="fDOM (QSU)")
+  
+  dev.off()
+}
+
