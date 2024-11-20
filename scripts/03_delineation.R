@@ -230,9 +230,6 @@ VDOW_other <- as.Date(VDOW_other)
 #pulse of fDOM and turbidity in VDOW 11/2023
 #It seems like fDOM starts to decrease significantly over several days after a sonde event. It makes me think that a sonde event introduces enough oxygen into the wells (which wouldn't show up as DO) to spur aerobic respiration/DOC consumption
 
-#for every row where event is happening, and column of event code to categorize
-#add column event_type to each well dataframe based on conditions (the date) %in%
-#add column value to r based on condition
 
 #### Plotting just the events ####
 #SLOC#
@@ -366,5 +363,37 @@ for (i in c(1:length(VDOS_events))) {
   
   dev.off()
 }
+
+
+
+
+#### Adding event column to dataframe ####
+#for every row where event is happening, and column of event code to categorize
+#add column event_type to each well dataframe based on conditions (the date) %in%
+#add column value to r based on condition
+
+
+### SLOC ### 
+BEGI_EXO.or2[["SLOC"]]$event <- with (BEGI_EXO.or2[["SLOC"]], ifelse(as.Date(BEGI_EXO.or2[["SLOC"]]$datetimeMT) %in% SLOC_mx, 'metabolism',
+                                                                     ifelse(as.Date(BEGI_EXO.or2[["SLOC"]]$datetimeMT) %in% SLOC_lt, 'lateral transfer',
+                                                                            ifelse(as.Date(BEGI_EXO.or2[["SLOC"]]$datetimeMT) %in% SLOC_other, 'other', 'NA'))))
+
+### SLOW ###
+BEGI_EXO.or2[["SLOW"]]$event <- with (BEGI_EXO.or2[["SLOW"]], ifelse(as.Date(BEGI_EXO.or2[["SLOW"]]$datetimeMT) %in% SLOW_mx, 'metabolism',
+                                                                     ifelse(as.Date(BEGI_EXO.or2[["SLOW"]]$datetimeMT) %in% SLOW_lt, 'lateral transfer',
+                                                                            ifelse(as.Date(BEGI_EXO.or2[["SLOW"]]$datetimeMT) %in% SLOW_other, 'other', 'NA'))))
+
+### VDOS ###
+BEGI_EXO.or2[["VDOS"]]$event <- with (BEGI_EXO.or2[["VDOS"]], ifelse(as.Date(BEGI_EXO.or2[["VDOS"]]$datetimeMT) %in% VDOS_mx, 'metabolism',
+                                                                     ifelse(as.Date(BEGI_EXO.or2[["VDOS"]]$datetimeMT) %in% VDOS_lt, 'lateral transfer',
+                                                                            ifelse(as.Date(BEGI_EXO.or2[["VDOS"]]$datetimeMT) %in% VDOS_other, 'other', 'NA'))))
+
+
+### VDOW ###
+BEGI_EXO.or2[["VDOW"]]$event <- with (BEGI_EXO.or2[["VDOW"]], ifelse(as.Date(BEGI_EXO.or2[["VDOW"]]$datetimeMT) %in% VDOW_mx, 'metabolism',
+                                                                     ifelse(as.Date(BEGI_EXO.or2[["VDOW"]]$datetimeMT) %in% VDOW_lt, 'lateral transfer',
+                                                                            ifelse(as.Date(BEGI_EXO.or2[["VDOW"]]$datetimeMT) %in% VDOW_other, 'other', 'NA'))))
+
+
 
 
