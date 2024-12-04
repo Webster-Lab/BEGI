@@ -197,7 +197,7 @@ lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
 
 #### save rds of all data with temp-corrected fDOM (fDOM.QSU.mn.Tc) ####
 
-saveRDS(EXOz.tc, "EXO_compiled/EXOz.tc.rds")
+saveRDS(EXOz.tc, "EXO_compiled/BEGI_EXOz.tc.rds")
 #rm(list = ls())
 
 
