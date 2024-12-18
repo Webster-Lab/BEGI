@@ -9,6 +9,7 @@ library(broom)
 library(zoo)
 library(stringr)
 library(suncalc)
+library(DescTools)
 
 #### Import compiled EXO1 RDS file ####
 BEGI_EXO.or2 = readRDS("EXO_compiled/BEGI_EXO.or2.rds")
@@ -550,6 +551,8 @@ SLOC_DO20= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct
 SLOC_DO21= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-08-19 10:15:00",tz= "US/Mountain")
             &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-08-19 11:15:00",tz= "US/Mountain"),]
 
+SLOC_DO <-list(SLOC_DO1,SLOC_DO2,SLOC_DO3,SLOC_DO4,SLOC_DO5,SLOC_DO6,SLOC_DO7,SLOC_DO8,SLOC_DO9,SLOC_DO10,
+            SLOC_DO11,SLOC_DO12,SLOC_DO13,SLOC_DO14,SLOC_DO15,SLOC_DO16,SLOC_DO17,SLOC_DO18,SLOC_DO19,SLOC_DO20,SLOC_DO21)
 
 #SLOW#
 
@@ -592,6 +595,8 @@ SLOW_DO9= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct(
 #10th event
 SLOW_DO10= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2024-08-19 10:30:00",tz= "US/Mountain")
                                  &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2024-08-19 17:15:00",tz= "US/Mountain"),]
+
+SLOW_DO<-list(SLOW_DO1,SLOW_DO2,SLOW_DO3,SLOW_DO4,SLOW_DO5,SLOW_DO6,SLOW_DO7,SLOW_DO8,SLOW_DO9,SLOW_DO10)
 
 
 #VDOW#
@@ -637,7 +642,7 @@ VDOW_DO10= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct
                                  &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-12-18 11:00:00",tz= "US/Mountain"),]
 
 #11th event
-VDOW_D11= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-02-21 13:45:00",tz= "US/Mountain")
+VDOW_DO11= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-02-21 13:45:00",tz= "US/Mountain")
                                  &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-02-21 15:30:00",tz= "US/Mountain"),]
 
 #12th event
@@ -667,6 +672,9 @@ VDOW_DO17= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct
 #18th event
 VDOW_DO18= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-08-19 09:30:00",tz= "US/Mountain")
                                  &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-08-19 10:45:00",tz= "US/Mountain"),]
+
+VDOW_DO<-list(VDOW_DO1,VDOW_DO2,VDOW_DO3,VDOW_DO4,VDOW_DO5,VDOW_DO6,VDOW_DO7,VDOW_DO8,VDOW_DO9,VDOW_DO10,
+           VDOW_DO11,VDOW_DO12,VDOW_DO13,VDOW_DO14,VDOW_DO15,VDOW_DO16,VDOW_DO17,VDOW_DO18)
 
 
 #VDOS#
@@ -711,19 +719,99 @@ VDOS_DO9= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct(
 VDOS_DO10= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2024-08-19 09:45:00",tz= "US/Mountain")
                                  &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2024-08-19 11:30:00",tz= "US/Mountain"),]
 
+VDOS_DO<-list(VDOS_DO1,VDOS_DO2,VDOS_DO3,VDOS_DO4,VDOS_DO5,VDOS_DO6,VDOS_DO7,VDOS_DO8,VDOS_DO9,VDOS_DO10)
+
+
+#### DO area under curve ####
+
+#SLOC#
+# Initialize a vector to store the AUC results
+SLOC_AUC_results <- vector("numeric", length(SLOC_DO))
+
+# Loop through each data frame in the list
+for (i in seq_along(SLOC_DO)) {
+  SLOC_AUC_results[i] <- AUC(
+    x = SLOC_DO[[i]]$datetimeMT, 
+    y = SLOC_DO[[i]]$ODO.mg.L.mn, 
+    method = "spline", 
+    absolutearea = TRUE,
+    subdivisions = 1000,
+    na.rm = FALSE
+  )
+}
+
+# Print the results
+print(SLOC_AUC_results)
+
+
+#SLOW#
+# Initialize a vector to store the AUC results
+SLOW_AUC_results <- vector("numeric", length(SLOW_DO))
+
+# Loop through each data frame in the list
+for (i in seq_along(SLOW_DO)) {
+  SLOW_AUC_results[i] <- AUC(
+    x = SLOW_DO[[i]]$datetimeMT, 
+    y = SLOW_DO[[i]]$ODO.mg.L.mn, 
+    method = "spline", 
+    absolutearea = TRUE,
+    subdivisions = 1000,
+    na.rm = FALSE
+  )
+}
+
+# Print the results
+print(SLOW_AUC_results)
+
+
+#VDOW#
+# Initialize a vector to store the AUC results
+VDOW_AUC_results <- vector("numeric", length(VDOW_DO))
+
+# Loop through each data frame in the list
+for (i in seq_along(VDOW_DO)) {
+  VDOW_AUC_results[i] <- AUC(
+    x = VDOW_DO[[i]]$datetimeMT, 
+    y = VDOW_DO[[i]]$ODO.mg.L.mn, 
+    method = "spline", 
+    absolutearea = TRUE,
+    subdivisions = 1000,
+    na.rm = FALSE
+  )
+}
+
+# Print the results
+print(VDOW_AUC_results)
+
+
+#VDOS#
+# Initialize a vector to store the AUC results
+VDOS_AUC_results <- vector("numeric", length(VDOS_DO))
+
+# Loop through each data frame in the list
+for (i in seq_along(VDOS_DO)) {
+  VDOS_AUC_results[i] <- AUC(
+    x = VDOS_DO[[i]]$datetimeMT, 
+    y = VDOS_DO[[i]]$ODO.mg.L.mn, 
+    method = "spline", 
+    absolutearea = TRUE,
+    subdivisions = 1000,
+    na.rm = FALSE
+  )
+}
+
+# Print the results
+print(VDOS_AUC_results)
 
 
 
 
 
 
+#### DO Boxplots ####
 
-
-
-
-
-
-
-
-
-
+DO_events<-data.frame(DO=c(SLOC_AUC_results,SLOW_AUC_results,VDOW_AUC_results,VDOS_AUC_results),
+                      Well=rep(c("SLOC","SLOW","VDOW","VDOS"),
+                               times=c(length(SLOC_AUC_results),length(SLOW_AUC_results),length(VDOW_AUC_results),length(VDOS_AUC_results))))
+DO_events_bp<-ggplot(data=DO_events,mapping=aes(x=Well, y=DO))+geom_boxplot()
+print(DO_events_bp)
