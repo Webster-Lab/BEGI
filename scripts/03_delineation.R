@@ -14,6 +14,13 @@ library(DescTools)
 #### Import compiled EXO1 RDS file ####
 BEGI_EXO.or2 = readRDS("EXO_compiled/BEGI_EXO.or2.rds")
 
+#### Correct negative DO values ####
+BEGI_EXO.or2[["VDOW"]]$ODO.mg.L.mn <- BEGI_EXO.or2[["VDOW"]]$ODO.mg.L.mn + 0.36
+BEGI_EXO.or2[["VDOS"]]$ODO.mg.L.mn <- BEGI_EXO.or2[["VDOS"]]$ODO.mg.L.mn + 0.42
+BEGI_EXO.or2[["SLOW"]]$ODO.mg.L.mn <- BEGI_EXO.or2[["SLOW"]]$ODO.mg.L.mn + 0.32
+BEGI_EXO.or2[["SLOC"]]$ODO.mg.L.mn <- BEGI_EXO.or2[["SLOC"]]$ODO.mg.L.mn + 2.2
+
+
 #### Read in .csv files of service dates and times ####
 service.VDOW = read.csv("EXO_compiled/service.VDOW.csv", row.names = 1)
 names(service.VDOW) = "datetimeMT"
@@ -468,88 +475,88 @@ BEGI_EXO.or2[["VDOW"]]$event <- with (BEGI_EXO.or2[["VDOW"]], ifelse(as.Date(BEG
 
 
 #1st event
-SLOC_DO1= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-10-08 22:45:00",tz= "US/Mountain")
-              &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-10-09 00:45:00",tz= "US/Mountain"),]
+SLOC_DO1= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-08 22:45:00",tz= "US/Mountain")
+              &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-09 00:45:00",tz= "US/Mountain"),]
 
 #2nd event
-SLOC_DO2= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-10-09 22:00:00",tz= "US/Mountain")
-              &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-10-10 02:15:00",tz= "US/Mountain"),]
+SLOC_DO2= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-09 22:00:00",tz= "US/Mountain")
+              &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-10 02:15:00",tz= "US/Mountain"),]
 
 #3rd event
-SLOC_DO3= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-10-10 22:15:00",tz= "US/Mountain")
-              &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-10-11 01:15:00",tz= "US/Mountain"),]
+SLOC_DO3= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-10 22:15:00",tz= "US/Mountain")
+              &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-11 01:15:00",tz= "US/Mountain"),]
 
 #4th event
-SLOC_DO4= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-10-16 14:15:00",tz= "US/Mountain")
-             &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-10-16 19:15:00",tz= "US/Mountain"),]
+SLOC_DO4= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-16 14:15:00",tz= "US/Mountain")
+             &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-16 19:15:00",tz= "US/Mountain"),]
 
 #5th event
-SLOC_DO5= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-10-17 11:00:00",tz= "US/Mountain")
-              &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-10-18 02:15:00",tz= "US/Mountain"),]
+SLOC_DO5= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-17 11:00:00",tz= "US/Mountain")
+              &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-18 02:15:00",tz= "US/Mountain"),]
 
 #6th event
-SLOC_DO6= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-11-17 20:15:00",tz= "US/Mountain")
-              &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-11-17 20:45:00",tz= "US/Mountain"),]
+SLOC_DO6= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-11-17 20:15:00",tz= "US/Mountain")
+              &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-11-17 20:45:00",tz= "US/Mountain"),]
 
 #7th event
-SLOC_DO7= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-11-21 16:15:00",tz= "US/Mountain")
-              &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-10-16 16:45:00",tz= "US/Mountain"),]
+SLOC_DO7= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-11-21 16:15:00",tz= "US/Mountain")
+              &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-11-21 16:45:00",tz= "US/Mountain"),]
 
 #8th event
-SLOC_DO8= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-12-05 17:15:00",tz= "US/Mountain")
-              &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-12-05 17:45:00",tz= "US/Mountain"),]
+SLOC_DO8= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-12-05 17:15:00",tz= "US/Mountain")
+              &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-12-05 17:45:00",tz= "US/Mountain"),]
 
 #9th event
-SLOC_DO9= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-12-18 11:00:00",tz= "US/Mountain")
-             &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-12-18 12:00:00",tz= "US/Mountain"),]
+SLOC_DO9= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-12-18 11:00:00",tz= "US/Mountain")
+             &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-12-18 12:00:00",tz= "US/Mountain"),]
 
 #10th event
-SLOC_DO10= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2023-12-28 23:30:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2023-12-29 02:15:00",tz= "US/Mountain"),]
+SLOC_DO10= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-12-28 23:30:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-12-29 02:15:00",tz= "US/Mountain"),]
 
 #11th event
-SLOC_DO11= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-01-19 12:30:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-01-19 13:00:00",tz= "US/Mountain"),]
+SLOC_DO11= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-01-19 12:30:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-01-19 13:00:00",tz= "US/Mountain"),]
 
 #12th event
-SLOC_DO12= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-01-20 18:15:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-01-20 21:00:00",tz= "US/Mountain"),]
+SLOC_DO12= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-01-20 18:15:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-01-20 21:00:00",tz= "US/Mountain"),]
 
 #13th event
-SLOC_DO13= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-01-21 07:45:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-01-24 14:45:00",tz= "US/Mountain"),]
+SLOC_DO13= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-01-21 07:45:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-01-24 14:45:00",tz= "US/Mountain"),]
 
 #14th event
-SLOC_DO14= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-02-10 15:00:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-02-10 17:15:00",tz= "US/Mountain"),]
+SLOC_DO14= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-02-10 15:00:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-02-10 17:15:00",tz= "US/Mountain"),]
 
 #15th event
-SLOC_DO15= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-02-21 10:45:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-02-21 12:00:00",tz= "US/Mountain"),]
+SLOC_DO15= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-02-21 10:45:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-02-21 12:00:00",tz= "US/Mountain"),]
 
 #16th event
-SLOC_DO16= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-3-20 10:00:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-03-20 14:30:00",tz= "US/Mountain"),]
+SLOC_DO16= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-3-20 10:00:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-03-20 14:30:00",tz= "US/Mountain"),]
 
 #17th event
-SLOC_DO17= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-04-14 06:45:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-04-14 12:15:00",tz= "US/Mountain"),]
+SLOC_DO17= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-04-14 06:45:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-04-14 12:15:00",tz= "US/Mountain"),]
 
 #18th event
-SLOC_DO18= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-04-15 03:30:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-04-15 12:15:00",tz= "US/Mountain"),]
+SLOC_DO18= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-04-15 03:30:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-04-15 12:15:00",tz= "US/Mountain"),]
 
 #19th event
-SLOC_DO19= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-05-23 10:45:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-05-23 12:30:00",tz= "US/Mountain"),]
+SLOC_DO19= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-05-23 10:45:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-05-23 12:30:00",tz= "US/Mountain"),]
 
 #20th event
-SLOC_DO20= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-07-17 14:00:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-07-17 15:15:00",tz= "US/Mountain"),]
+SLOC_DO20= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-07-17 14:00:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-07-17 15:15:00",tz= "US/Mountain"),]
 
 #21st event
-SLOC_DO21= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT > as.POSIXct("2024-08-19 10:15:00",tz= "US/Mountain")
-            &BEGI_EXO.or2[["SLOC"]]$datetimeMT < as.POSIXct("2024-08-19 11:15:00",tz= "US/Mountain"),]
+SLOC_DO21= BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-08-19 10:15:00",tz= "US/Mountain")
+            &BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-08-19 11:15:00",tz= "US/Mountain"),]
 
 SLOC_DO <-list(SLOC_DO1,SLOC_DO2,SLOC_DO3,SLOC_DO4,SLOC_DO5,SLOC_DO6,SLOC_DO7,SLOC_DO8,SLOC_DO9,SLOC_DO10,
             SLOC_DO11,SLOC_DO12,SLOC_DO13,SLOC_DO14,SLOC_DO15,SLOC_DO16,SLOC_DO17,SLOC_DO18,SLOC_DO19,SLOC_DO20,SLOC_DO21)
@@ -557,44 +564,44 @@ SLOC_DO <-list(SLOC_DO1,SLOC_DO2,SLOC_DO3,SLOC_DO4,SLOC_DO5,SLOC_DO6,SLOC_DO7,SL
 #SLOW#
 
 #1st event
-SLOW_DO1= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2023-09-20 10:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2023-09-20 12:15:00",tz= "US/Mountain"),]
+SLOW_DO1= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2023-09-20 10:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2023-09-20 12:15:00",tz= "US/Mountain"),]
 
 #2nd event
-SLOW_DO2= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2023-10-16 14:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2023-10-16 15:15:00",tz= "US/Mountain"),]
+SLOW_DO2= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2023-10-16 14:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2023-10-16 15:15:00",tz= "US/Mountain"),]
 
 #3rd event
-SLOW_DO3= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2023-11-21 16:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2023-11-21 17:15:00",tz= "US/Mountain"),]
+SLOW_DO3= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2023-11-21 16:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2023-11-21 17:15:00",tz= "US/Mountain"),]
 
 #4th event
-SLOW_DO4= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2023-12-18 10:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2023-12-18 11:15:00",tz= "US/Mountain"),]
+SLOW_DO4= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2023-12-18 10:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2023-12-18 11:15:00",tz= "US/Mountain"),]
 
 #5th event
-SLOW_DO5= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2024-01-19 12:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2024-01-19 13:45:00",tz= "US/Mountain"),]
+SLOW_DO5= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2024-01-19 12:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2024-01-19 13:45:00",tz= "US/Mountain"),]
 
 #6th event
-SLOW_DO6= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2024-02-21 10:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2024-02-21 11:30:00",tz= "US/Mountain"),]
+SLOW_DO6= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2024-02-21 10:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2024-02-21 11:30:00",tz= "US/Mountain"),]
 
 #7th event
-SLOW_DO7= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2024-03-20 10:00:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2024-03-20 10:45:00",tz= "US/Mountain"),]
+SLOW_DO7= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2024-03-20 10:00:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2024-03-20 10:45:00",tz= "US/Mountain"),]
 
 #8th event
-SLOW_DO8= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2024-05-14 14:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2024-05-14 17:30:00",tz= "US/Mountain"),]
+SLOW_DO8= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2024-05-14 14:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2024-05-14 17:30:00",tz= "US/Mountain"),]
 
 #9th event
-SLOW_DO9= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2024-07-17 14:00:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2024-07-17 14:30:00",tz= "US/Mountain"),]
+SLOW_DO9= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2024-07-17 14:00:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2024-07-17 14:30:00",tz= "US/Mountain"),]
 
 #10th event
-SLOW_DO10= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT > as.POSIXct("2024-08-19 10:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT < as.POSIXct("2024-08-19 17:15:00",tz= "US/Mountain"),]
+SLOW_DO10= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXct("2024-08-19 10:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["SLOW"]]$datetimeMT <= as.POSIXct("2024-08-19 17:15:00",tz= "US/Mountain"),]
 
 SLOW_DO<-list(SLOW_DO1,SLOW_DO2,SLOW_DO3,SLOW_DO4,SLOW_DO5,SLOW_DO6,SLOW_DO7,SLOW_DO8,SLOW_DO9,SLOW_DO10)
 
@@ -602,76 +609,76 @@ SLOW_DO<-list(SLOW_DO1,SLOW_DO2,SLOW_DO3,SLOW_DO4,SLOW_DO5,SLOW_DO6,SLOW_DO7,SLO
 #VDOW#
 
 #1st event
-VDOW_DO1= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-10-03 11:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-10-03 12:45:00",tz= "US/Mountain"),]
+VDOW_DO1= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-10-03 11:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-10-03 12:45:00",tz= "US/Mountain"),]
 
 #2nd event
-VDOW_DO2= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-10-04 12:00:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-10-04 12:30:00",tz= "US/Mountain"),]
+VDOW_DO2= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-10-04 12:00:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-10-04 12:30:00",tz= "US/Mountain"),]
 
 #3rd event
-VDOW_DO3= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-10-04 16:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-10-04 21:30:00",tz= "US/Mountain"),]
+VDOW_DO3= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-10-04 16:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-10-04 21:30:00",tz= "US/Mountain"),]
 
 #4th event
-VDOW_DO4= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-10-05 13:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-10-05 21:15:00",tz= "US/Mountain"),]
+VDOW_DO4= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-10-05 13:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-10-05 21:15:00",tz= "US/Mountain"),]
 
 #5th event
-VDOW_DO5= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-10-16 14:00:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-10-16 15:15:00",tz= "US/Mountain"),]
+VDOW_DO5= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-10-16 14:00:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-10-16 15:15:00",tz= "US/Mountain"),]
 
 #6th event
-VDOW_DO6= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-11-20 14:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-11-20 17:15:00",tz= "US/Mountain"),]
+VDOW_DO6= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-11-20 14:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-11-20 17:15:00",tz= "US/Mountain"),]
 
 #7th event
-VDOW_DO7= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-11-27 09:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-11-27 13:15:00",tz= "US/Mountain"),]
+VDOW_DO7= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-11-27 09:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-11-27 13:15:00",tz= "US/Mountain"),]
 
 #8th event
-VDOW_DO8= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-11-28 10:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-11-28 13:15:00",tz= "US/Mountain"),]
+VDOW_DO8= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-11-28 10:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-11-28 13:15:00",tz= "US/Mountain"),]
 
 #9th event
-VDOW_DO9= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-11-29 10:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-11-29 12:00:00",tz= "US/Mountain"),]
+VDOW_DO9= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-11-29 10:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-11-29 12:00:00",tz= "US/Mountain"),]
 
 #10th event
-VDOW_DO10= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2023-12-18 09:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2023-12-18 11:00:00",tz= "US/Mountain"),]
+VDOW_DO10= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2023-12-18 09:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2023-12-18 11:00:00",tz= "US/Mountain"),]
 
 #11th event
-VDOW_DO11= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-02-21 13:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-02-21 15:30:00",tz= "US/Mountain"),]
+VDOW_DO11= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-02-21 13:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-02-21 15:30:00",tz= "US/Mountain"),]
 
 #12th event
-VDOW_DO12= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-03-20 09:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-03-20 13:15:00",tz= "US/Mountain"),]
+VDOW_DO12= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-03-20 09:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-03-20 13:15:00",tz= "US/Mountain"),]
 
 #13th event
-VDOW_DO13= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-04-17 10:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-04-17 18:15:00",tz= "US/Mountain"),]
+VDOW_DO13= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-04-17 10:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-04-17 18:15:00",tz= "US/Mountain"),]
 
 #14th event
-VDOW_DO14= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-05-14 13:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-05-15 01:30:00",tz= "US/Mountain"),]
+VDOW_DO14= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-05-14 13:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-05-15 01:30:00",tz= "US/Mountain"),]
 
 #15th event
-VDOW_DO15= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-05-23 10:00:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-05-23 12:45:00",tz= "US/Mountain"),]
+VDOW_DO15= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-05-23 10:00:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-05-23 12:45:00",tz= "US/Mountain"),]
 
 #16th event
-VDOW_DO16= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-06-17 12:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-06-17 14:15:00",tz= "US/Mountain"),]
+VDOW_DO16= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-06-17 12:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-06-17 14:15:00",tz= "US/Mountain"),]
 
 #17th event
-VDOW_DO17= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-07-17 13:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-07-17 21:15:00",tz= "US/Mountain"),]
+VDOW_DO17= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-07-17 13:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-07-17 21:15:00",tz= "US/Mountain"),]
 
 #18th event
-VDOW_DO18= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT > as.POSIXct("2024-08-19 09:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT < as.POSIXct("2024-08-19 10:45:00",tz= "US/Mountain"),]
+VDOW_DO18= BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-08-19 09:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-08-19 10:45:00",tz= "US/Mountain"),]
 
 VDOW_DO<-list(VDOW_DO1,VDOW_DO2,VDOW_DO3,VDOW_DO4,VDOW_DO5,VDOW_DO6,VDOW_DO7,VDOW_DO8,VDOW_DO9,VDOW_DO10,
            VDOW_DO11,VDOW_DO12,VDOW_DO13,VDOW_DO14,VDOW_DO15,VDOW_DO16,VDOW_DO17,VDOW_DO18)
@@ -680,44 +687,44 @@ VDOW_DO<-list(VDOW_DO1,VDOW_DO2,VDOW_DO3,VDOW_DO4,VDOW_DO5,VDOW_DO6,VDOW_DO7,VDO
 #VDOS#
 
 #1st event
-VDOS_DO1= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2023-10-15 23:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2023-10-16 18:15:00",tz= "US/Mountain"),]
+VDOS_DO1= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2023-10-15 23:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2023-10-16 18:15:00",tz= "US/Mountain"),]
 
 #2nd event
-VDOS_DO2= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2023-11-27 09:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2023-11-27 14:30:00",tz= "US/Mountain"),]
+VDOS_DO2= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2023-11-27 09:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2023-11-27 14:30:00",tz= "US/Mountain"),]
 
 #3rd event
-VDOS_DO3= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2023-11-29 10:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2023-11-29 13:00:00",tz= "US/Mountain"),]
+VDOS_DO3= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2023-11-29 10:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2023-11-29 13:00:00",tz= "US/Mountain"),]
 
 #4th event
-VDOS_DO4= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2023-11-30 10:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2023-11-30 11:00:00",tz= "US/Mountain"),]
+VDOS_DO4= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2023-11-30 10:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2023-11-30 11:00:00",tz= "US/Mountain"),]
 
 #5th event
-VDOS_DO5= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2024-02-21 13:30:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2024-02-21 17:15:00",tz= "US/Mountain"),]
+VDOS_DO5= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2024-02-21 13:30:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2024-02-21 17:15:00",tz= "US/Mountain"),]
 
 #6th event
-VDOS_DO6= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2024-04-17 10:00:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2024-04-17 12:15:00",tz= "US/Mountain"),]
+VDOS_DO6= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2024-04-17 10:00:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2024-04-17 12:15:00",tz= "US/Mountain"),]
 
 #7th event
-VDOS_DO7= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2024-05-23 10:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2024-05-23 17:15:00",tz= "US/Mountain"),]
+VDOS_DO7= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2024-05-23 10:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2024-05-23 17:15:00",tz= "US/Mountain"),]
 
 #8th event
-VDOS_DO8= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2024-07-16 10:00:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2024-07-16 14:15:00",tz= "US/Mountain"),]
+VDOS_DO8= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2024-07-16 10:00:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2024-07-16 14:15:00",tz= "US/Mountain"),]
 
 #9th event
-VDOS_DO9= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2024-07-17 13:15:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2024-07-17 14:00:00",tz= "US/Mountain"),]
+VDOS_DO9= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2024-07-17 13:15:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2024-07-17 14:00:00",tz= "US/Mountain"),]
 
 #10th event
-VDOS_DO10= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT > as.POSIXct("2024-08-19 09:45:00",tz= "US/Mountain")
-                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT < as.POSIXct("2024-08-19 11:30:00",tz= "US/Mountain"),]
+VDOS_DO10= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXct("2024-08-19 09:45:00",tz= "US/Mountain")
+                                 &BEGI_EXO.or2[["VDOS"]]$datetimeMT <= as.POSIXct("2024-08-19 11:30:00",tz= "US/Mountain"),]
 
 VDOS_DO<-list(VDOS_DO1,VDOS_DO2,VDOS_DO3,VDOS_DO4,VDOS_DO5,VDOS_DO6,VDOS_DO7,VDOS_DO8,VDOS_DO9,VDOS_DO10)
 
@@ -725,86 +732,68 @@ VDOS_DO<-list(VDOS_DO1,VDOS_DO2,VDOS_DO3,VDOS_DO4,VDOS_DO5,VDOS_DO6,VDOS_DO7,VDO
 #### DO area under curve ####
 
 #SLOC#
-# Initialize a vector to store the AUC results
+
 SLOC_AUC_results <- vector("numeric", length(SLOC_DO))
 
-# Loop through each data frame in the list
 for (i in seq_along(SLOC_DO)) {
   SLOC_AUC_results[i] <- AUC(
     x = SLOC_DO[[i]]$datetimeMT, 
     y = SLOC_DO[[i]]$ODO.mg.L.mn, 
-    method = "spline", 
-    absolutearea = TRUE,
-    subdivisions = 1000,
+    method = "trapezoid",
     na.rm = FALSE
   )
 }
 
-# Print the results
-print(SLOC_AUC_results)
+view(SLOC_AUC_results)
 
 
 #SLOW#
-# Initialize a vector to store the AUC results
+
 SLOW_AUC_results <- vector("numeric", length(SLOW_DO))
 
-# Loop through each data frame in the list
 for (i in seq_along(SLOW_DO)) {
   SLOW_AUC_results[i] <- AUC(
     x = SLOW_DO[[i]]$datetimeMT, 
     y = SLOW_DO[[i]]$ODO.mg.L.mn, 
-    method = "spline", 
-    absolutearea = TRUE,
-    subdivisions = 1000,
+    method = "trapezoid",
     na.rm = FALSE
   )
 }
 
-# Print the results
-print(SLOW_AUC_results)
+view(SLOW_AUC_results)
 
 
 #VDOW#
-# Initialize a vector to store the AUC results
+
 VDOW_AUC_results <- vector("numeric", length(VDOW_DO))
 
-# Loop through each data frame in the list
 for (i in seq_along(VDOW_DO)) {
   VDOW_AUC_results[i] <- AUC(
     x = VDOW_DO[[i]]$datetimeMT, 
     y = VDOW_DO[[i]]$ODO.mg.L.mn, 
-    method = "spline", 
-    absolutearea = TRUE,
-    subdivisions = 1000,
+    method = "trapezoid",
     na.rm = FALSE
   )
 }
 
-# Print the results
-print(VDOW_AUC_results)
+view(VDOW_AUC_results)
 
 
 #VDOS#
-# Initialize a vector to store the AUC results
+
 VDOS_AUC_results <- vector("numeric", length(VDOS_DO))
 
-# Loop through each data frame in the list
+
 for (i in seq_along(VDOS_DO)) {
   VDOS_AUC_results[i] <- AUC(
     x = VDOS_DO[[i]]$datetimeMT, 
     y = VDOS_DO[[i]]$ODO.mg.L.mn, 
-    method = "spline", 
-    absolutearea = TRUE,
-    subdivisions = 1000,
+    method = "trapezoid",
     na.rm = FALSE
   )
 }
 
-# Print the results
-print(VDOS_AUC_results)
-
-
-
+view(VDOS_AUC_results)
 
 
 
@@ -815,3 +804,109 @@ DO_events<-data.frame(DO=c(SLOC_AUC_results,SLOW_AUC_results,VDOW_AUC_results,VD
                                times=c(length(SLOC_AUC_results),length(SLOW_AUC_results),length(VDOW_AUC_results),length(VDOS_AUC_results))))
 DO_events_bp<-ggplot(data=DO_events,mapping=aes(x=Well, y=DO))+geom_boxplot()
 print(DO_events_bp)
+
+#removed outliers from plot
+DO_events_no<-ggplot(data=DO_events,mapping=aes(x=Well, y=DO))+geom_boxplot(outlier.shape=NA)+coord_cartesian(ylim=c(0,1250))
+print(DO_events_no)
+
+#### DO negative rates of change ####
+
+#SLOC#
+SLOC_rates <- list()
+SLOC_avg_rate <- numeric()
+
+for (i in seq_along(SLOC_DO)) {
+  events <- SLOC_DO[[i]]
+  events <- events %>%
+    mutate(
+      rate_of_change = c(NA, diff(ODO.mg.L.mn)),
+      negative_rate_of_change = ifelse(rate_of_change < 0, rate_of_change, NA)
+    )
+ 
+  SLOC_rates[[i]] <- events
+  avg_neg_rate <- mean(events$negative_rate_of_change, na.rm = TRUE)
+  SLOC_avg_rate <- c(SLOC_avg_rate, avg_neg_rate)
+}
+
+names(SLOC_rates) <- names(SLOC_DO)
+names(SLOC_avg_rate) <- names(SLOC_DO)
+View(SLOC_rates)
+print(SLOC_avg_rate)
+
+
+#SLOW#
+SLOW_rates <- list()
+SLOW_avg_rate <- numeric()
+
+for (i in seq_along(SLOW_DO)) {
+  events <- SLOW_DO[[i]]
+  events <- events %>%
+    mutate(
+      rate_of_change = c(NA, diff(ODO.mg.L.mn)),
+      negative_rate_of_change = ifelse(rate_of_change < 0, rate_of_change, NA)
+    )
+  
+  SLOW_rates[[i]] <- events
+  avg_neg_rate <- mean(events$negative_rate_of_change, na.rm = TRUE)
+  SLOW_avg_rate <- c(SLOW_avg_rate, avg_neg_rate)
+}
+
+names(SLOW_rates) <- names(SLOW_DO)
+names(SLOW_avg_rate) <- names(SLOW_DO)
+View(SLOW_rates)
+print(SLOW_avg_rate)
+
+
+#VDOW#
+VDOW_rates <- list()
+VDOW_avg_rate <- numeric()
+
+for (i in seq_along(VDOW_DO)) {
+  events <- VDOW_DO[[i]]
+  events <- events %>%
+    mutate(
+      rate_of_change = c(NA, diff(ODO.mg.L.mn)),
+      negative_rate_of_change = ifelse(rate_of_change < 0, rate_of_change, NA)
+    )
+  
+  VDOW_rates[[i]] <- events
+  avg_neg_rate <- mean(events$negative_rate_of_change, na.rm = TRUE)
+  VDOW_avg_rate <- c(VDOW_avg_rate, avg_neg_rate)
+}
+
+names(VDOW_rates) <- names(VDOW_DO)
+names(VDOW_avg_rate) <- names(VDOW_DO)
+View(VDOW_rates)
+print(VDOW_avg_rate)
+
+
+#VDOS#
+VDOS_rates <- list()
+VDOS_avg_rate <- numeric()
+
+for (i in seq_along(VDOS_DO)) {
+  events <- VDOS_DO[[i]]
+  events <- events %>%
+    mutate(
+      rate_of_change = c(NA, diff(ODO.mg.L.mn)),
+      negative_rate_of_change = ifelse(rate_of_change < 0, rate_of_change, NA)
+    )
+  
+  VDOS_rates[[i]] <- events
+  avg_neg_rate <- mean(events$negative_rate_of_change, na.rm = TRUE)
+  VDOS_avg_rate <- c(VDOS_avg_rate, avg_neg_rate)
+}
+
+names(VDOS_rates) <- names(VDOS_DO)
+names(VDOS_avg_rate) <- names(VDOS_DO)
+View(VDOS_rates)
+print(VDOS_avg_rate)
+
+#### 
+
+
+
+
+
+
+
