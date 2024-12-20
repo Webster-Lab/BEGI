@@ -14,7 +14,13 @@ library(broom)
 library(zoo)
 library(stringr)
 library(suncalc)
+library(dataRetrieval) # Download USGS discharge data
+options(scipen=999)
+library(viridis)
+library(gridExtra)
+library(patchwork)
 
+#
 #### load and wrangle PT data from google drive ####
 
 ls_tibble <- googledrive::drive_ls("https://drive.google.com/drive/folders/1FBwR7Bz4ayynuARNE7drXXl2lSX9rZcN")
@@ -717,7 +723,7 @@ BEGI_PTz[["SLOW"]]$DTW_m = BEGI_PTz[["SLOW"]]$SensorDepth_m_CBC_sm_neg*Slope + I
 ggplot(data=BEGI_PTz[["SLOW"]])+
   geom_line(aes(datetimeMT, DTW_m))+
   geom_point(aes(datetimeMT, DTW_beeper_m), size=3, color="red")
-ggplot(data=BEGI_PTz[["SLOW"]])+ geom_line(aes(datetimeMT, DTW_m*-1))+ylim(c(-3,0))
+ggplot(data=BEGI_PTz[["SLOW"]])+ geom_line(aes(datetimeMT, DTW_m*-1))+ylim(c(-3,.5))
 
 # SLOC
 plot(BEGI_PTz[["SLOC"]]$DTW_beeper_m ~ BEGI_PTz[["SLOC"]]$SensorDepth_m_CBC_sm_neg)
@@ -731,7 +737,7 @@ BEGI_PTz[["SLOC"]]$DTW_m = BEGI_PTz[["SLOC"]]$SensorDepth_m_CBC_sm_neg*Slope + I
 ggplot(data=BEGI_PTz[["SLOC"]])+
   geom_line(aes(datetimeMT, DTW_m))+
   geom_point(aes(datetimeMT, DTW_beeper_m), size=3, color="red")
-ggplot(data=BEGI_PTz[["SLOC"]])+ geom_line(aes(datetimeMT, DTW_m*-1))+ylim(c(-3,1))
+ggplot(data=BEGI_PTz[["SLOC"]])+ geom_line(aes(datetimeMT, DTW_m*-1))+ylim(c(-3,.5))
 
 #### save finalized DTW data ####
 
@@ -741,3 +747,129 @@ saveRDS(BEGI_PTz, "DTW_compiled/BEGI_PTz_DTW.rds")
 # save as dataframe
 BEGI_PT_DTW_all = rbind(BEGI_PTz[["VDOW"]],BEGI_PTz[["VDOS"]],BEGI_PTz[["SLOW"]],BEGI_PTz[["SLOC"]])
 saveRDS(BEGI_PT_DTW_all, "DTW_compiled/BEGI_PT_DTW_all.rds")
+
+#### add discharge data from Rio Grande ####
+
+# USGS station: Rio Grande at Isleta Lakes NR Isleta, NM - 08330875
+NM_retrieve_usgs_data <- function(start_date, end_date, site_no = "08330875", p_code = "00060") {
+  #Retrieve the USGS discharge data as an instantaneous (uv) data type.
+  usgs_data <- readNWISuv(siteNumbers = site_no, parameterCd = p_code, startDate = start_date, endDate = end_date)
+  #Rename columns to more user-friendly names.
+  usgs_data <- renameNWISColumns(usgs_data)
+}
+#retrieve data
+NM_USGS <- NM_retrieve_usgs_data("2023-09-15", "2024-12-03")
+(attributes(NM_USGS))
+# reformat for my needs
+# discharge is retrieved as cubic feet per second. Below I convert to L/sec
+NM_USGS_2 = data.frame(datetimeMT = NM_USGS$dateTime, Q_Lsec = (NM_USGS$Flow_Inst)*28.3168)
+NM_USGS_2$datetimeMT = force_tz(NM_USGS_2$datetimeMT, tzone="US/Mountain")
+tz(NM_USGS_2$datetimeMT)
+# round time to nearest 15 min - lubridate::round_date(x, "15 minutes") 
+NM_USGS_2$datetimeMT<- lubridate::round_date(NM_USGS_2$datetimeMT, "15 minutes") 
+
+# plot to check
+ggplot(NM_USGS_2, aes(datetimeMT,Q_Lsec)) +
+  xlab("") +
+  ylab("Q (L/sec)") +
+  geom_line()
+
+# add to clean time stamps
+time <- data.frame(
+  datetimeMT = seq.POSIXt(
+    from = ISOdatetime(2023,09,15,0,0,0, tz = "US/Mountain"),
+    to = ISOdatetime(2024,12,03,0,0,0, tz= "US/Mountain"),
+    by = "15 min" ))
+NM_USGS_3 = left_join(time, NM_USGS_2, by="datetimeMT")
+# interpolate USGS data when it goes to longer time intervals
+par(mfrow=c(2,1)) # set up plotting window to comapare ts before and after gap filling
+# Make univariate zoo time series #
+ts.temp<-read.zoo(NM_USGS_3, index.column=1, format="%Y-%m-%d %H:%M:%S", tz="US/Mountain")
+# ‘order.by’ are not unique warning suggests duplicate time stamps. I found that this is due to time zone changes, so nothing to worry about for regular time steps. 
+plot(ts.temp)
+# Apply NA interpolation method
+ts.filled = na.spline(ts.temp, na.rm = T, maxgap = 4*6)
+plot(ts.filled)
+# remove leading tail that interpolated poorly
+ts.filled[c(1:24)]=NA
+#par(mfrow=c(1,1)) # reset plotting window
+# revert back to df
+ts.filled = as.data.frame(ts.filled)
+ts.filled$datetimeMT = NM_USGS_3$datetimeMT
+names(ts.filled) = c("Q_Lsec","datetimeMT")
+NM_USGS_4 = ts.filled
+# check NAs that are left
+sum(is.na(NM_USGS_3$Q_Lsec))
+sum(is.na(NM_USGS_4$Q_Lsec))
+
+# join to well data
+siteIDz = c("VDOW", "VDOS", "SLOW", "SLOC")
+for(i in siteIDz){
+  BEGI_PTz[[i]]$Q_Lsec=NULL
+  BEGI_PTz[[i]] = left_join(BEGI_PTz[[i]], NM_USGS_4, by=c("datetimeMT"))
+}
+BEGI_PT_DTW_all = rbind(BEGI_PTz[["VDOW"]],BEGI_PTz[["VDOS"]],BEGI_PTz[["SLOW"]],BEGI_PTz[["SLOC"]])
+BEGI_PT_DTW_all = BEGI_PT_DTW_all %>%
+  group_by(datetimeMT, siteID, wellID) %>%
+  summarise_all(mean, na.rm = TRUE)%>% 
+  mutate_all(~ifelse(is.nan(.), NA, .))
+BEGI_PT_DTW_all$siteID = as.factor(BEGI_PT_DTW_all$siteID)
+BEGI_PT_DTW_all$wellID = as.factor(BEGI_PT_DTW_all$wellID)
+
+# plot to check
+ggplot(BEGI_PT_DTW_all, aes(datetimeMT, Q_Lsec, color=wellID)) +
+  xlab("") +
+  ylab("Q (L/sec)") +
+  geom_line() + geom_path()+ 
+  facet_grid(~siteID)
+ggplot(BEGI_PT_DTW_all, aes(datetimeMT, DTW_m, color=wellID)) +
+  xlab("") +
+  ylab("DTW") +
+  geom_line() +
+  facet_grid(~siteID)
+
+#### save data with Rio Grande discharge included ####
+
+# save as list
+saveRDS(BEGI_PTz, "DTW_compiled/BEGI_PTz_DTW.rds")
+
+# save as dataframe
+saveRDS(BEGI_PT_DTW_all, "DTW_compiled/BEGI_PT_DTW_all.rds")
+
+
+
+#### plot all final DTW data together ####
+
+Q = 
+  ggplot(BEGI_PT_DTW_all, aes(datetimeMT, Q_Lsec)) +
+  xlab("") +
+  ylab("Q (L/sec)") +
+  geom_line(linewidth=1)+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_blank(),
+        legend.title = element_blank(),
+        axis.ticks.x=element_blank(),
+        text = element_text(size = 20))
+
+DTW = 
+  ggplot(BEGI_PT_DTW_all, aes(datetimeMT, DTW_m*-1, color=wellID)) +
+  xlab("") +
+  ylab("Water Depth Below Surface (m)")+
+  geom_hline(yintercept=0, linetype = 'dashed') +
+  geom_line(key_glyph = "timeseries",linewidth=1,alpha=0.75) +
+  facet_grid(rows=vars(siteID))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 45,hjust = 1),
+        legend.title = element_blank(),
+        legend.position = "bottom",
+        text = element_text(size = 20))+
+  scale_color_viridis(discrete = TRUE, option = "D")
+
+#grid.arrange(Q, DTW, nrow = 2)
+
+Q_DTW = Q+ DTW+ plot_layout(ncol = 1, widths = c(1,.84), heights=c(1,2))
+ggsave("plots/RGdischarge_allwellsDTW.png", Q_DTW, width=11,height=8, units="in")
