@@ -836,12 +836,84 @@ saveRDS(BEGI_PTz, "DTW_compiled/BEGI_PTz_DTW.rds")
 # save as dataframe
 saveRDS(BEGI_PT_DTW_all, "DTW_compiled/BEGI_PT_DTW_all.rds")
 
+#### re-add data and fill gap in VDOW ####
 
+# there is a large datgap in VDOW from 2023-10-20 08:15:00 to 2024-02-06 10:30:00. This well is very physically close to VDOS and the data looks extremely similar other than a small difference in depth below the surface. The R-sq of their linear relationship is 0.9891. I therefore think it's appropriate to use VDOS to predict VDOW and fill the gap. 
 
+DTW = readRDS("DTW_compiled/BEGI_PTz_DTW.rds")
+DTW_df = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
+
+# plot VDO wells
+ggplot(DTW_df[DTW_df$siteID=="VDO",], aes(datetimeMT, DTW_m*-1, color=wellID)) +
+  xlab("") +
+  ylab("Water Depth Below Surface (m)")+
+  geom_hline(yintercept=0, linetype = 'dashed') +
+  geom_line(key_glyph = "timeseries",linewidth=1,alpha=0.75) +
+  facet_grid(rows=vars(siteID))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 45,hjust = 1),
+        legend.title = element_blank(),
+        legend.position = "bottom",
+        text = element_text(size = 20))+
+  scale_color_viridis(discrete = TRUE, option = "D")
+
+# define relationship between VDOS and VDOW
+plot(DTW_df$DTW_m[DTW_df$wellID=="VDOW"] ~ DTW_df$DTW_m[DTW_df$wellID=="VDOS"])
+m.VDOW = lm(DTW_df$DTW_m[DTW_df$wellID=="VDOW"] ~ DTW_df$DTW_m[DTW_df$wellID=="VDOS"])
+abline(m.VDOW)
+summary(m.VDOW)
+cf <- coef(m.VDOW)
+Intercept <- cf[1]
+Slope <- cf[2]
+
+# predict data gap
+DTW_df$DTW_m[DTW_df$wellID=="VDOW" 
+             & DTW_df$datetimeMT >= as.POSIXct("2023-10-20 08:15:00", tz="US/Mountain")
+             & DTW_df$datetimeMT <= as.POSIXct("2024-02-06 10:30:00", tz="US/Mountain")] = # length=10478
+  DTW_df$DTW_m[DTW_df$wellID=="VDOS"
+               & DTW_df$datetimeMT >= as.POSIXct("2023-10-20 08:15:00", tz="US/Mountain")
+               & DTW_df$datetimeMT <= as.POSIXct("2024-02-06 10:30:00", tz="US/Mountain")] *Slope + Intercept # length=10478
+
+# plot to check
+ggplot(DTW_df[DTW_df$siteID=="VDO"
+              & DTW_df$datetimeMT >= as.POSIXct("2023-10-10 08:15:00", tz="US/Mountain")
+              & DTW_df$datetimeMT <= as.POSIXct("2024-02-12 10:30:00", tz="US/Mountain"),], 
+       aes(datetimeMT, DTW_m*-1, color=wellID)) +
+  xlab("") +
+  ylab("Water Depth Below Surface (m)")+
+  geom_hline(yintercept=0, linetype = 'dashed') +
+  geom_vline(xintercept=as.POSIXct("2023-10-20 08:15:00", tz="US/Mountain"), linetype = 'dashed') +
+  geom_vline(xintercept=as.POSIXct("2024-02-06 10:30:00", tz="US/Mountain"), linetype = 'dashed') +
+  geom_line(key_glyph = "timeseries",linewidth=1,alpha=0.75) +
+  facet_grid(rows=vars(siteID))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 45,hjust = 1),
+        legend.title = element_blank(),
+        legend.position = "bottom",
+        text = element_text(size = 20))+
+  scale_color_viridis(discrete = TRUE, option = "D")
+
+# replace in list version of data
+
+DTW[["VDOW"]]$DTW_m = DTW_df$DTW_m[DTW_df$wellID=="VDOW"]
+
+#### save data with VDOW gap filled ####
+
+# save as list
+saveRDS(DTW, "DTW_compiled/BEGI_PTz_DTW.rds")
+
+# save as dataframe
+saveRDS(DTW_df, "DTW_compiled/BEGI_PT_DTW_all.rds")
+
+#
 #### plot all final DTW data together ####
 
 Q = 
-  ggplot(BEGI_PT_DTW_all, aes(datetimeMT, Q_Lsec)) +
+  ggplot(DTW_df, aes(datetimeMT, Q_Lsec)) +
   xlab("") +
   ylab("Q (L/sec)") +
   geom_line(linewidth=1)+
@@ -854,7 +926,7 @@ Q =
         text = element_text(size = 20))
 
 DTW = 
-  ggplot(BEGI_PT_DTW_all, aes(datetimeMT, DTW_m*-1, color=wellID)) +
+  ggplot(DTW_df, aes(datetimeMT, DTW_m*-1, color=wellID)) +
   xlab("") +
   ylab("Water Depth Below Surface (m)")+
   geom_hline(yintercept=0, linetype = 'dashed') +
