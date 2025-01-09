@@ -46,3 +46,30 @@ gwvar_well<-c(cv(BEGI_PT_DTW_trim$SLOC),
 gwmv_well<-data.frame(wells,gwmean_well,gwvar_well)
 gwmv_well #df of wellIDs and their average depth to water (m) and CV for the entire timeseries
 
+####import list of event dates per well ####
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
+
+
+#### DO event mean ####
+
+#SLOC
+#BEGI_events[["DO_events"]][["SLOC_DO"]][["SLOC_DO1"]][["datetimeMT"]][1]
+#BEGI_events[["DO_events"]][["SLOC_DO"]][[i]][["datetimeMT"]][1]
+SLOC_event_mean<-numeric()
+
+for (i in c(1:length(BEGI_events[["DO_events"]][["SLOC_DO"]]))){
+  temptimes = seq(from=BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT[1]-(60*60*48),
+                  to=BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT[1], 
+                  by = '15 mins')
+  #mean of DTW_m over period of temptimes
+  #add mean to SLOC_event_mean
+}
+
+#tempdat = BEGI_events[BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT >= (BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT[1]-(60*60*48)) &
+#  BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT <= (BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT[1]), ]
+
+#tempdat <- BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]
+#tempdat_filtered <- tempdat[tempdat[["datetimeMT"]] >= (tempdat[["datetimeMT"]][1] - 60*60*48) &
+#                              tempdat[["datetimeMT"]] <= tempdat[["datetimeMT"]][1], ]
+
+seq(from=BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT[1]-(60*60*48),to=BEGI_events[["DO_events"]][["SLOC_DO"]][[1]]$datetimeMT[1], by = '15 mins')
