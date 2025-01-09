@@ -914,7 +914,14 @@ DO_roc<-data.frame(DO=c(SLOC_avg_rate,SLOW_avg_rate,VDOW_avg_rate,VDOS_avg_rate)
 DO_roc_bp<-ggplot(data=DO_roc, mapping=aes(x=Well, y=DO))+geom_boxplot()
 print(DO_roc_bp)
 
-#### DOC calibration ####
+#### fDOM to DOC calibration ####
+#Match DOC grab sample values to fDOM (make sure you use the last fDOM value before the well was disturbed for sampling!)
+#Make a linear regression between fDOM and DOC for each well (see water level script for an example if you need it)
+#Calculate R-sq
+#Use linear equation to convert all fDOM values to DOC
+
+
+
 
 #### Dataframes fDOM events ####
 
