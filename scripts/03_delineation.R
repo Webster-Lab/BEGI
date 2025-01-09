@@ -1292,14 +1292,18 @@ names(VDOS_fDOM)<-c('VDOS_fDOM1','VDOS_fDOM2','VDOS_fDOM3','VDOS_fDOM4','VDOS_fD
 
 #### Save lists of event dataframes ####
 #DO
+
+Eventdate <-list(SLOC_dates,SLOW_dates,VDOW_dates,VDOS_dates)  
+names(Eventdate)<-c('SLOC_dates','SLOW_dates','VDOW_dates','VDOS_dates')
+
 DO_events<-list(SLOC_DO,SLOW_DO,VDOW_DO,VDOS_DO)
 names(DO_events)<-c('SLOC_DO','SLOW_DO','VDOW_DO','VDOS_DO')
 #fDOM
 fDOM_events<-list(SLOC_fDOM,SLOW_fDOM,VDOW_fDOM,VDOS_fDOM)
 names(fDOM_events)<-c('SLOC_fDOM','SLOW_fDOM','VDOW_fDOM','VDOS_fDOM')
 #compile all events
-BEGI_events<-list(DO_events,fDOM_events)
-names(BEGI_events)<-c('DO_events','fDOM_events')
+BEGI_events<-list(DO_events,fDOM_events,Eventdate)
+names(BEGI_events)<-c('DO_events','fDOM_events','Eventdate')
 
 #save list
 saveRDS(BEGI_events,"EXO_compiled/BEGI_events.rds")
