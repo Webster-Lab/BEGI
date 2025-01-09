@@ -565,6 +565,13 @@ names(SLOC_DO)<-c('SLOC_DO1','SLOC_DO2','SLOC_DO3','SLOC_DO4','SLOC_DO5','SLOC_D
                   'SLOC_DO11','SLOC_DO12','SLOC_DO13','SLOC_DO14','SLOC_DO15','SLOC_DO16','SLOC_DO17','SLOC_DO18','SLOC_DO19','SLOC_DO20',
                   'SLOC_DO21')
 
+SLOC_dates <- as.POSIXct(character(0))
+for (i in seq_along(SLOC_DO)){
+  temptime <- as.POSIXct(SLOC_DO[[i]]$datetimeMT[1])
+  SLOC_dates<-c(SLOC_dates,temptime)
+}
+
+
 #SLOW#
 
 #1st event
@@ -609,6 +616,13 @@ SLOW_DO10= BEGI_EXO.or2[["SLOW"]][BEGI_EXO.or2[["SLOW"]]$datetimeMT >= as.POSIXc
 
 SLOW_DO<-list(SLOW_DO1,SLOW_DO2,SLOW_DO3,SLOW_DO4,SLOW_DO5,SLOW_DO6,SLOW_DO7,SLOW_DO8,SLOW_DO9,SLOW_DO10)
 names(SLOW_DO)<-c('SLOW_DO1','SLOW_DO2','SLOW_DO3','SLOW_DO4','SLOW_DO5','SLOW_DO6','SLOW_DO7','SLOW_DO8','SLOW_DO9','SLOW_DO10')
+
+SLOW_dates <- as.POSIXct(character(0))
+for (i in seq_along(SLOW_DO)){
+  temptime <- as.POSIXct(SLOW_DO[[i]]$datetimeMT[1])
+  SLOW_dates<-c(SLOW_dates,temptime)
+}
+
 
 #VDOW#
 
@@ -689,6 +703,13 @@ VDOW_DO<-list(VDOW_DO1,VDOW_DO2,VDOW_DO3,VDOW_DO4,VDOW_DO5,VDOW_DO6,VDOW_DO7,VDO
 names(VDOW_DO)<-c('VDOW_DO1','VDOW_DO2','VDOW_DO3','VDOW_DO4','VDOW_DO5','VDOW_DO6','VDOW_DO7','VDOW_DO8','VDOW_DO9','VDOW_DO10',
                   'VDOW_DO11','VDOW_DO12','VDOW_DO13','VDOW_DO14','VDOW_DO15','VDOW_DO16','VDOW_DO17','VDOW_DO18')
 
+VDOW_dates <- as.POSIXct(character(0))
+for (i in seq_along(VDOW_DO)){
+  temptime <- as.POSIXct(VDOW_DO[[i]]$datetimeMT[1])
+  VDOW_dates<-c(VDOW_dates,temptime)
+}
+
+
 #VDOS#
 
 #1st event
@@ -733,6 +754,12 @@ VDOS_DO10= BEGI_EXO.or2[["VDOS"]][BEGI_EXO.or2[["VDOS"]]$datetimeMT >= as.POSIXc
 
 VDOS_DO<-list(VDOS_DO1,VDOS_DO2,VDOS_DO3,VDOS_DO4,VDOS_DO5,VDOS_DO6,VDOS_DO7,VDOS_DO8,VDOS_DO9,VDOS_DO10)
 names(VDOS_DO)<-c('VDOS_DO1','VDOS_DO2','VDOS_DO3','VDOS_DO4','VDOS_DO5','VDOS_DO6','VDOS_DO7','VDOS_DO8','VDOS_DO9','VDOS_DO10')
+
+VDOS_dates <- as.POSIXct(character(0))
+for (i in seq_along(VDOS_DO)){
+  temptime <- as.POSIXct(VDOS_DO[[i]]$datetimeMT[1])
+  VDOS_dates<-c(VDOS_dates,temptime)
+}
 
 #### DO area under curve ####
 
@@ -801,18 +828,28 @@ for (i in seq_along(VDOS_DO)) {
 view(VDOS_AUC_results)
 
 
-
 #### DO Boxplots auc ####
 
-DO_events<-data.frame(DO=c(SLOC_AUC_results,SLOW_AUC_results,VDOW_AUC_results,VDOS_AUC_results),
+DO_AUC<-data.frame(DO=c(SLOC_AUC_results,SLOW_AUC_results,VDOW_AUC_results,VDOS_AUC_results),
                       Well=rep(c("SLOC","SLOW","VDOW","VDOS"),
                                times=c(length(SLOC_AUC_results),length(SLOW_AUC_results),length(VDOW_AUC_results),length(VDOS_AUC_results))))
-DO_events_bp<-ggplot(data=DO_events,mapping=aes(x=Well, y=DO))+geom_boxplot()
-print(DO_events_bp)
+DO_AUC$Event<-c('SLOC_DO1','SLOC_DO2','SLOC_DO3','SLOC_DO4','SLOC_DO5','SLOC_DO6','SLOC_DO7','SLOC_DO8','SLOC_DO9','SLOC_DO10',
+                'SLOC_DO11','SLOC_DO12','SLOC_DO13','SLOC_DO14','SLOC_DO15','SLOC_DO16','SLOC_DO17','SLOC_DO18','SLOC_DO19','SLOC_DO20',
+                'SLOC_DO21','SLOW_DO1','SLOW_DO2','SLOW_DO3','SLOW_DO4','SLOW_DO5','SLOW_DO6','SLOW_DO7','SLOW_DO8','SLOW_DO9','SLOW_DO10',
+                'VDOW_DO1','VDOW_DO2','VDOW_DO3','VDOW_DO4','VDOW_DO5','VDOW_DO6','VDOW_DO7','VDOW_DO8','VDOW_DO9','VDOW_DO10',
+                'VDOW_DO11','VDOW_DO12','VDOW_DO13','VDOW_DO14','VDOW_DO15','VDOW_DO16','VDOW_DO17','VDOW_DO18',
+                'VDOS_DO1','VDOS_DO2','VDOS_DO3','VDOS_DO4','VDOS_DO5','VDOS_DO6','VDOS_DO7','VDOS_DO8','VDOS_DO9','VDOS_DO10')
+DO_AUC$Eventdate <-c(SLOC_dates,SLOW_dates,VDOW_dates,VDOS_dates) 
+
+saveRDS(DO_AUC,"EXO_compiled/DO_AUC.rds")  
+  
+  
+DO_AUC_bp<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO))+geom_boxplot()
+print(DO_AUC_bp)
 
 #removed outliers from plot
-DO_events_no<-ggplot(data=DO_events,mapping=aes(x=Well, y=DO))+geom_boxplot(outlier.shape=NA)+coord_cartesian(ylim=c(0,1250))
-print(DO_events_no)
+DO_AUC_no<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO))+geom_boxplot(outlier.shape=NA)+coord_cartesian(ylim=c(0,1250))
+print(DO_AUC_no)
 
 #### DO negative rates of change ####
 
@@ -907,10 +944,17 @@ names(VDOS_avg_rate) <- names(VDOS_DO)
 View(VDOS_rates)
 print(VDOS_avg_rate)
 
+
+# dataframe of negative roc and average roc #
+
 #### DO boxplots negative roc ####
 DO_roc<-data.frame(DO=c(SLOC_avg_rate,SLOW_avg_rate,VDOW_avg_rate,VDOS_avg_rate),
                    Well=rep(c("SLOC","SLOW","VDOW","VDOS"),
                             times=c(length(SLOC_avg_rate),length(SLOW_avg_rate),length(VDOW_avg_rate),length(VDOS_avg_rate))))
+DO_roc$Eventdate <-c(SLOC_dates,SLOW_dates,VDOW_dates,VDOS_dates)
+
+saveRDS(DO_roc,"EXO_compiled/DO_roc.rds")
+
 DO_roc_bp<-ggplot(data=DO_roc, mapping=aes(x=Well, y=DO))+geom_boxplot()
 print(DO_roc_bp)
 
@@ -919,6 +963,7 @@ print(DO_roc_bp)
 #Make a linear regression between fDOM and DOC for each well (see water level script for an example if you need it)
 #Calculate R-sq
 #Use linear equation to convert all fDOM values to DOC
+
 
 
 

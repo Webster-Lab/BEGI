@@ -15,15 +15,17 @@ library(DescTools)
 #as dataframe
 BEGI_PT_DTW_all = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
 
-#### Trim data frame to match sonde length ####
+#### Trim data frame to match sonde length and add constant ####
 
 BEGI_PT_DTW_trim <- BEGI_PT_DTW_all[BEGI_PT_DTW_all$datetimeMT >= "2023-09-15 00:00:00" 
                                     & BEGI_PT_DTW_all$datetimeMT <= "2024-09-04 00:00:00",]
 
+BEGI_PT_DTW_trim$DTW_m_con = BEGI_PT_DTW_trim$DTW_m + 1
+
 #### Whole Well Mean/Var ####
 
 BEGI_PT_DTW_trim <- BEGI_PT_DTW_trim %>%
-  spread (wellID, DTW_m) #%>%
+  spread (wellID, DTW_m_con) #%>%
   #mutate_at(c("SLOC","SLOW","VDOS","VDOW")) # this line of code isn't working for AJW. I'm not sure what the intention is.
 
 wells<-c("SLOC","SLOW","VDOS","VDOW")
@@ -42,15 +44,10 @@ gwvar_well<-c(cv(BEGI_PT_DTW_trim$SLOC),
               cv(BEGI_PT_DTW_trim$VDOW))
 
 gwmv_well<-data.frame(wells,gwmean_well,gwvar_well)
-gwmv_well #df of wellIDs and their average depth to water (m) and CV for the entire timeseries
-# AJW result:
-# wells gwmean_well  gwvar_well
-# 1  SLOC  -0.0102643 -971.849364
-# 2  SLOW   0.4499568   30.676837
-# 3  VDOS   1.6606177   10.563440
-# 4  VDOW   1.5886944    9.796984
+gwmv_well 
 
-# check values
+#### AJW check ####
+#need to use trimmed dataset
 mean(BEGI_PT_DTW_all$DTW_m[BEGI_PT_DTW_all$wellID=="SLOC"], na.rm = T) #-0.0155472
 cv(BEGI_PT_DTW_all$DTW_m[BEGI_PT_DTW_all$wellID=="SLOC"]) # -602.7168
 # I am not sure why these values are different from Eve's method above
@@ -83,7 +80,7 @@ gwmv_well = data.frame(wells = c("SLOC","SLOW","VDOS","VDOW"),
 # 4  VDOW   1.6059399   5.507157
 # these seem more reasonable and informative!
 
-# export for use in other scripts
+#### export for use in other scripts ####
 write.csv(gwmv_well, "DTW_compiled/gwmv_well.csv")
 
 ####import list of event dates per well ####
