@@ -27,6 +27,7 @@ library(lme4)
 library(lmerTest)
 library(MuMIn)
 
+
 # replace NaNs with NA
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
 
@@ -67,6 +68,12 @@ DO_events_all[is.nan(DO_events_all)] <- NA
 
 # clean up environment
 rm(DO_AUC); rm(DO_ROC); rm(DOevents)
+
+# Add + 2 to DOC_ROC to handle log transformations
+DO_events_all$DO_ROC_con = DO_events_all$DO_ROC + 2
+
+# Multiply DO_ROC data by -1 to handle log transformations
+DO_events_all$DO_ROC_s = DO_events_all$DO_ROC * -1
 
 
 #### explore data ####
@@ -284,3 +291,182 @@ DO_events_all_VDOWint <- within(DO_events_all, wellID <- relevel(wellID, ref = "
 m.1.VDOWint = nlme::lme(log(DO_AUC) ~ wellID, data=DO_events_all_VDOWint, random=~1|siteID, method="ML")
 summary(m.1.VDOWint)
 # interpretation: VDOW is significantly different from SLOC, but NOT from VDOW or SLOW (this last one is marginal... p-value is 0.0556 so it is ALMOST a sig difference, but not quite). AUC in VDOW is lower than in SLOC and is not sig. different than VDOW or SLOW (though it is marginally higher than SLOW, but not significantly so). 
+
+#### group means DO_ROC ####
+
+#+++++++++++++ with nlme::lme #+++++++++++
+
+m.null = nlme::lme(DO_ROC ~ 1, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+m.1 = nlme::lme(DO_ROC ~ wellID, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1)
+# Results: 
+# AICc is >2 pts different with m.1 being lower, so wellID does provide the model significantly more information. So, we can use it.  
+
+Anova(m.1, type=2) #Chi-Square test for influence of wellID on ROC fitted with type 2 error
+# All wells aren't significantly different from each other 
+
+#you could also get the p-value via a Chi-Square likelihood ratio test against the null model
+#remember these models have to be nested - with the more complex model listed first
+anova(m.1, m.null)
+
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #not great 
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# not great, pretty skewed. Will need to be transformed.
+
+
+#+++++++++++++ with nlme::lme and LOG TRANSFORMED DATA #+++++++++++
+# taking the log of DOC_ROC data +2
+m.null = nlme::lme(log(DO_ROC_con) ~ 1, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+m.1 = nlme::lme(log(DO_ROC_con) ~ wellID, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1)
+# Results: 
+# m.1 performs better than null  
+
+Anova(m.1, type=2) #Chi-Square test for influence of wellID on AUC fitted with type 2 error
+# still no significant difference between wells
+
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #not great
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# does not look good. Will need to try a different transformation
+
+
+#+++++++++++++ with nlme::lme and POSITIVE TRANSFORMED DATA #+++++++++++
+# testing model fit on DOC_ROC * -1
+m.null = nlme::lme(DO_ROC_s ~ 1, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+m.1 = nlme::lme(DO_ROC_s ~ wellID, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1)
+# Results: 
+# m.1 performs better than null  
+
+Anova(m.1, type=2) #Chi-Square test for influence of wellID on AUC fitted with type 2 error
+# still no significant difference between wells
+
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #not great
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# does not look good. Will need to try a different transformation
+
+
+#+++++++++++++ with nlme::lme and LOG OF POSITIVE TRANSFORMED DATA #+++++++++++
+# taking the log of DOC_ROC_s
+m.null = nlme::lme(log(DO_ROC_s) ~ 1, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+m.1 = nlme::lme(log(DO_ROC_s) ~ wellID, data=DO_events_all, random=~1|siteID, method="ML", na.action=na.omit)
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1)
+# Results: 
+# AICc is <2 pts different, so wellID does not provide the model significantly more information, but is also not a worst model. So, we can use it.  
+
+
+Anova(m.1, type=2) #Chi-Square test for influence of wellID on AUC fitted with type 2 error
+# still no significant difference between wells
+
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #not great
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# not great but better than previous transformations. Less skewed.
+
+#3 temporal autocorrelation in data
+forecast::Acf(residuals(m.1))
+# looks good, though we may need to consider if data is structured correctly
+
+
+# GET P-VALUES AND COEFFICIENT ESTIMATES WITH 95% CONFIDENCE INTERVALS
+#F-tests 
+anova.lme(m.1,type = "marginal", adjustSigma = F)
+
+#95% CI gives you LOWER and UPPER bound around the MEAN ESTIMATE for each parameter
+#linear, quadratic terms with 95% Confidence Intervals
+conf_int <- intervals(m.1, level = 0.95, which = "fixed")  # Get confidence intervals on transformed scale
+# conf_int = unlist(conf_int)
+# back_transformed_ci <- exp(conf_int) # Back-transform using exp() function
+# # need to format this better!
+# above code did NOT work to back-transform data, so each value needs to be back-transformed as exp(#)
+exp()
+exp()
+# etc....
+
+
+## Finally, look at model summary: m.1
+summary(m.1)
+
+# NOTES ABOUT HOW TO INTERPRET COEFFICENT VALUES:
+# The intercept is defined as the expected outcome (DO_AUC) when all predictors are zero. In this case, the intercept will be the mean AUC for SLOC. The other coefficients in the model will be differences between this mean and the means for the comparison groups.
+# So:
+# mean AUC for SLOC = exp(5.742010) = 311.6903
+# mean AUC for SLOW = exp(5.742010-2.682254) = 21.32235
+# mean AUC for VDOS = exp(5.742010-1.419104) = 75.40744
+# mean AUC for VDOW = exp(5.742010-1.668458) = 58.76533
+
+# the p values and confidence intervals for each coefficient I think just indicate that AUC in SLOC is different from all the others. We need to reorder factors to set what the intercept is so that we can interpret the other differences between wells. 
+
+### reorder wellID to set intercept to other wells:
+## SLOC
+m.1.SLOCint = m.1
+# interpretation: SLOC is significantly different from all other wells. The negative Value estimates indicate that all the other wells have lower mean AUC than SLOC.
+
+## SLOW
+DO_events_all_SLOWint <- within(DO_events_all, wellID <- relevel(wellID, ref = "SLOW"))
+m.1.SLOWint = nlme::lme(log(DO_ROC_s) ~ wellID, data=DO_events_all_SLOWint, random=~1|siteID, method="ML", na.action=na.omit)
+summary(m.1.SLOWint)
+# interpretation: SLOW is significantly different from VDOW. SLOW is marginally different from SLOC
+
+## VDOS
+DO_events_all_VDOSint <- within(DO_events_all, wellID <- relevel(wellID, ref = "VDOS"))
+m.1.VDOSint = nlme::lme(log(DO_ROC_s) ~ wellID, data=DO_events_all_VDOSint, random=~1|siteID, method="ML", na.action=na.omit)
+summary(m.1.VDOSint)
+# interpretation: VDOS is not significantly different  from any other well in ROC 
+
+## VDOW
+DO_events_all_VDOWint <- within(DO_events_all, wellID <- relevel(wellID, ref = "VDOW"))
+m.1.VDOWint = nlme::lme(log(DO_ROC_s) ~ wellID, data=DO_events_all_VDOWint, random=~1|siteID, method="ML", na.action=na.omit)
+summary(m.1.VDOWint)
+# interpretation: VDOW is significantly different from SLOW, but NOT from VDOS or SLOC 
