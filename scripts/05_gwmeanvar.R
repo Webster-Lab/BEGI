@@ -86,6 +86,11 @@ write.csv(gwmv_well, "DTW_compiled/gwmv_well.csv")
 ####import list of event dates per well ####
 BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
 
+#Turns lists into vectors
+SLOC_dates <- c(BEGI_events[["Eventdate"]][["SLOC_dates"]])
+SLOW_dates <- c(BEGI_events[["Eventdate"]][["SLOW_dates"]])
+VDOS_dates <- c(BEGI_events[["Eventdate"]][["VDOS_dates"]])
+VDOW_dates <- c(BEGI_events[["Eventdate"]][["VDOW_dates"]])
 
 #### DO event mean ####
 # note from AJW: I need the events labeled by date (or something more sophisticated if they span multiple dates) so that I can match them to the AUC etc. results for modeling!
@@ -108,6 +113,8 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["SLOC_DO"]]))){
   SLOC_event_mean <- c(SLOC_event_mean,SLOC_mean)
 }
 
+SLOC_event_mean = unlist(SLOC_event_mean,use.names = F)
+
 #SLOW
 #mean calculated 2 days before each event
 SLOW_event_mean<-numeric()
@@ -126,6 +133,8 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["SLOW_DO"]]))){
   SLOW_event_mean <- c(SLOW_event_mean,SLOW_mean)
 }
 
+SLOW_event_mean = unlist(SLOW_event_mean,use.names = F)
+
 
 #VDOS
 #mean calculated 2 days before each event
@@ -137,13 +146,15 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOS_DO"]]))){
                   by = '15 mins')
   VDOS_mean <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOS_mean = mean(VDOS, na.rm = TRUE))
   #mean of DTW_m over period of temptimes
   #add mean to VDOS_event_mean
   VDOS_event_mean <- c(VDOS_event_mean,VDOS_mean)
 }
+
+VDOS_event_mean = unlist(VDOS_event_mean,use.names = F)
 
 
 #VDOW
@@ -156,13 +167,15 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOW_DO"]]))){
                   by = '15 mins')
   VDOW_mean <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOW_mean = mean(VDOW, na.rm = TRUE))
   #mean of DTW_m over period of temptimes
   #add mean to VDOW_event_mean
   VDOW_event_mean <- c(VDOW_event_mean,VDOW_mean)
 }
+
+VDOW_event_mean = unlist(VDOW_event_mean,use.names = F)
 
 
 #### DO event CV ####
@@ -187,6 +200,8 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["SLOC_DO"]]))){
   SLOC_event_cv <- c(SLOC_event_cv,SLOC_cv)
 }
 
+SLOC_event_cv = unlist(SLOC_event_cv,use.names = F)
+
 
 #SLOW
 #CV calculated 2 days before each event
@@ -206,6 +221,8 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["SLOW_DO"]]))){
   SLOW_event_cv <- c(SLOW_event_cv,SLOW_cv)
 }
 
+SLOW_event_cv = unlist(SLOW_event_cv,use.names = F)
+
 
 #VDOS
 #CV calculated 2 days before each event
@@ -217,13 +234,15 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOS_DO"]]))){
                   by = '15 mins')
   VDOS_cv <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOS_cv = cv(VDOS))
   #mean of DTW_m over period of temptimes
   #add mean to VDOS_event_mean
   VDOS_event_cv <- c(VDOS_event_cv,VDOS_cv)
 }
+
+VDOS_event_cv = unlist(VDOS_event_cv,use.names = F)
 
 
 #VDOW
@@ -236,7 +255,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOW_DO"]]))){
                   by = '15 mins')
   VDOW_cv <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOW_cv = cv(VDOW))
   #mean of DTW_m over period of temptimes
@@ -244,4 +263,18 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOW_DO"]]))){
   VDOW_event_cv <- c(VDOW_event_cv,VDOW_cv)
 }
 
+VDOW_event_cv = unlist(VDOW_event_cv,use.names = F)
+
+
+#### Dataframe of event mean/var ####
+#BEGI_events[["Eventdate"]][["SLOC_DO"]]
+DO_event_mean <- c(SLOC_event_mean,SLOW_event_mean,VDOS_event_mean,VDOW_event_mean)
+DO_event_cv <- c(SLOC_event_cv,SLOW_event_cv,VDOS_event_cv,VDOW_event_cv)
+Eventdates<-c(SLOC_dates,SLOW_dates,VDOS_dates,VDOW_dates)
+WellID<-c(rep(c("SLOC","SLOW","VDOS","VDOW"),
+             times=c(length(SLOC_event_mean),length(SLOW_event_mean),length(VDOS_event_mean),length(VDOW_event_mean))))
+DO_event_mv <- data.frame(WellID,Eventdates,DO_event_mean,DO_event_cv)
+View(DO_event_mv)
+
+write_csv(DO_event_mv,"DTW_compiled/DO_mv_2days.csv")
 
