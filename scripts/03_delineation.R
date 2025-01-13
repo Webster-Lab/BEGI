@@ -841,15 +841,21 @@ DO_AUC$Event<-c('SLOC_DO1','SLOC_DO2','SLOC_DO3','SLOC_DO4','SLOC_DO5','SLOC_DO6
                 'VDOS_DO1','VDOS_DO2','VDOS_DO3','VDOS_DO4','VDOS_DO5','VDOS_DO6','VDOS_DO7','VDOS_DO8','VDOS_DO9','VDOS_DO10')
 DO_AUC$Eventdate <-c(SLOC_dates,SLOW_dates,VDOW_dates,VDOS_dates) 
 
+DO_AUC$DO_log <- log(DO_AUC$DO)
+
 saveRDS(DO_AUC,"EXO_compiled/DO_AUC.rds")  
   
   
-DO_AUC_bp<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO))+geom_boxplot()
+DO_AUC_bp<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Respiration Event Size (DO Consumption)")
 print(DO_AUC_bp)
 
 #removed outliers from plot
-DO_AUC_no<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO))+geom_boxplot(outlier.shape=NA)+coord_cartesian(ylim=c(0,1250))
+DO_AUC_no<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO))+geom_boxplot(outlier.shape=NA,fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+coord_cartesian(ylim=c(0,1250))+labs(y = "Respiration Event Size (DO Consumption)")
 print(DO_AUC_no)
+
+#log scale
+DO_AUC_log<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO_log))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Respiration Event Size (log DO Consumption)")
+print(DO_AUC_log)
 
 #### DO negative rates of change ####
 
