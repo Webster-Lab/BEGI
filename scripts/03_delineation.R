@@ -950,7 +950,11 @@ names(VDOS_avg_rate) <- names(VDOS_DO)
 View(VDOS_rates)
 print(VDOS_avg_rate)
 
+#save compiled RDS of each event rate of change#
+roc_all<-list(SLOC_rates,SLOW_rates,VDOW_rates,VDOS_rates)
+names(roc_all)<-c("SLOC_rates","SLOW_rates","VDOW_rates","VDOS_rates")
 
+saveRDS(roc_all,"EXO_compiled/roc_all.rds")
 # dataframe of negative roc and average roc #
 
 #### DO boxplots negative roc ####
