@@ -105,4 +105,30 @@ for (name in names(roc_all[["VDOS_rates"]])){
 #     type="l")
 #abline(h=0,col="blue")
 
+#### Integrate under ER curve ####
+#AUC(x = (as.numeric(roc_all[["SLOC_rates"]][["SLOC_DO1"]]$datetimeMT)[-1]),
+#    y = roc_all[["SLOC_rates"]][["SLOC_DO1"]]$ER[-1],
+#    method = "trapezoid",
+#    na.rm = FALSE)
+# 0.05809091
+
+#SLOC#
+
+SLOC_ER_results <- numeric(length(roc_all[["SLOC_rates"]])) 
+names(SLOC_ER_results) <- names(roc_all[["SLOC_rates"]])
+
+for (i in seq_along(roc_all[["SLOC_rates"]])) {
+  SLOC_ER_results[i] <- AUC(
+    x = as.numeric(roc_all[["SLOC_rates"]][[i]]$datetimeMT)[-1],
+    y = roc_all[["SLOC_rates"]][[i]]$ER[-1],
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+View(SLOC_ER_results)
+#shouldn't be getting negative values with AUC? 
+
+
+
 
