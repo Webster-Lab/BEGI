@@ -355,12 +355,6 @@ roc_all = readRDS("EXO_compiled/roc_all.rds")
 #print(ER_AUC_bp)
 
 
-#### Convert DO to ER with Q = D -R ####
-#1. rate of change of DO
-#2. integral of rate of change of DO
-#3. POSITIVE integral of rate of change of DO
-#4. 2. - 3. = -ER
-
 #### Convert DO rate of change mg to g ####
 
 #SLOC#
@@ -411,7 +405,7 @@ for (i in seq_along(roc_all[["SLOC_rates"]])) {
    )
 }
 
-View(SLOC_DO_results)
+#View(SLOC_DO_results)
 
 #SLOW#
 
@@ -435,7 +429,7 @@ for (i in seq_along(roc_all[["SLOW_rates"]])) {
   )
 }
 
-View(SLOW_DO_results)
+#View(SLOW_DO_results)
 
 #VDOW#
 
@@ -459,7 +453,7 @@ for (i in seq_along(roc_all[["VDOW_rates"]])) {
   )
 }
 
-View(VDOW_DO_results)
+#View(VDOW_DO_results)
 
 #VDOS#
 
@@ -483,7 +477,7 @@ for (i in seq_along(roc_all[["VDOS_rates"]])) {
   )
 }
 
-View(VDOS_DO_results)
+#View(VDOS_DO_results)
 
 
 #### POSITIVE of DO rate of change (D) ####
@@ -513,7 +507,7 @@ for (i in seq_along(roc_all[["SLOC_rates"]])) {
   )
 }
 
-View(SLOC_D)
+#View(SLOC_D)
 
 #SLOW#
 SLOW_D <- numeric(length(roc_all[["SLOW_rates"]])) 
@@ -540,7 +534,7 @@ for (i in seq_along(roc_all[["SLOW_rates"]])) {
   )
 }
 
-View(SLOW_D)
+#View(SLOW_D)
 
 #VDOW#
 VDOW_D <- numeric(length(roc_all[["VDOW_rates"]])) 
@@ -567,7 +561,7 @@ for (i in seq_along(roc_all[["VDOW_rates"]])) {
   )
 }
 
-View(VDOW_D)
+#View(VDOW_D)
 
 #VDOS#
 VDOS_D <- numeric(length(roc_all[["VDOS_rates"]])) 
@@ -594,7 +588,7 @@ for (i in seq_along(roc_all[["VDOS_rates"]])) {
   )
 }
 
-View(VDOS_D)
+#View(VDOS_D)
 
 #### Q - D = -ER ####
 
@@ -605,7 +599,7 @@ names(SLOC_D)<-NULL
 SLOC_ER <- SLOC_DO_results - SLOC_D
 names(SLOC_ER) <- names(roc_all[["SLOC_rates"]]) 
 
-View(SLOC_ER)
+#View(SLOC_ER)
 
 
 #SLOW#
@@ -615,7 +609,7 @@ names(SLOW_D)<-NULL
 SLOW_ER <- SLOW_DO_results - SLOW_D
 names(SLOW_ER) <- names(roc_all[["SLOW_rates"]]) 
 
-View(SLOW_ER)
+#View(SLOW_ER)
 
 
 #VDOW#
@@ -625,7 +619,7 @@ names(VDOW_D)<-NULL
 VDOW_ER <- VDOW_DO_results - VDOW_D
 names(VDOW_ER) <- names(roc_all[["VDOW_rates"]]) 
 
-View(VDOW_ER)
+#View(VDOW_ER)
 
 
 #VDOS#
@@ -635,9 +629,10 @@ names(VDOS_D)<-NULL
 VDOS_ER <- VDOS_DO_results - VDOS_D
 names(VDOS_ER) <- names(roc_all[["VDOS_rates"]]) 
 
-View(VDOS_ER)
+#View(VDOS_ER)
 
-#### ER boxplot ####
+#### ER and D boxplots and save data frame ####
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
 
 odumER<-data.frame(ER=c(SLOC_ER,SLOW_ER,VDOW_ER,VDOS_ER),
                   Well=rep(c("SLOC","SLOW","VDOW","VDOS"),
@@ -648,9 +643,16 @@ odumER$Event<-c('SLOC_DO1','SLOC_DO2','SLOC_DO3','SLOC_DO4','SLOC_DO5','SLOC_DO6
              'VDOW_DO1','VDOW_DO2','VDOW_DO3','VDOW_DO4','VDOW_DO5','VDOW_DO6','VDOW_DO7','VDOW_DO8','VDOW_DO9','VDOW_DO10',
             'VDOW_DO11','VDOW_DO12','VDOW_DO13','VDOW_DO14','VDOW_DO15','VDOW_DO16','VDOW_DO17','VDOW_DO18',
            'VDOS_DO1','VDOS_DO2','VDOS_DO3','VDOS_DO4','VDOS_DO5','VDOS_DO6','VDOS_DO7','VDOS_DO8','VDOS_DO9','VDOS_DO10')
-#odumER$Eventdate <-c(SLOC_dates,SLOW_dates,VDOW_dates,VDOS_dates) 
+odumER$Eventdate <-c(BEGI_events[["Eventdate"]][["SLOC_dates"]],BEGI_events[["Eventdate"]][["SLOW_dates"]],BEGI_events[["Eventdate"]][["VDOW_dates"]],BEGI_events[["Eventdate"]][["VDOS_dates"]]) 
+odumER$D <-c(SLOC_D,SLOW_D,VDOW_D,VDOS_D)
 
+#ER boxplot
 odumER_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Ecosystem Respiration (g O2/m^2)")
 print(odumER_bp)
 
+#D boxplot
+odumD_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Oxygen Uptake via Diffusion (g O2/m^2)")
+print(odumD_bp)
 
+#save dataframe
+saveRDS(odumER, "EXO_compiled/odumER.rds")
