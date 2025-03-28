@@ -89,17 +89,7 @@ summary(ER_events)
 
 # explore correlations
 psych::pairs.panels(ER_events[c("ER", "dtw_ER_event_mean", "dtw_ER_event_cv")], stars = TRUE)
-# explore structure
-with(DO_events_all, table(wellID))
-
-DO_events_all = 
-  DO_events_all %>% 
-  group_by(siteID, wellID) %>% 
-  arrange(Eventdate)
-summary(DO_events_all)
-
-# explore correlations
-psych::pairs.panels(DO_events_all[c("DO_AUC", "dtw_DO_event_mean", "dtw_DO_event_cv")], stars = TRUE)
+psych::pairs.panels(ER_events[c("D", "dtw_ER_event_mean", "dtw_ER_event_cv")], stars = TRUE)
 # event gw mean and gw var are fairly correlated (-0.41), so we probably shouldn't include them in the same model or test for an interaction without testing for variance inflations factors. 
 # no obvious correlation between DO AUC and dtw stats, but we'll see how it looks when we group it by site and well in the models!
 
@@ -191,8 +181,8 @@ anova.lme(m.2,type = "marginal", adjustSigma = F)
 
 #95% CI gives you LOWER and UPPER bound around the MEAN ESTIMATE for each parameter
 #linear, quadratic terms with 95% Confidence Intervals
-m.1_conf_int <- intervals(m.1, level = 0.95, which = "fixed") 
-m.2_conf_int <- intervals(m.2, level = 0.95, which = "fixed") 
+m.1_conf_int <- intervals(m.1, level = 0.95, which = "fixed") #ns
+m.2_conf_int <- intervals(m.2, level = 0.95, which = "fixed") #ns
 
 # view model summaries
 summary(m.1)
@@ -226,7 +216,6 @@ visreg(m.3,"dtw_ER_event_cv",type="conditional",points.par=list(cex=1.2),
        xlab=list("Groundwater Variation Preceeding Event", cex=1.8),
        ylab=list("Respiration Event Magnitude (log)", cex=1.8),
        by='wellID',overlay=TRUE)
-# that point is influential and makes it significant, but it looks like the trend is there without it
 
 ## get Pseudo-R-squares
 r.squaredGLMM(m.1)
@@ -234,4 +223,135 @@ r.squaredGLMM(m.2)
 r.squaredGLMM(m.3)
 # #Marginal R2:  the proportion of variance explained by the fixed factor(s) alone
 #Conditional R2: he proportion of variance explained by both the fixed and random factors
+
+
+#### test for relationship btw D & dtw stats ####
+
+
+#+++++++++++++ with nlme::lme #+++++++++++
+
+m.null = nlme::lme(D ~ 1, data=ER_events, random=~1|wellID, method="ML")
+m.1 = nlme::lme(D ~ dtw_ER_event_mean, 
+                data=ER_events, random=~1|siteID/wellID, method="ML")
+m.2 = nlme::lme(D ~ dtw_ER_event_cv, 
+                data=ER_events, random=~1|siteID/wellID, method="ML")
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1, m.2)
+# null model is lowest by 4 points... m.1 and m.2 are about the same
+
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #looks bad-ish - some outliers, but not a consistent pattern
+plot(m.2) #looks bad-ish - clumped with some outliers
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# not great. Not normal.
+qqnorm(residuals(m.2))
+qqline(residuals(m.2))
+hist(residuals(m.2))
+# pretty much the same..
+
+#+++++++++++++ with nlme::lme and LOG TRANSFORMED DATA #+++++++++++
+#need to filter out 0 values to be able to log transform
+ER_events_filtered <- ER_events[ER_events$D > 0, ]
+
+m.null = nlme::lme(log(D) ~ 1, data=ER_events_filtered, random=~1|wellID, method="ML")
+m.1 = nlme::lme(log(D) ~ dtw_ER_event_mean, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+m.2 = nlme::lme(log(D) ~ dtw_ER_event_cv, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+ER_events_r =ER_events_filtered[ER_events_filtered$dtw_ER_event_cv<3,]
+m.3 = nlme::lme(log(D) ~ dtw_ER_event_cv, 
+                data=ER_events_r, random=~1|siteID/wellID, method="ML")
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1, m.2)
+# null model is still better than m.1 and m.2, m1 and m2 still about the same
+
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #looks good
+plot(m.2) #looks good
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# looks great
+qqnorm(residuals(m.2))
+qqline(residuals(m.2))
+hist(residuals(m.2))
+# looks great
+
+#3 temporal autocorrelation in data
+forecast::Acf(residuals(m.1))
+# looks great
+forecast::Acf(residuals(m.2))
+# looks great
+
+# GET P-VALUES AND COEFFICIENT ESTIMATES WITH 95% CONFIDENCE INTERVALS
+#F-tests 
+anova.lme(m.1,type = "marginal", adjustSigma = F)
+anova.lme(m.2,type = "marginal", adjustSigma = F)
+
+#95% CI gives you LOWER and UPPER bound around the MEAN ESTIMATE for each parameter
+#linear, quadratic terms with 95% Confidence Intervals
+m.1_conf_int <- intervals(m.1, level = 0.95, which = "fixed") #ns
+m.2_conf_int <- intervals(m.2, level = 0.95, which = "fixed") #ns
+
+# view model summaries
+summary(m.1)
+summary(m.2)
+
+## look at random effects to varify that intercepts are being estimated differenlt
+ranef(m.1)
+ranef(m.2)
+
+### plot of predicted model
+# for all sites
+visreg(m.1,"dtw_ER_event_mean",type="conditional",points.par=list(cex=1.2),
+       fill=list(col="lightgrey"),
+       cex.axis=1.4, line.par=list(col="black"),
+       xlab=list("Groundwater Mean Preceeding Event", cex=1.8),
+       ylab=list("Respiration Event Magnitude (log)", cex=1.8),
+       by='wellID',overlay=TRUE) # this looks significant, but it isn't because it's just driven by different means of each site and well. This is why including random effects is important!
+# for all sites
+visreg(m.2,"dtw_ER_event_cv",type="conditional",points.par=list(cex=1.2),
+       fill=list(col="lightgrey"),
+       cex.axis=1.4, line.par=list(col="black"),
+       xlab=list("Groundwater Variation Preceeding Event", cex=1.8),
+       ylab=list("Respiration Event Magnitude (log)", cex=1.8),
+       by='wellID',overlay=TRUE)
+
+# look at model without the far high variability point to make sure it isn't driving the result
+summary(m.3)
+visreg(m.3,"dtw_ER_event_cv",type="conditional",points.par=list(cex=1.2),
+       fill=list(col="lightgrey"),
+       cex.axis=1.4, line.par=list(col="black"),
+       xlab=list("Groundwater Variation Preceeding Event", cex=1.8),
+       ylab=list("Respiration Event Magnitude (log)", cex=1.8),
+       by='wellID',overlay=TRUE)
+
+## get Pseudo-R-squares
+r.squaredGLMM(m.1)
+r.squaredGLMM(m.2)
+r.squaredGLMM(m.3)
+# #Marginal R2:  the proportion of variance explained by the fixed factor(s) alone
+#Conditional R2: he proportion of variance explained by both the fixed and random factors
+
+
 
