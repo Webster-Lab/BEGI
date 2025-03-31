@@ -1,7 +1,7 @@
 #### read me ####
 # The purpose of this script is to trim the water level dataset, calculate the mean and CV of the whole dataset for each well, and then calculate the mean and CV for each event (x days leading up to each event)
 
-#### Libraries ####
+#### Libraries and functions####
 library(googledrive)
 library(tidyverse)
 library(broom)
@@ -9,6 +9,10 @@ library(zoo)
 library(stringr)
 library(suncalc)
 library(DescTools)
+
+cv <- function (x){
+  sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE) * 100
+}
 
 #### Import finalized water level data ####
 
@@ -298,7 +302,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOW_DO"]]))){
                   by = '15 mins')
   VDOW_mean1 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOW_mean1 = mean(VDOW, na.rm = TRUE))
   #mean of DTW_m over period of temptimes
@@ -318,7 +322,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOS_DO"]]))){
                   by = '15 mins')
   VDOS_mean1 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOS_mean1 = mean(VDOS, na.rm = TRUE))
   #mean of DTW_m over period of temptimes
@@ -382,7 +386,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOW_DO"]]))){
                   by = '15 mins')
   VDOW_cv1 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOW_cv1 = cv(VDOW))
   #cv of DTW_m over period of temptimes
@@ -402,7 +406,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOS_DO"]]))){
                   by = '15 mins')
   VDOS_cv1 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOS_cv1 = cv(VDOS))
   #cv of DTW_m over period of temptimes
@@ -477,7 +481,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOW_DO"]]))){
                   by = '15 mins')
   VDOW_mean5 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOW_mean5 = mean(VDOW, na.rm = TRUE))
   #mean of DTW_m over period of temptimes
@@ -498,7 +502,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOS_DO"]]))){
                   by = '15 mins')
   VDOS_mean5 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOS_mean5 = mean(VDOS, na.rm = TRUE))
   #mean of DTW_m over period of temptimes
@@ -566,7 +570,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOW_DO"]]))){
                   by = '15 mins')
   VDOW_cv5 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOW_cv5 = cv(VDOW))
   #cv of DTW_m over period of temptimes
@@ -587,7 +591,7 @@ for (i in c(1:length(BEGI_events[["DO_events"]][["VDOS_DO"]]))){
                   by = '15 mins')
   VDOS_cv5 <- BEGI_PT_DTW_trim %>%
     ungroup() %>%
-    filter(siteID == "SLO") %>%
+    filter(siteID == "VDO") %>%
     filter(between(datetimeMT,temptimes[1],temptimes[length(temptimes)])) %>%
     summarise(VDOS_cv5 = cv(VDOS))
   #cv of DTW_m over period of temptimes
