@@ -32,7 +32,6 @@ library(lattice)
 library(patchwork)
 
 
-
 # replace NaNs with NA
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
 
@@ -883,3 +882,92 @@ r.squaredGLMM(m.3)
 # #Marginal R2:  the proportion of variance explained by the fixed factor(s) alone
 #Conditional R2: he proportion of variance explained by both the fixed and random factors
 
+
+#### Save and export model results ####
+#reset each model
+
+#Log transformed ER and dtw over 2 days
+#need to multiply ER by -1 to be able to log transform
+ER_events$posER <- ER_events$ER * -1
+#filter out 0 values
+ER_events_filtered <- ER_events[ER_events$posER > 0, ]
+
+m.null = nlme::lme(log(posER) ~ 1, data=ER_events_filtered, random=~1|wellID, method="ML")
+m.1 = nlme::lme(log(posER) ~ dtw_ER_event_mean2, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+m.2 = nlme::lme(log(posER) ~ dtw_ER_event_cv2, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+ER_events_r =ER_events_filtered[ER_events_filtered$dtw_ER_event_cv2<3,]
+m.3 = nlme::lme(log(posER) ~ dtw_ER_event_cv2, 
+                data=ER_events_r, random=~1|siteID/wellID, method="ML")
+
+#Log transformed ER and dtw over 1 day
+m.4 = nlme::lme(log(posER) ~ dtw_ER_event_mean1, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+m.5 = nlme::lme(log(posER) ~ dtw_ER_event_cv1, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+ER_events_r =ER_events_filtered[ER_events_filtered$dtw_ER_event_cv1<3,]
+m.6 = nlme::lme(log(posER) ~ dtw_ER_event_cv1, 
+                data=ER_events_r, random=~1|siteID/wellID, method="ML")
+
+#Log transformed ER and dtw over 5 days
+m.7 = nlme::lme(log(posER) ~ dtw_ER_event_mean5, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+m.8 = nlme::lme(log(posER) ~ dtw_ER_event_cv5, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+ER_events_r =ER_events_filtered[ER_events_filtered$dtw_ER_event_cv5<3,]
+m.9 = nlme::lme(log(posER) ~ dtw_ER_event_cv5, 
+                data=ER_events_r, random=~1|siteID/wellID, method="ML")
+
+#Log transformed D and dtw over 2 days
+ER_events_filtered <- ER_events[ER_events$D > 0, ]
+
+m.null = nlme::lme(log(D) ~ 1, data=ER_events_filtered, random=~1|wellID, method="ML")
+m.10 = nlme::lme(log(D) ~ dtw_ER_event_mean2, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+m.11 = nlme::lme(log(D) ~ dtw_ER_event_cv2, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+ER_events_r =ER_events_filtered[ER_events_filtered$dtw_ER_event_cv2<3,]
+m.12 = nlme::lme(log(D) ~ dtw_ER_event_cv2, 
+                data=ER_events_r, random=~1|siteID/wellID, method="ML")
+
+#Log transformed D and dtw over 1 day
+m.13 = nlme::lme(log(D) ~ dtw_ER_event_mean1, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+m.14 = nlme::lme(log(D) ~ dtw_ER_event_cv1, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+ER_events_r =ER_events_filtered[ER_events_filtered$dtw_ER_event_cv1<3,]
+m.15 = nlme::lme(log(D) ~ dtw_ER_event_cv1, 
+                data=ER_events_r, random=~1|siteID/wellID, method="ML")
+
+#Log transformed D and dtw over 5 days
+m.16 = nlme::lme(log(D) ~ dtw_ER_event_mean5, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+m.17 = nlme::lme(log(D) ~ dtw_ER_event_cv5, 
+                data=ER_events_filtered, random=~1|siteID/wellID, method="ML")
+ER_events_r =ER_events_filtered[ER_events_filtered$dtw_ER_event_cv5<3,]
+m.18 = nlme::lme(log(D) ~ dtw_ER_event_cv5, 
+                data=ER_events_r, random=~1|siteID/wellID, method="ML")
+
+
+#Summarize
+s.1 <- summary(m.1)
+s.2 <- summary(m.2)
+s.3 <- summary(m.3)
+s.4 <- summary(m.4)
+s.5 <- summary(m.5)
+s.6 <- summary(m.6)
+s.7 <- summary(m.7)
+s.8 <- summary(m.8)
+s.9 <- summary(m.9)
+s.10 <- summary(m.10)
+s.11 <- summary(m.11)
+s.12 <- summary(m.12)
+s.13 <- summary(m.13)
+s.14 <- summary(m.14)
+s.15 <- summary(m.15)
+s.16 <- summary(m.16)
+s.17 <- summary(m.17)
+s.18 <- summary(m.18)
+
+#compile and save

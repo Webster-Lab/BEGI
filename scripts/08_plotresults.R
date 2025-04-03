@@ -35,6 +35,7 @@ library(patchwork)
 library(scales)
 library(ggbreak)
 library(viridis)
+library(gridExtra)
 
 # replace NaNs with NA
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
@@ -120,10 +121,10 @@ DO_AUC_gwvar_log =
   ggplot(DO_events_all, aes(x = dtw_DO_event_cv, y = log(DO_AUC), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
   geom_smooth(method = "lm", fill=NA) +
-  labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceeding Event (2 days)", width=35), 
+  labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceeding Event (2 days)", width=35),
        y = str_wrap("Dissolved Oxygen Consumption Event Size (log scale)", width=40))+
   theme_bw()+
-  theme(panel.grid.major = element_blank(),
+  theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
         text = element_text(size = 20))+
@@ -418,3 +419,93 @@ Q_DTW_DOevents =
   Q+ DTW+ DO_AUC_ts +DO_AUC_ts_log +
   plot_layout(ncol = 1, widths = c(1,.84,1,1), heights=c(1,1.5,1.5,1.5))
 ggsave("plots/RGdischarge_allwellsDTW_DOAUC.png", Q_DTW_DOevents, width=11,height=10, units="in")
+
+#### load and wrangle updated data ####
+#using compiled dtw dataset with varying time periods and odum's ER
+
+# Odum's method of quantifying the size of respiration events from %DO timeseries
+odumER = readRDS("EXO_compiled/odumER.rds")
+odumER$siteID = substr(odumER$Well, start = 1, stop = 3)
+names(odumER)[names(odumER) == 'Well'] <- 'wellID'
+odumER[sapply(odumER, is.character)] <- lapply(odumER[sapply(odumER, is.character)],  as.factor)
+names(odumER)[names(odumER) == 'Event'] <- 'eventID'
+
+# # eventIDs
+# DOevents = DO_AUC[,2:5]
+
+# mean and variance summary of depth to water (DTW) for each event
+dtw_events = read.csv("DTW_compiled/DO_mv.csv")
+names(dtw_events)[names(dtw_events) == 'WellID'] <- 'wellID'
+names(dtw_events)[names(dtw_events) == 'Eventdates'] <- 'Eventdate'
+dtw_events$Eventdate = as.POSIXct(paste(substr(dtw_events$Eventdate, start=1,stop=10),
+                                        substr(dtw_events$Eventdate, start=12,stop=19), sep=" "),
+                                  tz="US/Mountain")
+dtw_events$siteID = substr(dtw_events$wellID, start = 1, stop = 3)
+dtw_events[sapply(dtw_events, is.character)] <- lapply(dtw_events[sapply(dtw_events, is.character)],  as.factor)
+
+# join data
+# the current dtw data by event does not have the same date/times as the DO events. Need to fix, but for now I will join to the nearest date/time
+ER_events = odumER %>% 
+  arrange(Eventdate)  %>%  group_by(siteID, wellID)  
+dtw_events = dtw_events %>% 
+  arrange(Eventdate) %>%  group_by(siteID, wellID) 
+ER_events$Eventdate_dtw = dtw_events$Eventdate
+ER_events$Eventdate - ER_events$Eventdate_dtw # check that date/times are close
+names(dtw_events)[names(dtw_events) == 'Eventdate'] <- 'Eventdate_dtw'
+ER_events = left_join(ER_events, dtw_events, by=c("siteID","wellID","Eventdate_dtw"))
+names(ER_events)[names(ER_events) == 'DO_event_mean'] <- 'dtw_ER_event_mean2'
+names(ER_events)[names(ER_events) == 'DO_event_cv'] <- 'dtw_ER_event_cv2'
+names(ER_events)[names(ER_events) == 'DO_event_mean1'] <- 'dtw_ER_event_mean1'
+names(ER_events)[names(ER_events) == 'DO_event_cv1'] <- 'dtw_ER_event_cv1'
+names(ER_events)[names(ER_events) == 'DO_event_mean5'] <- 'dtw_ER_event_mean5'
+names(ER_events)[names(ER_events) == 'DO_event_cv5'] <- 'dtw_ER_event_cv5'
+#need to multiply ER by -1 to be able to log transform
+ER_events$posER <- ER_events$ER * -1
+
+
+# replace NaNs with NA
+ER_events[is.nan(ER_events)] <- NA
+
+# clean up environment
+rm(odumER); rm(dtw_events)
+
+#### plot respiration events over time ####
+#D
+D_gwvar_log = 
+  ggplot(ER_events, aes(x = dtw_ER_event_cv2, y = log(D), color=wellID))+
+  geom_point(alpha = 0.7, size=5)+                                      
+  geom_smooth(method = "lm", fill=NA) +
+  labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceeding Event (2 days)", width=35),
+       y = str_wrap("Oxygen Uptake via Diffusion (log scale)", width=40))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank(),
+        text = element_text(size = 20))+
+  scale_color_viridis(discrete = TRUE, option = "D")
+D_gwvar_log
+ggsave("plots/D_gwvar_log.png",D_gwvar_log, width = 9, height = 8, units = "in")
+
+#ER
+ER_gwvar_log = 
+  ggplot(ER_events, aes(x = dtw_ER_event_cv2, y = log(posER), color=wellID))+
+  geom_point(alpha = 0.7, size=5)+                                      
+  geom_smooth(method = "lm", fill=NA) +
+  labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceeding Event (2 days)", width=35),
+       y = str_wrap("Ecosystem Respiration (log scale)", width=40))+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank(),
+        text = element_text(size = 20))+
+  scale_color_viridis(discrete = TRUE, option = "D")
+ER_gwvar_log
+ggsave("plots/ER_gwvar_log.png",ER_gwvar_log, width = 9, height = 8, units = "in")
+
+
+#AUC, ER, and D
+poster_results <- grid.arrange(DO_AUC_gwvar_log, ER_gwvar_log, D_gwvar_log, ncol=3)
+ggsave("plots/poster_results.png", poster_results, width = 20, height = 8, units = "in")
+
+#### DO and FDOM event example ####
+
