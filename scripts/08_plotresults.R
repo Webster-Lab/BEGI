@@ -508,4 +508,56 @@ poster_results <- grid.arrange(DO_AUC_gwvar_log, ER_gwvar_log, D_gwvar_log, ncol
 ggsave("plots/poster_results.png", poster_results, width = 20, height = 8, units = "in")
 
 #### DO and FDOM event example ####
+### Import compiled EXO1 RDS file ###
+BEGI_EXO.or2 = readRDS("EXO_compiled/BEGI_EXO.or2.rds")
+
+### Correct negative DO values ###
+BEGI_EXO.or2[["SLOC"]]$ODO.mg.L.mn <- BEGI_EXO.or2[["SLOC"]]$ODO.mg.L.mn + 0.3
+
+
+### Read in .csv files of service dates and times ###
+service.SLOC = read.csv("EXO_compiled/service.SLOC.csv", row.names = 1)
+names(service.SLOC) = "datetimeMT"
+service.SLOC$datetimeMT = as.POSIXct(service.SLOC$datetimeMT, tz="US/Mountain")
+
+# sunrise/sunset
+suntimes = 
+  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2024-09-5"), by = 1),
+                   keep = c("sunrise", "sunset"),
+                   lat = 34.9, lon = -106.7, tz = "US/Mountain")
+
+pm.pts = suntimes$sunset[-(nrow(suntimes))]
+am.pts = suntimes$sunrise[-1]
+
+
+## SLOC 10-06 17:00 to 10-12 17:00 ##
+tempdat = BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-06 17:00:01", tz="US/Mountain") & 
+                                   BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-12 17:00:00", tz="US/Mountain"), ]
+
+  
+  #save plot 
+jpeg("plots/SLOC_event.jpg", width = 8, height = 8, units="in", res=1000)
+plot.new()
+  
+  par(mfrow=c(2,1))
+  
+  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn,
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,1.0))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="Dissolved Oxygen (mg/L)")
+  
+  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn,
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(22.5,80))
+  rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  title(main="fDOM (QSU)")
+  
+dev.off()
 
