@@ -1,6 +1,8 @@
 #### read me ####
 
 # the purpose of this script is to delineate respiration events from the compiled EXO1 RDS files in the Webster BEGI project
+# DO events are delineated and their ROC and AUC are calculated
+# fdom is converted to DOC and delineated
 
 #### libraries ####
 library(googledrive)
@@ -10,6 +12,7 @@ library(zoo)
 library(stringr)
 library(suncalc)
 library(DescTools)
+library(readxl)
 
 #### Import compiled EXO1 RDS file ####
 BEGI_EXO.or2 = readRDS("EXO_compiled/BEGI_EXO.or2.rds")
@@ -974,8 +977,124 @@ print(DO_roc_bp)
 #Calculate R-sq
 #Use linear equation to convert all fDOM values to DOC
 
+#Import temp corrected fDOM data
+EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
 
+#get DOC data from google drive
+doc_tibble <- googledrive::as_id("https://drive.google.com/drive/folders/1zdzsIXO5LIzbcg2RzfE4mz3dBKvBmrO-")
 
+doc <- googledrive::drive_ls(path = doc_tibble, type = "xlsx")
+
+googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-01-22_BEGI_rerun.xlsx"], 
+                            path = "NPOC-TN_2025-01-22_BEGI_rerun.xlsx",
+                            overwrite = T)
+docdata1 <- read_xlsx("NPOC-TN_2025-01-22_BEGI_rerun.xlsx", sheet = 9, skip = 1)
+
+googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2024-10-23_updated.xlsx"], 
+                            path = "NPOC-TN_2024-10-23_updated.xlsx",
+                            overwrite = T)
+docdata2 <- read_xlsx("NPOC-TN_2024-10-23_updated.xlsx", sheet = 7, skip = 1)
+
+googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2024-10-10_updated.xlsx"], 
+                            path = "NPOC-TN_2024-10-10_updated.xlsx",
+                            overwrite = T)
+docdata3 <- read_xlsx("NPOC-TN_2024-10-10_updated.xlsx", sheet = 6, skip = 1)
+
+#clean up
+docdata1 <- select(docdata1,-6:-8)
+names(docdata1)[names(docdata1) == '...1'] <- 'date'
+names(docdata1)[names(docdata1) == '...2'] <- 'WellID'
+names(docdata1)[names(docdata1) == '...3'] <- 'Sample'
+
+docdata2 <- select(docdata2,-6:-8)
+names(docdata2)[names(docdata2) == '...1'] <- 'date'
+names(docdata2)[names(docdata2) == '...2'] <- 'WellID'
+names(docdata2)[names(docdata2) == '...3'] <- 'Sample'
+
+docdata3 <- select(docdata3,-6:-8)
+names(docdata3)[names(docdata3) == '...1'] <- 'date'
+names(docdata3)[names(docdata3) == '...2'] <- 'WellID'
+names(docdata3)[names(docdata3) == '...3'] <- 'Sample'
+
+#stitch
+docdata <- merge(docdata1,docdata2, all = TRUE)
+docdata <- merge(docdata, docdata3, all = TRUE)
+#filter by well
+docdata <- docdata %>%
+  spread (WellID, NPOC)
+docdata$date <- as.Date(docdata$date)
+
+#VDOW
+#daily mean of VDOW fDOM
+fDOM_df <- data.frame(
+  date = as.Date(EXOz.tc[["VDOW"]]$datetimeMT),
+  fDOM = EXOz.tc[["VDOW"]]$fDOM.QSU.mn.Tc)
+daily_fDOM <- aggregate(fDOM ~ date, data = fDOM_df, FUN = mean)
+
+merged_VDOW <- merge(daily_fDOM, docdata[, c("date", "VDOW")], by = "date")
+merged_VDOW <- na.omit(merged_VDOW)
+
+plot(merged_VDOW$VDOW ~ merged_VDOW$fDOM)
+m.VDOW = lm(fDOM ~ VDOW, data = merged_VDOW)
+abline(m.VDOW, col = "blue", lwd = 2)
+summary(m.VDOW)
+cf <- coef(m.VDOW)
+Intercept <- cf[1]
+Slope <- cf[2]
+
+#VDOS
+#daily mean of VDOS fDOM
+fDOM_df <- data.frame(
+  date = as.Date(EXOz.tc[["VDOS"]]$datetimeMT),
+  fDOM = EXOz.tc[["VDOS"]]$fDOM.QSU.mn.Tc)
+daily_fDOM <- aggregate(fDOM ~ date, data = fDOM_df, FUN = mean)
+
+merged_VDOS <- merge(daily_fDOM, docdata[, c("date", "VDOS")], by = "date")
+merged_VDOS <- na.omit(merged_VDOS)
+
+plot(merged_VDOS$VDOS ~ merged_VDOS$fDOM)
+m.VDOS = lm(fDOM ~ VDOS, data = merged_VDOS)
+abline(m.VDOS, col = "blue", lwd = 2)
+summary(m.VDOS)
+cf <- coef(m.VDOS)
+Intercept <- cf[1]
+Slope <- cf[2]
+
+#SLOC
+#daily mean of SLOC fDOM
+fDOM_df <- data.frame(
+  date = as.Date(EXOz.tc[["SLOC"]]$datetimeMT),
+  fDOM = EXOz.tc[["SLOC"]]$fDOM.QSU.mn.Tc)
+daily_fDOM <- aggregate(fDOM ~ date, data = fDOM_df, FUN = mean)
+
+merged_SLOC <- merge(daily_fDOM, docdata[, c("date", "SLOC")], by = "date")
+merged_SLOC <- na.omit(merged_SLOC)
+
+plot(merged_SLOC$SLOC ~ merged_SLOC$fDOM)
+m.SLOC = lm(fDOM ~ SLOC, data = merged_SLOC)
+abline(m.SLOC, col = "blue", lwd = 2)
+summary(m.SLOC)
+cf <- coef(m.SLOC)
+Intercept <- cf[1]
+Slope <- cf[2]
+
+#SLOW
+#daily mean of SLOW fDOM
+fDOM_df <- data.frame(
+  date = as.Date(EXOz.tc[["SLOW"]]$datetimeMT),
+  fDOM = EXOz.tc[["SLOW"]]$fDOM.QSU.mn.Tc)
+daily_fDOM <- aggregate(fDOM ~ date, data = fDOM_df, FUN = mean)
+
+merged_SLOW <- merge(daily_fDOM, docdata[, c("date", "SLOW")], by = "date")
+merged_SLOW <- na.omit(merged_SLOW)
+
+plot(merged_SLOW$SLOW ~ merged_SLOW$fDOM)
+m.SLOW = lm(fDOM ~ SLOW, data = merged_SLOW)
+abline(m.SLOW, col = "blue", lwd = 2)
+summary(m.SLOW)
+cf <- coef(m.SLOW)
+Intercept <- cf[1]
+Slope <- cf[2]
 
 
 #### Dataframes fDOM events ####
