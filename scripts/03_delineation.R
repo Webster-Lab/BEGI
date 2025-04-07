@@ -1000,6 +1000,11 @@ googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2024-10-10_updated.
                             overwrite = T)
 docdata3 <- read_xlsx("NPOC-TN_2024-10-10_updated.xlsx", sheet = 6, skip = 1)
 
+googledrive::drive_download(file = doc$id[doc$name=="240620_BEGI_Data.xlsx"], 
+                            path = "240620_BEGI_Data.xlsx",
+                            overwrite = T)
+docdata4 <- read_xlsx("240620_BEGI_Data.xlsx")
+
 #clean up
 docdata1 <- select(docdata1,-6:-8)
 names(docdata1)[names(docdata1) == '...1'] <- 'date'
@@ -1016,9 +1021,14 @@ names(docdata3)[names(docdata3) == '...1'] <- 'date'
 names(docdata3)[names(docdata3) == '...2'] <- 'WellID'
 names(docdata3)[names(docdata3) == '...3'] <- 'Sample'
 
+names(docdata4)[names(docdata4) == 'Collection Date'] <- 'date'
+names(docdata4)[names(docdata4) == 'NPOC (mg C/L)'] <- 'NPOC'
+names(docdata4)[names(docdata4) == 'TDN (mg N/L)'] <- 'TN'
+
 #stitch
 docdata <- merge(docdata1,docdata2, all = TRUE)
 docdata <- merge(docdata, docdata3, all = TRUE)
+docdata <- merge(docdata, docdata4, all = TRUE)
 #filter by well
 docdata <- docdata %>%
   spread (WellID, NPOC)
