@@ -990,15 +990,15 @@ googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-01-22_BEGI_rer
                             overwrite = T)
 docdata1 <- read_xlsx("NPOC-TN_2025-01-22_BEGI_rerun.xlsx", sheet = 9, skip = 1)
 
-googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2024-10-23_updated.xlsx"], 
-                            path = "NPOC-TN_2024-10-23_updated.xlsx",
-                            overwrite = T)
-docdata2 <- read_xlsx("NPOC-TN_2024-10-23_updated.xlsx", sheet = 7, skip = 1)
+#googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2024-10-23_updated.xlsx"], 
+#                            path = "NPOC-TN_2024-10-23_updated.xlsx",
+#                            overwrite = T)
+#docdata2 <- read_xlsx("NPOC-TN_2024-10-23_updated.xlsx", sheet = 7, skip = 1)
 
-googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2024-10-10_updated.xlsx"], 
-                            path = "NPOC-TN_2024-10-10_updated.xlsx",
-                            overwrite = T)
-docdata3 <- read_xlsx("NPOC-TN_2024-10-10_updated.xlsx", sheet = 6, skip = 1)
+#googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2024-10-10_updated.xlsx"], 
+#                            path = "NPOC-TN_2024-10-10_updated.xlsx",
+#                            overwrite = T)
+#docdata3 <- read_xlsx("NPOC-TN_2024-10-10_updated.xlsx", sheet = 6, skip = 1)
 
 googledrive::drive_download(file = doc$id[doc$name=="240620_BEGI_Data.xlsx"], 
                             path = "240620_BEGI_Data.xlsx",
@@ -1011,24 +1011,24 @@ names(docdata1)[names(docdata1) == '...1'] <- 'date'
 names(docdata1)[names(docdata1) == '...2'] <- 'WellID'
 names(docdata1)[names(docdata1) == '...3'] <- 'Sample'
 
-docdata2 <- select(docdata2,-6:-8)
-names(docdata2)[names(docdata2) == '...1'] <- 'date'
-names(docdata2)[names(docdata2) == '...2'] <- 'WellID'
-names(docdata2)[names(docdata2) == '...3'] <- 'Sample'
+#docdata2 <- select(docdata2,-6:-8)
+#names(docdata2)[names(docdata2) == '...1'] <- 'date'
+#names(docdata2)[names(docdata2) == '...2'] <- 'WellID'
+#names(docdata2)[names(docdata2) == '...3'] <- 'Sample'
 
-docdata3 <- select(docdata3,-6:-8)
-names(docdata3)[names(docdata3) == '...1'] <- 'date'
-names(docdata3)[names(docdata3) == '...2'] <- 'WellID'
-names(docdata3)[names(docdata3) == '...3'] <- 'Sample'
+#docdata3 <- select(docdata3,-6:-8)
+#names(docdata3)[names(docdata3) == '...1'] <- 'date'
+#names(docdata3)[names(docdata3) == '...2'] <- 'WellID'
+#names(docdata3)[names(docdata3) == '...3'] <- 'Sample'
 
 names(docdata4)[names(docdata4) == 'Collection Date'] <- 'date'
 names(docdata4)[names(docdata4) == 'NPOC (mg C/L)'] <- 'NPOC'
 names(docdata4)[names(docdata4) == 'TDN (mg N/L)'] <- 'TN'
 
 #stitch
-docdata <- merge(docdata1,docdata2, all = TRUE)
-docdata <- merge(docdata, docdata3, all = TRUE)
-docdata <- merge(docdata, docdata4, all = TRUE)
+#docdata <- merge(docdata1,docdata2, all = TRUE)
+#docdata <- merge(docdata, docdata3, all = TRUE)
+docdata <- merge(docdata1, docdata4, all = TRUE)
 #filter by well
 docdata <- docdata %>%
   spread (WellID, NPOC)
