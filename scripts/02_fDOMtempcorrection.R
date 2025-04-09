@@ -202,3 +202,114 @@ saveRDS(EXOz.tc, "EXO_compiled/BEGI_EXOz.tc.rds")
 
 
 
+
+#### timeseries of fdom ####
+#load data
+EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
+
+# read in file and filter to EXO1 removal and deployments
+service = readxl::read_excel("googledrive/sensor_event_log.xlsx")
+service = service[service$model=="EXO1",]
+service = service[service$observation=="removed" | service$observation=="deployed",]
+
+# format date and time
+service$datetime = paste(service$date,  service$time, sep = " ")
+# convert to POIXct and set timezone
+service$datetimeMT<-as.POSIXct(service$datetime, 
+                               format = "%Y-%m-%d %H:%M",
+                               tz="US/Mountain")
+service$date = as.Date(service$date)
+
+# remove rows with no exact times
+servicetimes = service[!is.na(service$datetimeMT),]
+
+# service dates
+
+service.VDOW = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="VDOW"]
+service.VDOS = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="VDOS"]
+service.SLOC = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOC"]
+service.SLOW = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOW"]
+
+# sunrise/sunset
+
+suntimes = 
+  getSunlightTimes(date = seq.Date(from = as.Date("2023-09-14"), to = as.Date("2024-09-5"), by = 1),
+                   keep = c("sunrise", "sunset"),
+                   lat = 34.9, lon = -106.7, tz = "US/Mountain")
+
+pm.pts = suntimes$sunset[-(nrow(suntimes))]
+am.pts = suntimes$sunrise[-1]
+
+## SLOC all ##
+tempdat = EXOz.tc[["SLOC"]]
+
+# Save plot 
+jpeg("plots/SLOCfDOM.jpg", width = 12, height = 8, units="in", res=1000)
+
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+abline(v=as.POSIXct(service.SLOC), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+dev.off()
+
+## SLOW all ##
+tempdat = EXOz.tc[["SLOW"]]
+
+# Save plot 
+jpeg("plots/SLOWfDOM.jpg", width = 12, height = 8, units="in", res=1000)
+
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+abline(v=as.POSIXct(service.SLOW), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+dev.off()
+
+## VDOW all ##
+tempdat = EXOz.tc[["VDOW"]]
+
+# Save plot 
+jpeg("plots/VDOWfDOM.jpg", width = 12, height = 8, units="in", res=1000)
+
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+abline(v=as.POSIXct(service.VDOW), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+dev.off()
+
+## VDOS all ##
+tempdat = EXOz.tc[["VDOS"]]
+
+# Save plot 
+jpeg("plots/VDOSfDOM.jpg", width = 12, height = 8, units="in", res=1000)
+
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+abline(v=as.POSIXct(service.VDOS), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+dev.off()
+
+

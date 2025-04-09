@@ -984,6 +984,7 @@ EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
 doc_tibble <- googledrive::as_id("https://drive.google.com/drive/folders/1zdzsIXO5LIzbcg2RzfE4mz3dBKvBmrO-")
 
 doc <- googledrive::drive_ls(path = doc_tibble, type = "xlsx")
+2
 
 googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-01-22_BEGI_rerun.xlsx"], 
                             path = "NPOC-TN_2025-01-22_BEGI_rerun.xlsx",
