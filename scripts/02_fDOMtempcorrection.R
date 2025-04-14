@@ -313,3 +313,42 @@ title(main="fDOM (QSU)")
 dev.off()
 
 
+
+#### temp correction of fdom WITHOUT service times removed ####
+
+#read in data without service times removed
+BEGI_EXO.ts = readRDS("EXO_compiled/BEGI_EXO.ts.rds")
+
+#set rho (after 'Define linear relationships and rhos' section )
+siteIDz = c("VDOW", "VDOS", "SLOW", "SLOC")
+for (i in siteIDz){
+  BEGI_EXO.ts[[i]]$siteID = i
+  BEGI_EXO.ts[[i]] = left_join(BEGI_EXO.ts[[i]], rhos, by=c("siteID"))
+}
+
+#apply temp correction
+siteIDz = c("VDOW", "VDOS", "SLOW", "SLOC")
+for (i in siteIDz){
+  BEGI_EXO.ts[[i]]$siteID = i
+  BEGI_EXO.ts[[i]]$fDOM.QSU.mn.Tc = BEGI_EXO.ts[[i]]$fDOM.QSU.mn / ( 1 + (BEGI_EXO.ts[[i]]$rho * (BEGI_EXO.ts[[i]]$Temp..C.mn - BEGI_EXO.ts[[i]]$Tref)))
+}
+
+#plot to check
+# SLOC
+tempdat = BEGI_EXO.ts[["SLOC"]][BEGI_EXO.ts[["SLOC"]]$datetimeMT < as.POSIXct("2024-09-15 00:00:01 MDT") &
+                              BEGI_EXO.ts[["SLOC"]]$datetimeMT > as.POSIXct("2024-08-15 00:00:01 MDT"),]
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="l")#,ylim=c(22.5,24.5))
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
+      pch=20,col="blue", xlab="", xaxt = "n", type="l")
+
+# save RDS of temp-corrected fdom WITHOUT servicing times removed
+saveRDS(BEGI_EXO.ts, "EXO_compiled/BEGI_EXOz.ts.tc.rds")
+
+
+
+
