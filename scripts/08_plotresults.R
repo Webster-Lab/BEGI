@@ -474,7 +474,7 @@ rm(odumER); rm(dtw_events)
 D_gwvar_log = 
   ggplot(ER_events, aes(x = dtw_ER_event_cv2, y = log(D), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
-  geom_smooth(method = "lm", fill=NA) +
+  #geom_smooth(method = "lm", fill=NA) +
   labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceeding Event (2 days)", width=35),
        y = str_wrap("Oxygen Uptake via Diffusion (log scale)", width=40))+
   theme_bw()+
@@ -490,7 +490,7 @@ ggsave("plots/D_gwvar_log.png",D_gwvar_log, width = 9, height = 8, units = "in")
 ER_gwvar_log = 
   ggplot(ER_events, aes(x = dtw_ER_event_cv2, y = log(posER), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
-  geom_smooth(method = "lm", fill=NA) +
+  #geom_smooth(method = "lm", fill=NA) +
   labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceeding Event (2 days)", width=35),
        y = str_wrap("Ecosystem Respiration (log scale)", width=40))+
   theme_bw()+
@@ -506,6 +506,10 @@ ggsave("plots/ER_gwvar_log.png",ER_gwvar_log, width = 9, height = 8, units = "in
 #AUC, ER, and D
 poster_results <- grid.arrange(DO_AUC_gwvar_log, ER_gwvar_log, D_gwvar_log, ncol=3)
 ggsave("plots/poster_results.png", poster_results, width = 20, height = 8, units = "in")
+
+#ER and D
+pres_results <- grid.arrange(ER_gwvar_log, D_gwvar_log, ncol=2)
+ggsave("plots/pres_results.png", pres_results, width = 20, height = 8, units = "in")
 
 #### DO and FDOM event example ####
 ### Import compiled EXO1 RDS file ###
@@ -531,8 +535,8 @@ am.pts = suntimes$sunrise[-1]
 
 
 ## SLOC 10-06 17:00 to 10-12 17:00 ##
-tempdat = BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-06 17:00:01", tz="US/Mountain") & 
-                                   BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-12 17:00:00", tz="US/Mountain"), ]
+tempdat = BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2023-10-17 11:15:01", tz="US/Mountain") & 
+                                   BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2023-10-18 00:15:00", tz="US/Mountain"), ]
 
   
   #save plot 
@@ -542,14 +546,14 @@ plot.new()
   par(mfrow=c(2,1))
   
   plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn,
-       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,1.0))
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,6.0))
   rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
   lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
         pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
   abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
   axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
   title(main="Dissolved Oxygen (mg/L)")
-  
+
   plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn,
        pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(22.5,80))
   rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
@@ -559,5 +563,86 @@ plot.new()
   axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
   title(main="fDOM (QSU)")
   
+dev.off()
+
+
+#### lateral transfer example ####
+
+# read in and wrangle data from previous section
+
+## SLOC 10-06 17:00 to 10-12 17:00 ##
+tempdat = BEGI_EXO.or2[["SLOC"]][BEGI_EXO.or2[["SLOC"]]$datetimeMT >= as.POSIXct("2024-08-25 10:15:01", tz="US/Mountain") & 
+                                   BEGI_EXO.or2[["SLOC"]]$datetimeMT <= as.POSIXct("2024-08-26 10:15:00", tz="US/Mountain"), ]
+
+
+#save plot 
+jpeg("plots/lt_event.jpg", width = 8, height = 8, units="in", res=1000)
+plot.new()
+
+par(mfrow=c(2,1))
+
+plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn,
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,6.0))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
+abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+
+plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn,
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(22.5,90))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
+abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+dev.off()
+
+
+#### sonde error example ####
+# read in and wrangle data from previous section
+
+## VDOW 6/5 - 6/13 ##
+tempdat = BEGI_EXO.or2[["VDOW"]][BEGI_EXO.or2[["VDOW"]]$datetimeMT >= as.POSIXct("2024-06-05 10:15:01", tz="US/Mountain") & 
+                                   BEGI_EXO.or2[["VDOW"]]$datetimeMT <= as.POSIXct("2024-06-13 10:15:00", tz="US/Mountain"), ]
+
+
+#save plot 
+jpeg("plots/error_event.jpg", width = 8, height = 8, units="in", res=1000)
+plot.new()
+
+par(mfrow=c(3,1))
+
+plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn,
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="",ylim=c(-0.2,9.0))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=100, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$ODO.mg.L.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(-0.2,10)
+abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Dissolved Oxygen (mg/L)")
+
+plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn,
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(0,90))
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
+abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="fDOM (QSU)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$SpCond.µS.cm.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=2000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$SpCond.µS.cm.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service.VDOW), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Specific Conductance (us/cm)")
+
+
 dev.off()
 
