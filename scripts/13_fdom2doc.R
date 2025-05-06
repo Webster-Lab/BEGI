@@ -92,74 +92,137 @@ saveRDS(BEGI_EXO.stz.fd, "EXO_compiled/BEGI_EXO.stz.fd.rds")
 rm(list = ls())
 BEGI_EXO.stz.fd = readRDS("EXO_compiled/BEGI_EXO.stz.fd.rds")
 
+#temp corrected
+BEGI_EXO.tc.fd = readRDS("EXO_compiled/BEGI_EXOz.tc.fd.rds")
 
 #### plot to check ####
+#using temp corrected data
 ## SLOC##
-tempdat = BEGI_EXO.stz.fd[["SLOC"]]
+tempdat = BEGI_EXO.tc.fd[["SLOC"]]
 
 # Save plot 
-jpeg("plots/SLOC_fdom2doc.jpg", width = 12, height = 6, units="in", res=1000)
+jpeg("plots/SLOC_fdom2doc.jpg", width = 12, height = 10, units="in", res=1000)
 
 plot.new()
+par(mfrow=c(3,1))
+
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
-rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
       pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="1 min"),format="%m-%d", las=2)
 title(main="fDOM (QSU)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Temperature (deg C)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Turbidity (FNU)")
 
 dev.off()
 
 ## SLOW##
-tempdat = BEGI_EXO.stz.fd[["SLOW"]]
+tempdat = BEGI_EXO.tc.fd[["SLOW"]]
 
 # Save plot 
-jpeg("plots/SLOW_fdom2doc.jpg", width = 12, height = 6, units="in", res=1000)
+jpeg("plots/SLOW_fdom2doc.jpg", width = 12, height = 10, units="in", res=1000)
 
 plot.new()
+par(mfrow=c(3,1))
+
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
-rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
       pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="1 min"),format="%m-%d", las=2)
 title(main="fDOM (QSU)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Temperature (deg C)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Turbidity (FNU)")
 
 dev.off()
 
 ## VDOW##
-tempdat = BEGI_EXO.stz.fd[["VDOW"]]
+tempdat = BEGI_EXO.tc.fd[["VDOW"]]
 
 # Save plot 
-jpeg("plots/VDOW_fdom2doc.jpg", width = 12, height = 6, units="in", res=1000)
+jpeg("plots/VDOW_fdom2doc.jpg", width = 12, height = 10, units="in", res=1000)
 
 plot.new()
+par(mfrow=c(3,1))
+
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
-rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
       pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="1 min"),format="%m-%d", las=2)
 title(main="fDOM (QSU)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Temperature (deg C)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Turbidity (FNU)")
 
 dev.off()
 
 
 ## VDOS##
-tempdat = BEGI_EXO.stz.fd[["VDOS"]]
+tempdat = BEGI_EXO.tc.fd[["VDOS"]]
 
 # Save plot 
-jpeg("plots/VDOS_fdom2doc.jpg", width = 12, height = 6, units="in", res=1000)
+jpeg("plots/VDOS_fdom2doc.jpg", width = 12, height = 10, units="in", res=1000)
 
 plot.new()
+par(mfrow=c(3,1))
+
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
      pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n")
-rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
       pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
 axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="1 min"),format="%m-%d", las=2)
 title(main="fDOM (QSU)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5))
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Temperature (deg C)")
+
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+      pch=20,col="black", xlab="", xaxt = "n", type="o")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+title(main="Turbidity (FNU)")
 
 dev.off()
 
@@ -170,22 +233,15 @@ doc_tibble <- googledrive::as_id("https://drive.google.com/drive/folders/1zdzsIX
 doc <- googledrive::drive_ls(path = doc_tibble, type = "xlsx")
 2
 
-googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v2.xlsx"], 
-                            path = "NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v2.xlsx",
-                            overwrite = T)
-docdata <- read_xlsx("NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v2.xlsx", sheet = 2)
-
 #import DOC data without values removed (complete DOC data)
 googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v1.xlsx"], 
                             path = "NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v1.xlsx",
                             overwrite = T)
-docdata2 <- read_xlsx("NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v1.xlsx", sheet = 2)
+docdata <- read_xlsx("NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v1.xlsx", sheet = 2)
 
 #### wrangle DOC data ####
 
-names(docdata2)[names(docdata2) == 'Conc (mg/L)'] <- 'NPOC'
 names(docdata)[names(docdata) == 'Conc (mg/L)'] <- 'NPOC'
-names(docdata)[names(docdata) == 'Matrix Spike'] <- 'MatrixSpike'
 
 #filter by well
 docdata <- docdata %>%
@@ -217,41 +273,11 @@ docSLOW <- data.frame(docdata$Sample,
 docSLOW <- na.omit(docSLOW)
 
 
-##repeat for complete DOC data##
-#filter by well
-docdata2 <- docdata2 %>%
-  spread (Well, NPOC)
-
-# filter docdata to df of each well
-#VDOW
-docVDOW2 <- data.frame(docdata2$Sample,
-                      docdata2$VDOW,
-                      docdata2$MatrixSpike)
-docVDOW2 <- na.omit(docVDOW2)
-
-#VDOS
-docVDOS2 <- data.frame(docdata2$Sample,
-                      docdata2$VDOS,
-                      docdata2$MatrixSpike)
-docVDOS2 <- na.omit(docVDOS2)
-
-#SLOC
-docSLOC2 <- data.frame(docdata2$Sample,
-                      docdata2$SLOC,
-                      docdata2$MatrixSpike)
-docSLOC2 <- na.omit(docSLOC2)
-
-#SLOW
-docSLOW2 <- data.frame(docdata2$Sample,
-                      docdata2$SLOW,
-                      docdata2$MatrixSpike)
-docSLOW2 <- na.omit(docSLOW2)
-
-
 #### Partition/clean fDOM data ####
 #add a column to label each chunk as Matrix spike
+#using temp corrected data, changed from BEGI_EXO.stz.fd to BEGI_EXO.tc.fd
 #VDOW#
-BEGI_EXO.stz.fd[["VDOW"]] <- BEGI_EXO.stz.fd[["VDOW"]] %>%
+BEGI_EXO.tc.fd[["VDOW"]] <- BEGI_EXO.tc.fd[["VDOW"]] %>%
   mutate(MatrixSpike = case_when(
     datetimeMT >= as.POSIXct("2025-04-21 14:28:00") & datetimeMT <= as.POSIXct("2025-04-21 14:42:00") ~ 0,
     datetimeMT >= as.POSIXct("2025-04-21 15:23:00") & datetimeMT <= as.POSIXct("2025-04-21 15:40:00") ~ 0.5,
@@ -262,7 +288,7 @@ BEGI_EXO.stz.fd[["VDOW"]] <- BEGI_EXO.stz.fd[["VDOW"]] %>%
   ))
 
 #VDOS#
-BEGI_EXO.stz.fd[["VDOS"]] <- BEGI_EXO.stz.fd[["VDOS"]] %>%
+BEGI_EXO.tc.fd[["VDOS"]] <- BEGI_EXO.tc.fd[["VDOS"]] %>%
   mutate(MatrixSpike = case_when(
     datetimeMT >= as.POSIXct("2025-04-21 14:28:00") & datetimeMT <= as.POSIXct("2025-04-21 14:45:00") ~ 0,
     datetimeMT >= as.POSIXct("2025-04-21 15:21:00") & datetimeMT <= as.POSIXct("2025-04-21 15:37:00") ~ 0.5,
@@ -273,7 +299,7 @@ BEGI_EXO.stz.fd[["VDOS"]] <- BEGI_EXO.stz.fd[["VDOS"]] %>%
   ))
 
 #SLOC#
-BEGI_EXO.stz.fd[["SLOC"]] <- BEGI_EXO.stz.fd[["SLOC"]] %>%
+BEGI_EXO.tc.fd[["SLOC"]] <- BEGI_EXO.tc.fd[["SLOC"]] %>%
   mutate(MatrixSpike = case_when(
     datetimeMT >= as.POSIXct("2025-04-21 14:30:00") & datetimeMT <= as.POSIXct("2025-04-21 14:47:00") ~ 0,
     datetimeMT >= as.POSIXct("2025-04-21 15:20:00") & datetimeMT <= as.POSIXct("2025-04-21 15:34:00") ~ 0.5,
@@ -284,7 +310,7 @@ BEGI_EXO.stz.fd[["SLOC"]] <- BEGI_EXO.stz.fd[["SLOC"]] %>%
   ))
 
 #SLOW#
-BEGI_EXO.stz.fd[["SLOW"]] <- BEGI_EXO.stz.fd[["SLOW"]] %>%
+BEGI_EXO.tc.fd[["SLOW"]] <- BEGI_EXO.tc.fd[["SLOW"]] %>%
   mutate(MatrixSpike = case_when(
     datetimeMT >= as.POSIXct("2025-04-21 14:52:00") & datetimeMT <= as.POSIXct("2025-04-21 15:06:00") ~ 0,
     datetimeMT >= as.POSIXct("2025-04-21 15:18:00") & datetimeMT <= as.POSIXct("2025-04-21 15:32:00") ~ 0.5,
@@ -298,7 +324,7 @@ BEGI_EXO.stz.fd[["SLOW"]] <- BEGI_EXO.stz.fd[["SLOW"]] %>%
 #VDOW#
 trim_n <- 4
 
-VDOW_mean_fdom <- BEGI_EXO.stz.fd[["VDOW"]] %>%
+VDOW_mean_fdom <- BEGI_EXO.tc.fd[["VDOW"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
@@ -312,7 +338,7 @@ VDOW_mean_fdom <- BEGI_EXO.stz.fd[["VDOW"]] %>%
 #VDOS#
 trim_n <- 4
 
-VDOS_mean_fdom <- BEGI_EXO.stz.fd[["VDOS"]] %>%
+VDOS_mean_fdom <- BEGI_EXO.tc.fd[["VDOS"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
@@ -326,7 +352,7 @@ VDOS_mean_fdom <- BEGI_EXO.stz.fd[["VDOS"]] %>%
 #SLOC#
 trim_n <- 4
 
-SLOC_mean_fdom <- BEGI_EXO.stz.fd[["SLOC"]] %>%
+SLOC_mean_fdom <- BEGI_EXO.tc.fd[["SLOC"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
@@ -340,7 +366,7 @@ SLOC_mean_fdom <- BEGI_EXO.stz.fd[["SLOC"]] %>%
 #SLOW#
 trim_n <- 4
 
-SLOW_mean_fdom <- BEGI_EXO.stz.fd[["SLOW"]] %>%
+SLOW_mean_fdom <- BEGI_EXO.tc.fd[["SLOW"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
@@ -354,38 +380,18 @@ SLOW_mean_fdom <- BEGI_EXO.stz.fd[["SLOW"]] %>%
 #### combined doc/fdom df for each well ####
 #complete DOC data
 #VDOW#
-docVDOW2$fdom <- VDOW_mean_fdom[match(docVDOW2$docdata2.MatrixSpike,names(VDOW_mean_fdom))]
-docVDOW2 <- docVDOW2[-3,] #removes 10 mg/L
-#VDOS#
-docVDOS2$fdom <- VDOS_mean_fdom[match(docVDOS2$docdata2.MatrixSpike,names(VDOS_mean_fdom))]
-docVDOS2 <- docVDOS2[-3,]
-#SLOC#
-docSLOC2$fdom <- SLOC_mean_fdom[match(docSLOC2$docdata2.MatrixSpike,names(SLOC_mean_fdom))]
-docSLOC2 <- docSLOC2[-3,]
-#SLOW#
-docSLOW2$fdom <- SLOW_mean_fdom[match(docSLOW2$docdata2.MatrixSpike,names(SLOW_mean_fdom))]
-docSLOW2 <- docSLOW2[-3,]
-
-
-#VDOW#
-#remove value not included in docdata
-VDOW_mean_fdom <- VDOW_mean_fdom[-4]
 docVDOW$fdom <- VDOW_mean_fdom[match(docVDOW$docdata.MatrixSpike,names(VDOW_mean_fdom))]
-
+docVDOW <- docVDOW[-3,] #removes 10 mg/L 
 #VDOS#
-#remove value not included in docdata
-VDOS_mean_fdom <- VDOS_mean_fdom[-4]
 docVDOS$fdom <- VDOS_mean_fdom[match(docVDOS$docdata.MatrixSpike,names(VDOS_mean_fdom))]
-
+docVDOS <- docVDOS[-c(3,4),] #removes 2 and 10 mg/L
 #SLOC#
-#remove value not included in docdata
-SLOC_mean_fdom <- SLOC_mean_fdom[-c(2,4)]
 docSLOC$fdom <- SLOC_mean_fdom[match(docSLOC$docdata.MatrixSpike,names(SLOC_mean_fdom))]
-
+docSLOC <- docSLOC[-c(3,5),] #removes 5 and 10 mg/L
 #SLOW#
-#remove value not included in docdata
-SLOW_mean_fdom <- SLOW_mean_fdom[-4]
 docSLOW$fdom <- SLOW_mean_fdom[match(docSLOW$docdata.MatrixSpike,names(SLOW_mean_fdom))]
+docSLOW <- docSLOW[-c(3,4),] #removes 2 and 10 mg/L
+
 
 
 #### linear regression fdom2doc ####
@@ -396,7 +402,7 @@ plot(docVDOW$docdata.VDOW, docVDOW$fdom,
      main = "fDOM vs NPOC")
 m.VDOW <- lm(fdom ~ docdata.VDOW, data = docVDOW)
 abline(m.VDOW, col = "blue", lwd = 2)
-summary(m.VDOW)
+summary(m.VDOW) #R2 = 0.68 with 10 mg/L removed
 
 #VDOS#
 plot(docVDOS$docdata.VDOS, docVDOS$fdom,
@@ -424,52 +430,5 @@ plot(docSLOW$docdata.SLOW, docSLOW$fdom,
 m.SLOW <- lm(fdom ~ docdata.SLOW, data = docSLOW)
 abline(m.SLOW, col = "blue", lwd = 2)
 summary(m.SLOW)
-
-
-##complete DOC data##
-#VDOW#
-plot(docVDOW2$docdata2.VDOW, docVDOW2$fdom,
-     xlab = "NPOC (VDOW)",
-     ylab = "fDOM",
-     main = "fDOM vs NPOC")
-m.VDOW <- lm(fdom ~ docdata2.VDOW, data = docVDOW2)
-abline(m.VDOW, col = "blue", lwd = 2)
-summary(m.VDOW)
-#much better! this looks like a good relationship
-
-#VDOS#
-plot(docVDOS2$docdata2.VDOS, docVDOS2$fdom,
-     xlab = "NPOC (VDOS)",
-     ylab = "fDOM",
-     main = "fDOM vs NPOC")
-m.VDOS <- lm(fdom ~ docdata2.VDOS, data = docVDOS2)
-abline(m.VDOS, col = "blue", lwd = 2)
-summary(m.VDOS)
-#perhaps try removing 2 mg/L next?
-
-#SLOC#
-plot(docSLOC2$docdata2.SLOC, docSLOC2$fdom,
-     xlab = "NPOC (SLOC)",
-     ylab = "fDOM",
-     main = "fDOM vs NPOC")
-m.SLOC <- lm(fdom ~ docdata2.SLOC, data = docSLOC2)
-abline(m.SLOC, col = "blue", lwd = 2)
-summary(m.SLOC)
-#perhaps try removing 5 mg/L next?
-
-#SLOW#
-plot(docSLOW2$docdata2.SLOW, docSLOW2$fdom,
-     xlab = "NPOC (SLOW)",
-     ylab = "fDOM",
-     main = "fDOM vs NPOC")
-m.SLOW <- lm(fdom ~ docdata2.SLOW, data = docSLOW2)
-abline(m.SLOW, col = "blue", lwd = 2)
-summary(m.SLOW)
-#not sure with this one
-
-
-
-
-
 
 
