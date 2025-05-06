@@ -352,6 +352,21 @@ SLOW_mean_fdom <- BEGI_EXO.stz.fd[["SLOW"]] %>%
 #unname(SLOW_mean_fdom)
 
 #### combined doc/fdom df for each well ####
+#complete DOC data
+#VDOW#
+docVDOW2$fdom <- VDOW_mean_fdom[match(docVDOW2$docdata2.MatrixSpike,names(VDOW_mean_fdom))]
+docVDOW2 <- docVDOW2[-3,] #removes 10 mg/L
+#VDOS#
+docVDOS2$fdom <- VDOS_mean_fdom[match(docVDOS2$docdata2.MatrixSpike,names(VDOS_mean_fdom))]
+docVDOS2 <- docVDOS2[-3,]
+#SLOC#
+docSLOC2$fdom <- SLOC_mean_fdom[match(docSLOC2$docdata2.MatrixSpike,names(SLOC_mean_fdom))]
+docSLOC2 <- docSLOC2[-3,]
+#SLOW#
+docSLOW2$fdom <- SLOW_mean_fdom[match(docSLOW2$docdata2.MatrixSpike,names(SLOW_mean_fdom))]
+docSLOW2 <- docSLOW2[-3,]
+
+
 #VDOW#
 #remove value not included in docdata
 VDOW_mean_fdom <- VDOW_mean_fdom[-4]
@@ -372,19 +387,6 @@ docSLOC$fdom <- SLOC_mean_fdom[match(docSLOC$docdata.MatrixSpike,names(SLOC_mean
 SLOW_mean_fdom <- SLOW_mean_fdom[-4]
 docSLOW$fdom <- SLOW_mean_fdom[match(docSLOW$docdata.MatrixSpike,names(SLOW_mean_fdom))]
 
-
-#repeat for complete DOC data
-#VDOW#
-docVDOW2$fdom <- VDOW_mean_fdom[match(docVDOW2$docdata2.MatrixSpike,names(VDOW_mean_fdom))]
-
-#VDOS#
-docVDOS2$fdom <- VDOS_mean_fdom[match(docVDOS2$docdata2.MatrixSpike,names(VDOS_mean_fdom))]
-
-#SLOC#
-docSLOC2$fdom <- SLOC_mean_fdom[match(docSLOC2$docdata2.MatrixSpike,names(SLOC_mean_fdom))]
-
-#SLOW#
-docSLOW2$fdom <- SLOW_mean_fdom[match(docSLOW2$docdata2.MatrixSpike,names(SLOW_mean_fdom))]
 
 #### linear regression fdom2doc ####
 #VDOW#
@@ -433,6 +435,7 @@ plot(docVDOW2$docdata2.VDOW, docVDOW2$fdom,
 m.VDOW <- lm(fdom ~ docdata2.VDOW, data = docVDOW2)
 abline(m.VDOW, col = "blue", lwd = 2)
 summary(m.VDOW)
+#much better! this looks like a good relationship
 
 #VDOS#
 plot(docVDOS2$docdata2.VDOS, docVDOS2$fdom,
@@ -442,6 +445,7 @@ plot(docVDOS2$docdata2.VDOS, docVDOS2$fdom,
 m.VDOS <- lm(fdom ~ docdata2.VDOS, data = docVDOS2)
 abline(m.VDOS, col = "blue", lwd = 2)
 summary(m.VDOS)
+#perhaps try removing 2 mg/L next?
 
 #SLOC#
 plot(docSLOC2$docdata2.SLOC, docSLOC2$fdom,
@@ -451,6 +455,7 @@ plot(docSLOC2$docdata2.SLOC, docSLOC2$fdom,
 m.SLOC <- lm(fdom ~ docdata2.SLOC, data = docSLOC2)
 abline(m.SLOC, col = "blue", lwd = 2)
 summary(m.SLOC)
+#perhaps try removing 5 mg/L next?
 
 #SLOW#
 plot(docSLOW2$docdata2.SLOW, docSLOW2$fdom,
@@ -460,6 +465,7 @@ plot(docSLOW2$docdata2.SLOW, docSLOW2$fdom,
 m.SLOW <- lm(fdom ~ docdata2.SLOW, data = docSLOW2)
 abline(m.SLOW, col = "blue", lwd = 2)
 summary(m.SLOW)
+#not sure with this one
 
 
 
