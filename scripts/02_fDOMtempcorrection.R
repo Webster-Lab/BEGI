@@ -1,6 +1,8 @@
 #### read me ####
 
 # the purpose of this script is to to temperature-correct fDOM data for the Webster Lab BEGI project
+# methods are from:
+# Watras, C. J., Hanson, P. C., Stacy, T. L., Morrison, K. M., Mather, J., Hu, Y. H., & Milewski, P. (2011). A temperature compensation method for CDOM fluorescence sensors in freshwater. Limnology and Oceanography: Methods, 9(JULY), 296–301. https://doi.org/10.4319/lom.2011.9.296
 
 #### libraries ####
 library(googledrive)
@@ -122,6 +124,19 @@ rho = c(m.3231$coefficients[2]/m.3231$coefficients[1],
         m.3230$coefficients[2]/m.3230$coefficients[1],
         m.3229$coefficients[2]/m.3229$coefficients[1])
 rhos = data.frame(siteID, sondeID, rho, Tref)
+
+
+### test correction on lab data
+
+# sonde_3231 #
+# plot uncorrected
+plot(sonde_3231_tempcal$fDOM_QSU ~ sonde_3231_tempcal$temp_C, col="red")
+# correct
+sonde_3231_tempcal$fDOM_QSU_t = 
+  sonde_3231_tempcal$fDOM_QSU / 
+  ( 1 + (rhos[1,3] * (sonde_3231_tempcal$temp_C - rhos[1,4])))
+# plot corrected
+points(sonde_3231_tempcal$fDOM_QSU_t ~ sonde_3231_tempcal$temp_C, col="blue")
 
 
 #### set rho ####
@@ -257,6 +272,25 @@ axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d"
 title(main="fDOM (QSU)")
 
 dev.off()
+
+# plot temp correction
+tempdat = EXOz.tc[["SLOC"]]
+tempdat = tempdat[c(31500:32000),]
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,50))
+#rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="red", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service.SLOC), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
+      pch=20,col="blue", xlab="", xaxt = "n", type="o")
+title(main="fDOM (QSU)")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+     pch=20,col="red")
+
+
 
 ## SLOW all ##
 tempdat = EXOz.tc[["SLOW"]]
