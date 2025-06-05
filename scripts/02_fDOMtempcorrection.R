@@ -417,6 +417,25 @@ title(main="fDOM (QSU)")
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
       pch=20,col="blue", xlab="", xaxt = "n", type="l")
 
+# plot temp correction
+tempdat = BEGI_EXO.stz.fd[["SLOC"]]
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,90))
+#rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="red", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service.SLOC), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
+      pch=20,col="blue", xlab="", xaxt = "n", type="o")
+title(main="fDOM (QSU)")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="red")
+
+
+
+
 # SLOW
 tempdat = BEGI_EXO.stz.fd[["SLOW"]]
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
@@ -427,6 +446,24 @@ axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d"
 title(main="fDOM (QSU)")
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
       pch=20,col="blue", xlab="", xaxt = "n", type="l")
+
+# plot temp correction
+tempdat = BEGI_EXO.stz.fd[["SLOW"]]
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,90))
+#rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="red", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service.SLOC), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
+      pch=20,col="blue", xlab="", xaxt = "n", type="o")
+title(main="fDOM (QSU)")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="red")
+
+
 
 # VDOW
 tempdat = BEGI_EXO.stz.fd[["VDOW"]]
@@ -439,6 +476,23 @@ title(main="fDOM (QSU)")
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
       pch=20,col="blue", xlab="", xaxt = "n", type="l")
 
+# plot temp correction
+tempdat = BEGI_EXO.stz.fd[["VDOW"]]
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,130))
+#rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="red", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service.SLOC), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
+      pch=20,col="blue", xlab="", xaxt = "n", type="o")
+title(main="fDOM (QSU)")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="red")
+
+
 # VDOS
 tempdat = BEGI_EXO.stz.fd[["VDOS"]]
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
@@ -450,6 +504,26 @@ title(main="fDOM (QSU)")
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
       pch=20,col="blue", xlab="", xaxt = "n", type="l")
 
+# plot temp correction
+tempdat = BEGI_EXO.stz.fd[["VDOS"]]
+plot.new()
+plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,130))
+#rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
+      pch=20,col="red", xlab="", xaxt = "n", type="o")
+abline(v=as.POSIXct(service.SLOC), col="red")
+axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
+      pch=20,col="blue", xlab="", xaxt = "n", type="o")
+title(main="fDOM (QSU)")
+lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Temp..C.mn),
+      pch=20,col="red")
+
+
 # save RDS of temp-corrected fdom WITHOUT servicing times removed
 saveRDS(BEGI_EXO.stz.fd, "EXO_compiled/BEGI_EXOz.tc.fd.rds")
+
+
+
 
