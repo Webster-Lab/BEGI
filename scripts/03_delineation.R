@@ -395,7 +395,7 @@ for (i in c(1:length(VDOS_events))) {
   file_name = paste("plots/delineations/VDOS/events/VDOS_", dz, ".pdf", sep="")
   pdf(file_name)
   
-  par(mfrow=c(2,1))
+  par(mfrow=c(7,1))
   
   # Define the range of datetime values
   start_time <- min(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"), na.rm = TRUE)
@@ -1805,4 +1805,384 @@ names(BEGI_events)<-c('DO_events','fDOM_events','Eventdate')
 
 #save list
 saveRDS(BEGI_events,"EXO_compiled/BEGI_events.rds")
+
+
+#### Import data to plot all events ####
+#First, run through above code of "Read in .csv files of service dates and times", "Vector of dates", and "event dates"
+#import temp corrected data
+EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
+
+#correct negative DO values
+EXOz.tc[["VDOW"]]$ODO.mg.L.mn <- EXOz.tc[["VDOW"]]$ODO.mg.L.mn + 0.36
+EXOz.tc[["VDOS"]]$ODO.mg.L.mn <- EXOz.tc[["VDOS"]]$ODO.mg.L.mn + 0.42
+EXOz.tc[["SLOW"]]$ODO.mg.L.mn <- EXOz.tc[["SLOW"]]$ODO.mg.L.mn + 0.32
+EXOz.tc[["SLOC"]]$ODO.mg.L.mn <- EXOz.tc[["SLOC"]]$ODO.mg.L.mn + 2.2
+
+#Import DTW data
+DTW_df = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
+
+### spread DTW_m in DTW_df to 
+DTW_df <- DTW_df %>%
+  spread (wellID, DTW_m)
+
+
+
+
+#### Plot all SLOC events####
+# Layout for 6-panel events across multiple columns
+n_panels <- 6
+n_events <- length(SLOC_events)
+
+# Grid: 6 rows per event, spread across columns
+n_cols <- 4
+n_rows <- ceiling(n_events / n_cols)
+
+# Total plots = n_panels × n_events
+layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
+
+plot_number <- 1
+for (i in 1:n_events) {
+  col <- ((i - 1) %% n_cols) + 1
+  row <- ((i - 1) %/% n_cols) + 1
+  for (panel in 1:n_panels) {
+    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
+    plot_number <- plot_number + 1
+  }
+}
+
+#one pdf for all plots
+pdf("plots/delineations/SLOC/events/SLOC_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
+layout_matrix[is.na(layout_matrix)] <- 0
+layout(layout_matrix)
+par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
+
+for (i in seq_along(SLOC_events)) {
+  dz <- SLOC_events[i]
+  tempdat <- EXOz.tc[["SLOC"]][
+    EXOz.tc[["SLOC"]]$datetimeMT < (as.POSIXct(dz, tz = "US/Mountain") + 60*60*36) &
+      EXOz.tc[["SLOC"]]$datetimeMT > as.POSIXct(dz, tz = "US/Mountain"),
+  ]
+  tempdtw <- DTW_df[
+    DTW_df$datetimeMT > as.POSIXct(dz, tz = "US/Mountain") &
+      DTW_df$datetimeMT < as.POSIXct(dz, tz = "US/Mountain") + 60*60*36,
+  ]
+  
+  
+  start_time <- min(tempdat$datetimeMT, na.rm = TRUE)
+  end_time <- max(tempdat$datetimeMT, na.rm = TRUE)
+  hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  
+  # Plot 1: DO
+  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(-0.2, 10))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  
+  # Plot 2: fDOM
+  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(22.5, 140))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  
+  # Plot 3: Water level
+  plot(tempdtw$datetimeMT, -1 * tempdtw$SLOC, type="n", main="Depth", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdtw$datetimeMT, -1 * tempdtw$SLOC, type="b")
+  abline(h=0, col="green")
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  
+  # Plot 4: Turbidity
+  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  
+  # Plot 5: Temperature
+  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  
+  # Plot 6: Specific Conductance
+  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
+  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
+  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+}
+
+# Close the PDF after all plots are done
+dev.off()
+
+#### Plot all SLOW events####
+# Layout for 6-panel events across multiple columns
+n_panels <- 6
+n_events <- length(SLOW_events)
+
+# Grid: 6 rows per event, spread across columns
+n_cols <- 4
+n_rows <- ceiling(n_events / n_cols)
+
+# Total plots = n_panels × n_events
+layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
+
+plot_number <- 1
+for (i in 1:n_events) {
+  col <- ((i - 1) %% n_cols) + 1
+  row <- ((i - 1) %/% n_cols) + 1
+  for (panel in 1:n_panels) {
+    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
+    plot_number <- plot_number + 1
+  }
+}
+
+#one pdf for all plots
+pdf("plots/delineations/SLOW/events/SLOW_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
+layout_matrix[is.na(layout_matrix)] <- 0
+layout(layout_matrix)
+par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
+
+for (i in seq_along(SLOW_events)) {
+  dz <- SLOW_events[i]
+  tempdat <- EXOz.tc[["SLOW"]][
+    EXOz.tc[["SLOW"]]$datetimeMT < (as.POSIXct(dz, tz = "US/Mountain") + 60*60*36) &
+      EXOz.tc[["SLOW"]]$datetimeMT > as.POSIXct(dz, tz = "US/Mountain"),
+  ]
+  tempdtw <- DTW_df[
+    DTW_df$datetimeMT > as.POSIXct(dz, tz = "US/Mountain") &
+      DTW_df$datetimeMT < as.POSIXct(dz, tz = "US/Mountain") + 60*60*36,
+  ]
+  
+  
+  start_time <- min(tempdat$datetimeMT, na.rm = TRUE)
+  end_time <- max(tempdat$datetimeMT, na.rm = TRUE)
+  hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  
+  # Plot 1: DO
+  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(-0.2, 10))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  
+  # Plot 2: fDOM
+  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(22.5, 140))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  
+  # Plot 3: Water level
+  plot(tempdtw$datetimeMT, -1 * tempdtw$SLOW, type="n", main="Depth", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdtw$datetimeMT, -1 * tempdtw$SLOW, type="b")
+  abline(h=0, col="green")
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  
+  # Plot 4: Turbidity
+  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  
+  # Plot 5: Temperature
+  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  
+  # Plot 6: Specific Conductance
+  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
+  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
+  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+}
+
+# Close the PDF after all plots are done
+dev.off()
+
+
+
+
+
+
+#### Plot all VDOW events####
+# Layout for 6-panel events across multiple columns
+n_panels <- 6
+n_events <- length(VDOW_events)
+
+# Grid: 6 rows per event, spread across columns
+n_cols <- 4
+n_rows <- ceiling(n_events / n_cols)
+
+# Total plots = n_panels × n_events
+layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
+
+plot_number <- 1
+for (i in 1:n_events) {
+  col <- ((i - 1) %% n_cols) + 1
+  row <- ((i - 1) %/% n_cols) + 1
+  for (panel in 1:n_panels) {
+    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
+    plot_number <- plot_number + 1
+  }
+}
+
+#one pdf for all plots
+pdf("plots/delineations/VDOW/events/VDOW_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
+layout_matrix[is.na(layout_matrix)] <- 0
+layout(layout_matrix)
+par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
+
+for (i in seq_along(VDOW_events)) {
+  dz <- VDOW_events[i]
+  tempdat <- EXOz.tc[["VDOW"]][
+    EXOz.tc[["VDOW"]]$datetimeMT < (as.POSIXct(dz, tz = "US/Mountain") + 60*60*36) &
+      EXOz.tc[["VDOW"]]$datetimeMT > as.POSIXct(dz, tz = "US/Mountain"),
+  ]
+  tempdtw <- DTW_df[
+    DTW_df$datetimeMT > as.POSIXct(dz, tz = "US/Mountain") &
+      DTW_df$datetimeMT < as.POSIXct(dz, tz = "US/Mountain") + 60*60*36,
+  ]
+  
+  
+  start_time <- min(tempdat$datetimeMT, na.rm = TRUE)
+  end_time <- max(tempdat$datetimeMT, na.rm = TRUE)
+  hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  
+  # Plot 1: DO
+  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(-0.2, 10))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  
+  # Plot 2: fDOM
+  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(22.5, 140))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  
+  # Plot 3: Water level
+  plot(tempdtw$datetimeMT, -1 * tempdtw$VDOW, type="n", main="Depth", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdtw$datetimeMT, -1 * tempdtw$VDOW, type="b")
+  abline(h=0, col="green")
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  
+  # Plot 4: Turbidity
+  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  
+  # Plot 5: Temperature
+  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  
+  # Plot 6: Specific Conductance
+  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
+  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
+  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+}
+
+# Close the PDF after all plots are done
+dev.off()
+
+
+
+
+#### Plot all VDOS events####
+# Layout for 6-panel events across multiple columns
+n_panels <- 6
+n_events <- length(VDOS_events)
+
+# Grid: 6 rows per event, spread across columns
+n_cols <- 4
+n_rows <- ceiling(n_events / n_cols)
+
+# Total plots = n_panels × n_events
+layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
+
+plot_number <- 1
+for (i in 1:n_events) {
+  col <- ((i - 1) %% n_cols) + 1
+  row <- ((i - 1) %/% n_cols) + 1
+  for (panel in 1:n_panels) {
+    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
+    plot_number <- plot_number + 1
+  }
+}
+
+#one pdf for all plots
+pdf("plots/delineations/VDOS/events/VDOS_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
+layout_matrix[is.na(layout_matrix)] <- 0
+layout(layout_matrix)
+par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
+
+for (i in seq_along(VDOS_events)) {
+  dz <- VDOS_events[i]
+  tempdat <- EXOz.tc[["VDOS"]][
+    EXOz.tc[["VDOS"]]$datetimeMT < (as.POSIXct(dz, tz = "US/Mountain") + 60*60*36) &
+      EXOz.tc[["VDOS"]]$datetimeMT > as.POSIXct(dz, tz = "US/Mountain"),
+  ]
+  tempdtw <- DTW_df[
+    DTW_df$datetimeMT > as.POSIXct(dz, tz = "US/Mountain") &
+      DTW_df$datetimeMT < as.POSIXct(dz, tz = "US/Mountain") + 60*60*36,
+  ]
+  
+  
+  start_time <- min(tempdat$datetimeMT, na.rm = TRUE)
+  end_time <- max(tempdat$datetimeMT, na.rm = TRUE)
+  hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  
+  # Plot 1: DO
+  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(-0.2, 10))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  
+  # Plot 2: fDOM
+  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(22.5, 140))
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  
+  # Plot 3: Water level
+  plot(tempdtw$datetimeMT, -1 * tempdtw$VDOS, type="n", main="Depth", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdtw$datetimeMT, -1 * tempdtw$VDOS, type="b")
+  abline(h=0, col="green")
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  
+  # Plot 4: Turbidity
+  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  
+  # Plot 5: Temperature
+  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  
+  # Plot 6: Specific Conductance
+  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
+  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
+  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
+  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
+  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+}
+
+# Close the PDF after all plots are done
+dev.off()
+
+
 
