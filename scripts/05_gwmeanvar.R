@@ -619,3 +619,130 @@ DO_event_mvall <- merge(DO_event_mvall, DO_event_mv5, by = c("WellID","Eventdate
 View(DO_event_mvall)
 
 write_csv(DO_event_mvall,"DTW_compiled/DO_mv.csv")
+
+#### Event dtw timeseries ####
+#Import DTW data
+DTW_df = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
+
+### spread DTW_m in DTW_df to 
+DTW_df <- DTW_df %>%
+  spread (wellID, DTW_m)
+
+#import BEGI events (with tc data)
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
+
+
+#SLOC#
+dtw_timeseries <- list()
+
+for (i in seq_along(BEGI_events[["Eventdate"]][["SLOC_dates"]])) {
+  event_time <- BEGI_events[["Eventdate"]][["SLOC_dates"]][[i]]
+  start_time <- event_time - 60*60*48
+  
+  tempdat <- DTW_df[
+    DTW_df$datetimeMT >= start_time & DTW_df$datetimeMT < event_time,
+  ]
+#remove NAs from dataset  
+  valid_SLOC <- tempdat$SLOC[!is.na(tempdat$SLOC)]
+#extract 192 values  
+  if (length(valid_SLOC) >= 192) {
+    ts_values <- valid_SLOC[1:192]
+  } else {
+    ts_values <- c(valid_SLOC, rep(NA, 192 - length(valid_SLOC)))
+  }
+  
+  dtw_timeseries[[i]] <- ts_values
+}
+
+#combine to dataframe
+SLOC_dtw <- as.data.frame(do.call(rbind, dtw_timeseries))
+colnames(SLOC_dtw) <- paste0("t", seq_len(192))
+SLOC_dtw$event_time <- BEGI_events[["Eventdate"]][["SLOC_dates"]]
+
+#SLOW#
+dtw_timeseries <- list()
+
+for (i in seq_along(BEGI_events[["Eventdate"]][["SLOW_dates"]])) {
+  event_time <- BEGI_events[["Eventdate"]][["SLOW_dates"]][[i]]
+  start_time <- event_time - 60*60*48
+  
+  tempdat <- DTW_df[
+    DTW_df$datetimeMT >= start_time & DTW_df$datetimeMT < event_time,
+  ]
+  #remove NAs from dataset  
+  valid_SLOW <- tempdat$SLOW[!is.na(tempdat$SLOW)]
+  #extract 192 values  
+  if (length(valid_SLOW) >= 192) {
+    ts_values <- valid_SLOW[1:192]
+  } else {
+    ts_values <- c(valid_SLOW, rep(NA, 192 - length(valid_SLOW)))
+  }
+  
+  dtw_timeseries[[i]] <- ts_values
+}
+
+#combine to dataframe
+SLOW_dtw <- as.data.frame(do.call(rbind, dtw_timeseries))
+colnames(SLOW_dtw) <- paste0("t", seq_len(192))
+SLOW_dtw$event_time <- BEGI_events[["Eventdate"]][["SLOW_dates"]]
+
+
+#VDOW#
+dtw_timeseries <- list()
+
+for (i in seq_along(BEGI_events[["Eventdate"]][["VDOW_dates"]])) {
+  event_time <- BEGI_events[["Eventdate"]][["VDOW_dates"]][[i]]
+  start_time <- event_time - 60*60*48
+  
+  tempdat <- DTW_df[
+    DTW_df$datetimeMT >= start_time & DTW_df$datetimeMT < event_time,
+  ]
+  #remove NAs from dataset  
+  valid_VDOW <- tempdat$VDOW[!is.na(tempdat$VDOW)]
+  #extract 192 values  
+  if (length(valid_VDOW) >= 192) {
+    ts_values <- valid_VDOW[1:192]
+  } else {
+    ts_values <- c(valid_VDOW, rep(NA, 192 - length(valid_VDOW)))
+  }
+  
+  dtw_timeseries[[i]] <- ts_values
+}
+
+#combine to dataframe
+VDOW_dtw <- as.data.frame(do.call(rbind, dtw_timeseries))
+colnames(VDOW_dtw) <- paste0("t", seq_len(192))
+VDOW_dtw$event_time <- BEGI_events[["Eventdate"]][["VDOW_dates"]]
+
+
+#VDOS#
+dtw_timeseries <- list()
+
+for (i in seq_along(BEGI_events[["Eventdate"]][["VDOS_dates"]])) {
+  event_time <- BEGI_events[["Eventdate"]][["VDOS_dates"]][[i]]
+  start_time <- event_time - 60*60*48
+  
+  tempdat <- DTW_df[
+    DTW_df$datetimeMT >= start_time & DTW_df$datetimeMT < event_time,
+  ]
+  #remove NAs from dataset  
+  valid_VDOS <- tempdat$VDOS[!is.na(tempdat$VDOS)]
+  #extract 192 values  
+  if (length(valid_VDOS) >= 192) {
+    ts_values <- valid_VDOS[1:192]
+  } else {
+    ts_values <- c(valid_VDOS, rep(NA, 192 - length(valid_VDOS)))
+  }
+  
+  dtw_timeseries[[i]] <- ts_values
+}
+
+#combine to dataframe
+VDOS_dtw <- as.data.frame(do.call(rbind, dtw_timeseries))
+colnames(VDOS_dtw) <- paste0("t", seq_len(192))
+VDOS_dtw$event_time <- BEGI_events[["Eventdate"]][["VDOS_dates"]]
+
+#combine all dtw dataframes
+event_dtw <- rbind(SLOC_dtw,SLOW_dtw,VDOW_dtw,VDOS_dtw)
+#save
+saveRDS(event_dtw, "DTW_compiled/event_dtw.rds")
