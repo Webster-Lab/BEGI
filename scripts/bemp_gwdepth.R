@@ -9,7 +9,7 @@ library(lubridate)
 
 #### load data ####
 
-dat = read.csv("bemp_data/depth_to_groundwater_data/data/monthly_depth_to_groundwater_current.csv", na.strings = c("."))
+dat = read.csv("/BEGI/bemp_data/depth_to_groundwater_data/data", na.strings = c("."))
 
 #### format date/time ####
 

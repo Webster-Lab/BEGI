@@ -13,7 +13,7 @@ library(dplyr)
 library(lubridate)
 
 #### import EXO data ####
-ls_tibble <- googledrive::drive_ls("https://drive.google.com/drive/folders/1HnxuqNZlaXqVKSLhgcibviPokNH2-lom")
+ls_tibble <- googledrive::drive_ls("https://drive.google.com/drive/folders/1aZ4hjlIXWaj8k65RCgxq_E8WRQPYVQp2")
 2
 
 for (file_id in ls_tibble$id) {
@@ -26,7 +26,7 @@ for (file_id in ls_tibble$id) {
 siteIDz = c("VDOW", "VDOS", "SLOW", "SLOC")
 BEGI_EXOz.fd = list()
 for(i in siteIDz){
-  file_list <- list.files(recursive=FALSE, pattern=paste0("20250421_.*_", i, "_.*\\.csv$")) #i, ".csv", sep=""
+  file_list <- list.files(recursive=FALSE, pattern=paste0("20250610_.*_", i, "_.*\\.csv$")) #i, ".csv", sep=""
   BEGI_EXOz.fd[[i]] = lapply(file_list, read.csv, 
                           stringsAsFactors=FALSE, skip=8,header=T,
                           fileEncoding="utf-8") # this line makes it such that if there are any offending utf-16 encodings, it will show the offending file in the error message. If any utf-16 files are found, be sure to fix them in the Google Drive, not just your locally saved file!!
@@ -92,7 +92,7 @@ saveRDS(BEGI_EXO.stz.fd, "EXO_compiled/BEGI_EXO.stz.fd.rds")
 rm(list = ls())
 BEGI_EXO.stz.fd = readRDS("EXO_compiled/BEGI_EXO.stz.fd.rds")
 
-#temp corrected
+#temp corrected (after running above file through 02_fDOMtempcorrection.R)
 BEGI_EXO.tc.fd = readRDS("EXO_compiled/BEGI_EXOz.tc.fd.rds")
 
 #### plot to check ####
@@ -320,7 +320,7 @@ BEGI_EXO.tc.fd[["SLOW"]] <- BEGI_EXO.tc.fd[["SLOW"]] %>%
     datetimeMT >= as.POSIXct("2025-04-21 17:19:00") & datetimeMT <= as.POSIXct("2025-04-21 17:35:00") ~ 10,
   ))
 
-#trim beginning/end (?) of each spike chunk + take average of middle (?)
+#trim end of each spike chunk + take average of start
 #VDOW#
 trim_n <- 4
 
