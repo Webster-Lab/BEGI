@@ -912,6 +912,8 @@ saveRDS(DTW_df, "DTW_compiled/BEGI_PT_DTW_all.rds")
 #
 #### plot all final DTW data together ####
 
+DTW_df = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
+
 Q = 
   ggplot(DTW_df, aes(datetimeMT, Q_Lsec)) +
   xlab("") +
@@ -945,3 +947,34 @@ DTW =
 
 Q_DTW = Q+ DTW+ plot_layout(ncol = 1, widths = c(1,.84), heights=c(1,2))
 ggsave("plots/RGdischarge_allwellsDTW.png", Q_DTW, width=11,height=8, units="in")
+
+#### plot 48 hr periods ####
+
+# I noticed in the 16_tscluster.R analysis that a lot of 48 hr periods have more than 2 peaks/troughs in depth to water, which is unexpected for an ET signal. I am checking this here to see if it is "real" or not.
+
+# load dtw data
+DTW_df = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
+
+
+# load DO event data
+dat = readRDS("DTW_compiled/event_dtw.rds")
+dat[,193] # these are the start of each DO event
+# name events and make names into row names
+dat$ename = paste("e", c(1:59), sep="")
+rownames(dat) = dat$ename
+# save date/time stamps of events separately 
+times = dat[,193:194]
+dat[,193:194] = NULL
+# raw data
+matplot((t(dat))[,6], type = "l")
+# the first >2 peak event is in row 6
+times[6,]
+
+SLOCe6 = DTW_df[DTW_df$wellID=="SLOC" &
+                  DTW_df$datetimeMT <= as.POSIXct("2023-11-17 20:15:00", tz="US/Mountain")&
+                  DTW_df$datetimeMT > as.POSIXct("2023-11-15 20:15:00", tz="US/Mountain"),]
+
+par(mfrow=c(2,1), mar=c(2,2,2,2))
+plot(SLOCe6$datetimeMT, SLOCe6$SensorDepth_m_C, main="PT raw-ish sensor depth")
+plot(SLOCe6$datetimeMT, SLOCe6$DTW_m, main="Depth to water")
+plot(SLOCe6$datetimeMT, SLOCe6$Q_Lsec, main="Rio Grande Q")
