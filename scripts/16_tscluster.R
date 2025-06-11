@@ -152,23 +152,23 @@ k_table
 ## core calculations for distances of dtwclust are performed in C++ (fast)
 ## basic uses DTW distance measure and has less functionality than other options (?) but is faster
 
-
+set.seed(666)
 # run analysis with k=4
 depth_clust_k4 <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="pam")
 depth_clust_k4
 plot(depth_clust_k4)
 
-# run analysis with k=4
-depth_clust_k4_dba <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="dba")
-
-# run analysis with k=4
-depth_clust_k2_shape <- tsclust(series = dat_s_n, k = 2, distance = 'dtw_basic',centroid="shape")
-depth_clust_k2_shape
-plot(depth_clust_k2_shape)
-# run analysis with k=4
-depth_clust_k4_shape <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="shape")
-depth_clust_k4_shape
-plot(depth_clust_k4_shape)
+# # run analysis with k=4
+# depth_clust_k4_dba <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="dba")
+# 
+# # run analysis with k=4
+# depth_clust_k2_shape <- tsclust(series = dat_s_n, k = 2, distance = 'dtw_basic',centroid="shape")
+# depth_clust_k2_shape
+# plot(depth_clust_k2_shape)
+# # run analysis with k=4
+# depth_clust_k4_shape <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="shape")
+# depth_clust_k4_shape
+# plot(depth_clust_k4_shape)
 
 #### Merge Cluster Data With original Data ####
 
@@ -178,20 +178,20 @@ cluster_data1<-as.data.frame(list(DTW=list(cumsum(rep(1,59))),cluster=list(depth
 colnames(cluster_data1)<-c("DTW_id","cluster")
 # merge data df's together
 cluster_DTW_data_k4<-cbind(times, cluster_data1,dat_s_n)
-
-# format cluster data
-## 59 was the # of original curves
-cluster_data1_dba<-as.data.frame(list(DTW=list(cumsum(rep(1,59))),cluster=list(depth_clust_k4_dba@cluster)))
-colnames(cluster_data1_dba)<-c("DTW_id","cluster")
-# merge data df's together
-cluster_DTW_k4_dba<-cbind(times, cluster_data1_dba,dat_s_n)
-
-# format cluster data
-## 59 was the # of original curves
-cluster_data1_shape<-as.data.frame(list(DTW=list(cumsum(rep(1,59))),cluster=list(depth_clust_k4_shape@cluster)))
-colnames(cluster_data1_shape)<-c("DTW_id","cluster")
-# merge data df's together
-cluster_DTW_k4_shape<-cbind(times, cluster_data1_shape,dat_s_n)
+# 
+# # format cluster data
+# ## 59 was the # of original curves
+# cluster_data1_dba<-as.data.frame(list(DTW=list(cumsum(rep(1,59))),cluster=list(depth_clust_k4_dba@cluster)))
+# colnames(cluster_data1_dba)<-c("DTW_id","cluster")
+# # merge data df's together
+# cluster_DTW_k4_dba<-cbind(times, cluster_data1_dba,dat_s_n)
+# 
+# # format cluster data
+# ## 59 was the # of original curves
+# cluster_data1_shape<-as.data.frame(list(DTW=list(cumsum(rep(1,59))),cluster=list(depth_clust_k4_shape@cluster)))
+# colnames(cluster_data1_shape)<-c("DTW_id","cluster")
+# # merge data df's together
+# cluster_DTW_k4_shape<-cbind(times, cluster_data1_shape,dat_s_n)
 
 
 #### View Results ####
@@ -199,15 +199,15 @@ cluster_DTW_k4_shape<-cbind(times, cluster_data1_shape,dat_s_n)
 # view summary of results
 # includes the number of curves in each cluster, and the average distance of curves from the "ideal" curve 
 depth_clust_k4
-depth_clust_k4_dba
-depth_clust_k4_shape
+# depth_clust_k4_dba
+# depth_clust_k4_shape
 
 # there are a couple ways to plot results
 
 ## 1- with the output of the dtwclust function
 plot(depth_clust_k4)
-plot(depth_clust_k4_dba)
-plot(depth_clust_k4_shape)
+# plot(depth_clust_k4_dba)
+# plot(depth_clust_k4_shape)
 # this shows the centroid cluster (the one most representative of the cluster) in thick dashed line
 # and the rest of the curves overlain
 
@@ -216,10 +216,10 @@ plot(depth_clust_k4_shape)
 attr(depth_clust_k4@centroids,"series_id")
 ## events 7 41 58  5 are the centroids for each cluster
 
-dat_s_n_forplot = data.frame(t(dat_s_n[c(7,41,58,5),]))
+dat_s_n_forplot = data.frame(t(dat_s_n[c(7,58,41,22),]))
 names(dat_s_n_forplot) = colnames(dat_s_n_forplot)
 dat_s_n_forplot$t = rownames(dat_s_n_forplot)
-dat_s_n_forplot_long = dat_s_n_forplot %>% pivot_longer(cols='e7':'e5',
+dat_s_n_forplot_long = dat_s_n_forplot %>% pivot_longer(cols='e7':'e22',
                                                         names_to = "event",
                                                         values_to = "DTW_m")
 dat_s_n_forplot_long$timestep = as.numeric(gsub('t', '', dat_s_n_forplot_long$t))
@@ -227,9 +227,9 @@ dat_s_n_forplot_long =
   dat_s_n_forplot_long %>%
   mutate(cluster = case_match(event, 
                               "e7" ~ 1,
-                              "e41" ~ 2,
-                              "e58" ~ 3,
-                              "e5" ~ 4))
+                              "e58" ~ 2,
+                              "e41" ~ 3,
+                              "e22" ~ 4))
 
 centriodcurvesp = 
   ggplot(dat_s_n_forplot_long, aes(x=timestep,y=DTW_m))+
@@ -274,11 +274,20 @@ write.csv(cluster_DTW_data_k4, "DTW_compiled/DTW_clusters_k4_smoothed_norm.csv",
 # cluster 2 (11 events): little to no net change in water table but strong "diel" amplitude. >2 peaks.
 # cluster 3 (13 events): strong net drop ending on rising water. 2-4 peaks.
 # cluster 4 (24 events): net rise in water table with various numbers of peaks/troughs
+# ^ this is the old analysis! change for this one. 
 
 #based on these 3 plots:
 plot(depth_clust_k4)
 meancurvesp
 centriodcurvesp
+
+# Cluster sizes with average intra-cluster distance:
+#   
+#   size   av_dist
+# 1   11 11.489924
+# 2   13  9.653225
+# 3   10 13.114668
+# 4   25 14.163619
 
 ########################################
 #### for data that is smoothed and NOT normalized 
