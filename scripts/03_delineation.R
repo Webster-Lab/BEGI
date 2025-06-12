@@ -13,6 +13,8 @@ library(stringr)
 library(suncalc)
 library(DescTools)
 library(readxl)
+library(ggplot2)
+library(patchwork)
 
 #### Import compiled EXO1 RDS file ####
 BEGI_EXO.or2 = readRDS("EXO_compiled/BEGI_EXO.or2.rds")
@@ -1832,371 +1834,382 @@ EXOz.tc[["SLOC"]]$ODO.mg.L.mn <- EXOz.tc[["SLOC"]]$ODO.mg.L.mn + 2.2
 #Import DTW data
 DTW_df = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
 
-### spread DTW_m in DTW_df to 
+### spread DTW_m in DTW_df to each well
 DTW_df <- DTW_df %>%
   spread (wellID, DTW_m)
 
+#dtw df for each well
+DTW_SLOC <- data.frame(DTW_df$datetimeMT,
+                       DTW_df$SLOC)
+DTW_SLOC <- na.omit(DTW_SLOC)
+
+DTW_SLOW <- data.frame(DTW_df$datetimeMT,
+                       DTW_df$SLOW)
+DTW_SLOW <- na.omit(DTW_SLOW)
+
+DTW_VDOW <- data.frame(DTW_df$datetimeMT,
+                       DTW_df$VDOW)
+DTW_VDOW <- na.omit(DTW_VDOW)
+
+DTW_VDOS <- data.frame(DTW_df$datetimeMT,
+                       DTW_df$VDOS)
+DTW_VDOS <- na.omit(DTW_VDOS)
+
+#Define shaded am/pm
+shade_df <- data.frame(
+  xmin = pm.pts,
+  xmax = am.pts,
+  ymin = -Inf,
+  ymax = Inf
+)
 
 
 
 #### Plot all SLOC events####
-# Layout for 6-panel events across multiple columns
-n_panels <- 6
-n_events <- length(BEGI_events[["DO_events"]][["SLOC_DO"]])
-
-# Grid: 6 rows per event, spread across columns
-n_cols <- 4
-n_rows <- ceiling(n_events / n_cols)
-
-# Total plots = n_panels × n_events
-layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
-
-plot_number <- 1
-for (i in 1:n_events) {
-  col <- ((i - 1) %% n_cols) + 1
-  row <- ((i - 1) %/% n_cols) + 1
-  for (panel in 1:n_panels) {
-    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
-    plot_number <- plot_number + 1
-  }
-}
-
-#one pdf for all plots
-pdf("plots/delineations/SLOC/events/SLOC_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
-layout_matrix[is.na(layout_matrix)] <- 0
-layout(layout_matrix)
-par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
 
 for (i in seq_along(BEGI_events[["DO_events"]][["SLOC_DO"]])) {
-    dz <- BEGI_events[["DO_events"]][["SLOC_DO"]][[i]]
-    
-    start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*48
-    end_time <- max(dz$datetimeMT, na.rm = TRUE)
-    
-    tempdat <- EXOz.tc[["SLOC"]][
-      EXOz.tc[["SLOC"]]$datetimeMT >= start_time &
-        EXOz.tc[["SLOC"]]$datetimeMT <= end_time, ]
-    
-    tempdtw <- DTW_df[
-      DTW_df$datetimeMT >= start_time &
-        DTW_df$datetimeMT <= end_time, ]
-      
-    hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  dz <- BEGI_events[["DO_events"]][["SLOC_DO"]][[i]]
   
-  # Plot 1: DO
-  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$ODO.mg.L.mn, na.rm = TRUE), max(tempdat$ODO.mg.L.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  #Time window: 2 days before event to event end
+  start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*50
+  end_time <- max(dz$datetimeMT, na.rm = TRUE) + 60*60
   
-  # Plot 2: fDOM
-  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn.Tc, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$fDOM.QSU.mn, na.rm = TRUE),max(tempdat$fDOM.QSU.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  #Subset data
+  tempdat <- EXOz.tc[["SLOC"]][
+    EXOz.tc[["SLOC"]]$datetimeMT >= start_time &
+      EXOz.tc[["SLOC"]]$datetimeMT <= end_time, ]
   
-  # Plot 3: Water level
-  plot(tempdtw$datetimeMT, -1 * tempdtw$SLOC, type="n", main="Depth", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdtw$datetimeMT, -1 * tempdtw$SLOC, type="b")
-  abline(h=0, col="green")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  tempdtw <- DTW_SLOC[
+    DTW_SLOC$DTW_df.datetimeMT >= start_time &
+      DTW_SLOC$DTW_df.datetimeMT <= end_time, ]
   
-  # Plot 4: Turbidity
-  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOC$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 5: Temperature
-  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOC$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+
   
-  # Plot 6: Specific Conductance
-  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
-  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
-  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.SLOC)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOC$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOC$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOC$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOC$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/SLOC/events/SLOC_event_", i, ".pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
 }
 
-# Close the PDF after all plots are done
-dev.off()
 
 #### Plot all SLOW events####
-# Layout for 6-panel events across multiple columns
-n_panels <- 6
-n_events <- length(BEGI_events[["DO_events"]][["SLOW_DO"]])
-
-# Grid: 6 rows per event, spread across columns
-n_cols <- 4
-n_rows <- ceiling(n_events / n_cols)
-
-# Total plots = n_panels × n_events
-layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
-
-plot_number <- 1
-for (i in 1:n_events) {
-  col <- ((i - 1) %% n_cols) + 1
-  row <- ((i - 1) %/% n_cols) + 1
-  for (panel in 1:n_panels) {
-    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
-    plot_number <- plot_number + 1
-  }
-}
-
-#one pdf for all plots
-pdf("plots/delineations/SLOW/events/SLOW_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
-layout_matrix[is.na(layout_matrix)] <- 0
-layout(layout_matrix)
-par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
-
 
 for (i in seq_along(BEGI_events[["DO_events"]][["SLOW_DO"]])) {
   dz <- BEGI_events[["DO_events"]][["SLOW_DO"]][[i]]
   
-  start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*48
-  end_time <- max(dz$datetimeMT, na.rm = TRUE)
+  #Time window: 2 days before event to event end
+  start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*50
+  end_time <- max(dz$datetimeMT, na.rm = TRUE) + 60*60
   
+  #Subset data
   tempdat <- EXOz.tc[["SLOW"]][
     EXOz.tc[["SLOW"]]$datetimeMT >= start_time &
       EXOz.tc[["SLOW"]]$datetimeMT <= end_time, ]
   
-  tempdtw <- DTW_df[
-    DTW_df$datetimeMT >= start_time &
-      DTW_df$datetimeMT <= end_time, ]
+  tempdtw <- DTW_SLOW[
+    DTW_SLOW$DTW_df.datetimeMT >= start_time &
+      DTW_SLOW$DTW_df.datetimeMT <= end_time, ]
   
-  hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 1: DO
-  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$ODO.mg.L.mn, na.rm = TRUE), max(tempdat$ODO.mg.L.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 2: fDOM
-  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn.Tc, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$fDOM.QSU.mn, na.rm = TRUE),max(tempdat$fDOM.QSU.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
   
-  # Plot 3: Water level
-  plot(tempdtw$datetimeMT, -1 * tempdtw$SLOW, type="n", main="Depth", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdtw$datetimeMT, -1 * tempdtw$SLOW, type="b")
-  abline(h=0, col="green")
-  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.SLOW)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 4: Turbidity
-  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
-  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 5: Temperature
-  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
-  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 6: Specific Conductance
-  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
-  abline(v=as.POSIXct(service.SLOW$datetimeMT), col="red")
-  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
-  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.SLOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/SLOW/events/SLOW_event_", i, ".pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
 }
-
-# Close the PDF after all plots are done
-dev.off()
-
-
-
-
-
 
 #### Plot all VDOW events####
-# Layout for 6-panel events across multiple columns
-n_panels <- 6
-n_events <- length(BEGI_events[["DO_events"]][["VDOW_DO"]])
-
-# Grid: 6 rows per event, spread across columns
-n_cols <- 4
-n_rows <- ceiling(n_events / n_cols)
-
-# Total plots = n_panels × n_events
-layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
-
-plot_number <- 1
-for (i in 1:n_events) {
-  col <- ((i - 1) %% n_cols) + 1
-  row <- ((i - 1) %/% n_cols) + 1
-  for (panel in 1:n_panels) {
-    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
-    plot_number <- plot_number + 1
-  }
-}
-
-#one pdf for all plots
-pdf("plots/delineations/VDOW/events/VDOW_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
-layout_matrix[is.na(layout_matrix)] <- 0
-layout(layout_matrix)
-par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
-
 
 for (i in seq_along(BEGI_events[["DO_events"]][["VDOW_DO"]])) {
   dz <- BEGI_events[["DO_events"]][["VDOW_DO"]][[i]]
   
-  start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*48
-  end_time <- max(dz$datetimeMT, na.rm = TRUE)
+  #Time window: 2 days before event to event end
+  start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*50
+  end_time <- max(dz$datetimeMT, na.rm = TRUE) + 60*60
   
+  #Subset data
   tempdat <- EXOz.tc[["VDOW"]][
     EXOz.tc[["VDOW"]]$datetimeMT >= start_time &
       EXOz.tc[["VDOW"]]$datetimeMT <= end_time, ]
   
-  tempdtw <- DTW_df[
-    DTW_df$datetimeMT >= start_time &
-      DTW_df$datetimeMT <= end_time, ]
+  tempdtw <- DTW_VDOW[
+    DTW_VDOW$DTW_df.datetimeMT >= start_time &
+      DTW_VDOW$DTW_df.datetimeMT <= end_time, ]
   
-  hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 1: DO
-  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$ODO.mg.L.mn, na.rm = TRUE), max(tempdat$ODO.mg.L.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 2: fDOM
-  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn.Tc, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$fDOM.QSU.mn, na.rm = TRUE),max(tempdat$fDOM.QSU.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
   
-  # Plot 3: Water level
-  plot(tempdtw$datetimeMT, -1 * tempdtw$VDOW, type="n", main="Depth", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdtw$datetimeMT, -1 * tempdtw$VDOW, type="b")
-  abline(h=0, col="green")
-  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOW)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 4: Turbidity
-  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
-  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 5: Temperature
-  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
-  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 6: Specific Conductance
-  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
-  abline(v=as.POSIXct(service.VDOW$datetimeMT), col="red")
-  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
-  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/VDOW/events/VDOW_event_", i, ".pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
 }
-
-# Close the PDF after all plots are done
-dev.off()
-
-
-
 
 #### Plot all VDOS events####
-# Layout for 6-panel events across multiple columns
-n_panels <- 6
-n_events <- length(BEGI_events[["DO_events"]][["VDOS_DO"]])
-
-# Grid: 6 rows per event, spread across columns
-n_cols <- 4
-n_rows <- ceiling(n_events / n_cols)
-
-# Total plots = n_panels × n_events
-layout_matrix <- matrix(0, nrow = n_panels * n_rows, ncol = n_cols)
-
-plot_number <- 1
-for (i in 1:n_events) {
-  col <- ((i - 1) %% n_cols) + 1
-  row <- ((i - 1) %/% n_cols) + 1
-  for (panel in 1:n_panels) {
-    layout_matrix[(row - 1) * n_panels + panel, col] <- plot_number
-    plot_number <- plot_number + 1
-  }
-}
-
-#one pdf for all plots
-pdf("plots/delineations/VDOS/events/VDOS_all_events.pdf", width = 3.5 * n_cols, height = 2 * n_panels * n_rows)
-layout_matrix[is.na(layout_matrix)] <- 0
-layout(layout_matrix)
-par(mar = c(3.5, 4, 1.5, 0.2), oma = c(5, 4, 4, 2), cex.axis = 0.7, cex.main = 0.9)
-
 
 for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
   dz <- BEGI_events[["DO_events"]][["VDOS_DO"]][[i]]
   
-  start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*48
-  end_time <- max(dz$datetimeMT, na.rm = TRUE)
+  #Time window: 2 days before event to event end
+  start_time <- min(dz$datetimeMT, na.rm = TRUE) - 60*60*50
+  end_time <- max(dz$datetimeMT, na.rm = TRUE) + 60*60
   
+  #Subset data
   tempdat <- EXOz.tc[["VDOS"]][
     EXOz.tc[["VDOS"]]$datetimeMT >= start_time &
       EXOz.tc[["VDOS"]]$datetimeMT <= end_time, ]
   
-  tempdtw <- DTW_df[
-    DTW_df$datetimeMT >= start_time &
-      DTW_df$datetimeMT <= end_time, ]
+  tempdtw <- DTW_VDOS[
+    DTW_VDOS$DTW_df.datetimeMT >= start_time &
+      DTW_VDOS$DTW_df.datetimeMT <= end_time, ]
   
-  hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 1: DO
-  plot(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="n", main="DO", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$ODO.mg.L.mn, na.rm = TRUE), max(tempdat$ODO.mg.L.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$ODO.mg.L.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 2: fDOM
-  plot(tempdat$datetimeMT, tempdat$fDOM.QSU.mn.Tc, type="n", main="fDOM", xlab="", ylab="", xaxt="n", ylim=c(min(tempdat$fDOM.QSU.mn, na.rm = TRUE),max(tempdat$fDOM.QSU.mn, na.rm = TRUE)))
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=1000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$fDOM.QSU.mn, type="o")
-  abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
   
-  # Plot 3: Water level
-  plot(tempdtw$datetimeMT, -1 * tempdtw$VDOS, type="n", main="Depth", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-350, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdtw$datetimeMT, -1 * tempdtw$VDOS, type="b")
-  abline(h=0, col="green")
-  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOS)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 4: Turbidity
-  plot(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="n", main="Turbidity", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Turbidity.FNU.mn, type="o")
-  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 5: Temperature
-  plot(tempdat$datetimeMT, tempdat$Temp..C.mn, type="n", main="Temperature", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=100, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$Temp..C.mn, type="o")
-  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
-  # Plot 6: Specific Conductance
-  plot(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="n", main="SpCond", xlab="", ylab="", xaxt="n")
-  rect(xleft=pm.pts, xright=am.pts, ybottom=-4, ytop=2000, col="lightgrey", lwd=0)
-  lines(tempdat$datetimeMT, tempdat$SpCond.µS.cm.mn, type="o")
-  abline(v=as.POSIXct(service.VDOS$datetimeMT), col="red")
-  axis.POSIXct(1, at=hour_intervals, format="%H:%M", las=2)
-  axis.POSIXct(1, format = "%b %d", line = 2, tick = FALSE)
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(start_time, end_time)) +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/VDOS/events/VDOS_event_", i, ".pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
 }
-
-# Close the PDF after all plots are done
-dev.off()
-
-
-

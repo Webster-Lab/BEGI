@@ -234,14 +234,15 @@ doc <- googledrive::drive_ls(path = doc_tibble, type = "xlsx")
 2
 
 #import DOC data without values removed (complete DOC data)
-googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v1.xlsx"], 
-                            path = "NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v1.xlsx",
+googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-06-09_BEGI-Matrix-Spikes.xlsx"], 
+                            path = "NPOC-TN_2025-06-09_BEGI-Matrix-Spikes.xlsx",
                             overwrite = T)
-docdata <- read_xlsx("NPOC-TN_2025-04-21_BEGI-Matrix-Spikes_DataReport_v1.xlsx", sheet = 2)
+docdata <- read_xlsx("NPOC-TN_2025-06-09_BEGI-Matrix-Spikes.xlsx", sheet = 8)
 
 #### wrangle DOC data ####
 
 names(docdata)[names(docdata) == 'Conc (mg/L)'] <- 'NPOC'
+names(docdata)[names(docdata) == 'Matrix Spike'] <- 'MatrixSpike'
 
 #filter by well
 docdata <- docdata %>%
@@ -279,118 +280,123 @@ docSLOW <- na.omit(docSLOW)
 #VDOW#
 BEGI_EXO.tc.fd[["VDOW"]] <- BEGI_EXO.tc.fd[["VDOW"]] %>%
   mutate(MatrixSpike = case_when(
-    datetimeMT >= as.POSIXct("2025-04-21 14:28:00") & datetimeMT <= as.POSIXct("2025-04-21 14:42:00") ~ 0,
-    datetimeMT >= as.POSIXct("2025-04-21 15:23:00") & datetimeMT <= as.POSIXct("2025-04-21 15:40:00") ~ 0.5,
-    datetimeMT >= as.POSIXct("2025-04-21 15:51:00") & datetimeMT <= as.POSIXct("2025-04-21 16:05:00") ~ 1,
-    datetimeMT >= as.POSIXct("2025-04-21 16:18:00") & datetimeMT <= as.POSIXct("2025-04-21 16:31:00") ~ 2,
-    datetimeMT >= as.POSIXct("2025-04-21 16:47:00") & datetimeMT <= as.POSIXct("2025-04-21 17:01:00") ~ 5,
-    datetimeMT >= as.POSIXct("2025-04-21 17:15:00") & datetimeMT <= as.POSIXct("2025-04-21 17:28:00") ~ 10,
+    datetimeMT >= as.POSIXct("2025-06-10 13:45:00") & datetimeMT <= as.POSIXct("2025-06-10 14:08:00") ~ 0,
+    datetimeMT >= as.POSIXct("2025-06-10 14:34:00") & datetimeMT <= as.POSIXct("2025-06-10 14:49:00") ~ 0.5,
+    datetimeMT >= as.POSIXct("2025-06-10 15:13:00") & datetimeMT <= as.POSIXct("2025-06-10 15:27:00") ~ 1,
+    datetimeMT >= as.POSIXct("2025-06-10 15:48:00") & datetimeMT <= as.POSIXct("2025-06-10 16:14:00") ~ 2,
+    datetimeMT >= as.POSIXct("2025-06-10 16:36:00") & datetimeMT <= as.POSIXct("2025-06-10 17:03:00") ~ 5,
+    datetimeMT >= as.POSIXct("2025-06-10 17:23:00") & datetimeMT <= as.POSIXct("2025-06-10 17:45:00") ~ 10,
   ))
 
 #VDOS#
 BEGI_EXO.tc.fd[["VDOS"]] <- BEGI_EXO.tc.fd[["VDOS"]] %>%
   mutate(MatrixSpike = case_when(
-    datetimeMT >= as.POSIXct("2025-04-21 14:28:00") & datetimeMT <= as.POSIXct("2025-04-21 14:45:00") ~ 0,
-    datetimeMT >= as.POSIXct("2025-04-21 15:21:00") & datetimeMT <= as.POSIXct("2025-04-21 15:37:00") ~ 0.5,
-    datetimeMT >= as.POSIXct("2025-04-21 15:53:00") & datetimeMT <= as.POSIXct("2025-04-21 16:05:00") ~ 1,
-    datetimeMT >= as.POSIXct("2025-04-21 16:21:00") & datetimeMT <= as.POSIXct("2025-04-21 16:33:00") ~ 2,
-    datetimeMT >= as.POSIXct("2025-04-21 16:48:00") & datetimeMT <= as.POSIXct("2025-04-21 17:03:00") ~ 5,
-    datetimeMT >= as.POSIXct("2025-04-21 17:16:00") & datetimeMT <= as.POSIXct("2025-04-21 17:30:00") ~ 10,
+    datetimeMT >= as.POSIXct("2025-06-10 13:55:00") & datetimeMT <= as.POSIXct("2025-06-10 14:14:00") ~ 0,
+    datetimeMT >= as.POSIXct("2025-06-10 14:36:00") & datetimeMT <= as.POSIXct("2025-06-10 14:51:00") ~ 0.5,
+    datetimeMT >= as.POSIXct("2025-06-10 15:15:00") & datetimeMT <= as.POSIXct("2025-06-10 15:29:00") ~ 1,
+    datetimeMT >= as.POSIXct("2025-06-10 15:52:00") & datetimeMT <= as.POSIXct("2025-06-10 16:17:00") ~ 2,
+    datetimeMT >= as.POSIXct("2025-06-10 16:37:00") & datetimeMT <= as.POSIXct("2025-06-10 17:06:00") ~ 5,
+    datetimeMT >= as.POSIXct("2025-06-10 17:25:00") & datetimeMT <= as.POSIXct("2025-06-10 17:47:00") ~ 10,
   ))
 
 #SLOC#
 BEGI_EXO.tc.fd[["SLOC"]] <- BEGI_EXO.tc.fd[["SLOC"]] %>%
   mutate(MatrixSpike = case_when(
-    datetimeMT >= as.POSIXct("2025-04-21 14:30:00") & datetimeMT <= as.POSIXct("2025-04-21 14:47:00") ~ 0,
-    datetimeMT >= as.POSIXct("2025-04-21 15:20:00") & datetimeMT <= as.POSIXct("2025-04-21 15:34:00") ~ 0.5,
-    datetimeMT >= as.POSIXct("2025-04-21 15:55:00") & datetimeMT <= as.POSIXct("2025-04-21 16:07:00") ~ 1,
-    datetimeMT >= as.POSIXct("2025-04-21 16:22:00") & datetimeMT <= as.POSIXct("2025-04-21 16:35:00") ~ 2,
-    datetimeMT >= as.POSIXct("2025-04-21 16:50:00") & datetimeMT <= as.POSIXct("2025-04-21 17:05:00") ~ 5,
-    datetimeMT >= as.POSIXct("2025-04-21 17:18:00") & datetimeMT <= as.POSIXct("2025-04-21 17:33:00") ~ 10,
+    datetimeMT >= as.POSIXct("2025-06-10 13:59:00") & datetimeMT <= as.POSIXct("2025-06-10 14:17:00") ~ 0,
+    datetimeMT >= as.POSIXct("2025-06-10 14:40:00") & datetimeMT <= as.POSIXct("2025-06-10 14:53:00") ~ 0.5,
+    datetimeMT >= as.POSIXct("2025-06-10 15:17:00") & datetimeMT <= as.POSIXct("2025-06-10 15:32:00") ~ 1,
+    datetimeMT >= as.POSIXct("2025-06-10 15:59:00") & datetimeMT <= as.POSIXct("2025-06-10 16:21:00") ~ 2,
+    datetimeMT >= as.POSIXct("2025-06-10 16:39:00") & datetimeMT <= as.POSIXct("2025-06-10 17:08:00") ~ 5,
+    datetimeMT >= as.POSIXct("2025-06-10 17:27:00") & datetimeMT <= as.POSIXct("2025-06-10 17:49:00") ~ 10,
   ))
 
 #SLOW#
 BEGI_EXO.tc.fd[["SLOW"]] <- BEGI_EXO.tc.fd[["SLOW"]] %>%
   mutate(MatrixSpike = case_when(
-    datetimeMT >= as.POSIXct("2025-04-21 14:52:00") & datetimeMT <= as.POSIXct("2025-04-21 15:06:00") ~ 0,
-    datetimeMT >= as.POSIXct("2025-04-21 15:18:00") & datetimeMT <= as.POSIXct("2025-04-21 15:32:00") ~ 0.5,
-    datetimeMT >= as.POSIXct("2025-04-21 15:56:00") & datetimeMT <= as.POSIXct("2025-04-21 16:09:00") ~ 1,
-    datetimeMT >= as.POSIXct("2025-04-21 16:24:00") & datetimeMT <= as.POSIXct("2025-04-21 16:37:00") ~ 2,
-    datetimeMT >= as.POSIXct("2025-04-21 16:52:00") & datetimeMT <= as.POSIXct("2025-04-21 17:07:00") ~ 5,
-    datetimeMT >= as.POSIXct("2025-04-21 17:19:00") & datetimeMT <= as.POSIXct("2025-04-21 17:35:00") ~ 10,
+    datetimeMT >= as.POSIXct("2025-06-10 14:04:00") & datetimeMT <= as.POSIXct("2025-06-10 14:20:00") ~ 0,
+    datetimeMT >= as.POSIXct("2025-06-10 14:43:00") & datetimeMT <= as.POSIXct("2025-06-10 14:57:00") ~ 0.5,
+    datetimeMT >= as.POSIXct("2025-06-10 15:20:00") & datetimeMT <= as.POSIXct("2025-06-10 15:33:00") ~ 1,
+    datetimeMT >= as.POSIXct("2025-06-10 16:01:00") & datetimeMT <= as.POSIXct("2025-06-10 16:24:00") ~ 2,
+    datetimeMT >= as.POSIXct("2025-06-10 16:40:00") & datetimeMT <= as.POSIXct("2025-06-10 17:12:00") ~ 5,
+    datetimeMT >= as.POSIXct("2025-06-10 17:28:00") & datetimeMT <= as.POSIXct("2025-06-10 17:51:00") ~ 10,
   ))
 
-#trim end of each spike chunk + take average of start
+#filter each matrix spike group to only include first 50% of datapoints, take average
 #VDOW#
-trim_n <- 4
-
 VDOW_mean_fdom <- BEGI_EXO.tc.fd[["VDOW"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
-  mutate(row_num = row_number(),
-         group_size = n()) %>%
-  filter(row_num > trim_n & row_num <= group_size - trim_n) %>%
+  mutate(
+    row_num = row_number(),
+    group_size = n(),
+    cutoff = floor(group_size / 2)  # floor ensures you don’t include more than 50%
+  ) %>%
+  filter(row_num <= cutoff) %>%
   summarise(mean_fDOM = mean(fDOM.QSU.mn, na.rm = TRUE), .groups = "drop") %>%
   deframe()  # turns a 2-col tibble into a named vector: names are MatrixSpike values
 #unname(VDOW_mean_fdom)
 
 #VDOS#
-trim_n <- 4
-
 VDOS_mean_fdom <- BEGI_EXO.tc.fd[["VDOS"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
-  mutate(row_num = row_number(),
-         group_size = n()) %>%
-  filter(row_num > trim_n & row_num <= group_size - trim_n) %>%
+  mutate(
+    row_num = row_number(),
+    group_size = n(),
+    cutoff = floor(group_size / 2)  # floor ensures you don’t include more than 50%
+  ) %>%
+  filter(row_num <= cutoff) %>%
   summarise(mean_fDOM = mean(fDOM.QSU.mn, na.rm = TRUE), .groups = "drop") %>%
   deframe()  # turns a 2-col tibble into a named vector: names are MatrixSpike values
 #unname(VDOS_mean_fdom)
 
 #SLOC#
-trim_n <- 4
-
 SLOC_mean_fdom <- BEGI_EXO.tc.fd[["SLOC"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
-  mutate(row_num = row_number(),
-         group_size = n()) %>%
-  filter(row_num > trim_n & row_num <= group_size - trim_n) %>%
+  mutate(
+    row_num = row_number(),
+    group_size = n(),
+    cutoff = floor(group_size / 2)  # floor ensures you don’t include more than 50%
+  ) %>%
+  filter(row_num <= cutoff) %>%
   summarise(mean_fDOM = mean(fDOM.QSU.mn, na.rm = TRUE), .groups = "drop") %>%
   deframe()  # turns a 2-col tibble into a named vector: names are MatrixSpike values
 #unname(SLOC_mean_fdom)
 
 #SLOW#
-trim_n <- 4
-
 SLOW_mean_fdom <- BEGI_EXO.tc.fd[["SLOW"]] %>%
   filter(!is.na(MatrixSpike)) %>%
   group_by(MatrixSpike) %>%
   arrange(datetimeMT, .by_group = TRUE) %>%
-  mutate(row_num = row_number(),
-         group_size = n()) %>%
-  filter(row_num > trim_n & row_num <= group_size - trim_n) %>%
+  mutate(
+    row_num = row_number(),
+    group_size = n(),
+    cutoff = floor(group_size / 2)  # floor ensures you don’t include more than 50%
+  ) %>%
+  filter(row_num <= cutoff) %>%
   summarise(mean_fDOM = mean(fDOM.QSU.mn, na.rm = TRUE), .groups = "drop") %>%
   deframe()  # turns a 2-col tibble into a named vector: names are MatrixSpike values
 #unname(SLOW_mean_fdom)
+
 
 #### combined doc/fdom df for each well ####
 #complete DOC data
 #VDOW#
 docVDOW$fdom <- VDOW_mean_fdom[match(docVDOW$docdata.MatrixSpike,names(VDOW_mean_fdom))]
-docVDOW <- docVDOW[-3,] #removes 10 mg/L 
+docVDOW <- docVDOW[-c(3,5),] #removes 5 and 10 mg/L 
 #VDOS#
 docVDOS$fdom <- VDOS_mean_fdom[match(docVDOS$docdata.MatrixSpike,names(VDOS_mean_fdom))]
-docVDOS <- docVDOS[-c(3,4),] #removes 2 and 10 mg/L
+docVDOS <- docVDOS[-c(3,5),] #removes 5 and 10 mg/L
 #SLOC#
 docSLOC$fdom <- SLOC_mean_fdom[match(docSLOC$docdata.MatrixSpike,names(SLOC_mean_fdom))]
 docSLOC <- docSLOC[-c(3,5),] #removes 5 and 10 mg/L
 #SLOW#
 docSLOW$fdom <- SLOW_mean_fdom[match(docSLOW$docdata.MatrixSpike,names(SLOW_mean_fdom))]
-docSLOW <- docSLOW[-c(3,4),] #removes 2 and 10 mg/L
+docSLOW <- docSLOW[-c(3,5),] #removes 5 and 10 mg/L
 
 
 
