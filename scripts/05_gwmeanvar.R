@@ -746,3 +746,4 @@ VDOS_dtw$event_time <- BEGI_events[["Eventdate"]][["VDOS_dates"]]
 event_dtw <- rbind(SLOC_dtw,SLOW_dtw,VDOW_dtw,VDOS_dtw)
 #save
 saveRDS(event_dtw, "DTW_compiled/event_dtw.rds")
+

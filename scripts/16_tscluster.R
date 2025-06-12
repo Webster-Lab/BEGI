@@ -17,6 +17,9 @@ library(dtwclust)
 library(reshape2)
 library(zoo)
 library(xts)
+library(ggplot2)
+library(gridExtra)
+library(patchwork)
 
 
 #### load and wrangle data ####
@@ -383,3 +386,52 @@ plot(depth_clust_k3)
 
 
 
+
+#### plot cluster with Well ID ####
+cluster_DTW_data_k4 <- read_csv("DTW_compiled/DTW_clusters_k4_smoothed_norm.csv")
+
+#import BEGI events (with tc data)
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
+
+#Match event_time with Eventdate for each well
+#Turns out the events in the csv are in order for each well's Eventdate list :D
+cluster_DTW_data_k4$well_id <- rep(c("SLOC","SLOW","VDOW","VDOS"),
+                                   times = c(length(BEGI_events[["Eventdate"]][["SLOC_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["SLOW_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["VDOW_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["VDOS_dates"]])))
+
+#count of what clusters occurred in each well
+cluster_by_well <- data.frame(SLOC = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'SLOC'),
+                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'SLOC'),
+                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'SLOC'),
+                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'SLOC')),
+                              SLOW = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'SLOW'),
+                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'SLOW'),
+                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'SLOW'),
+                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'SLOW')),
+                              VDOW = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'VDOW'),
+                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'VDOW'),
+                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'VDOW'),
+                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'VDOW')),
+                              VDOS = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'VDOS'),
+                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'VDOS'),
+                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'VDOS'),
+                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'VDOS')))
+
+# plot all curves of each cluster
+cluster_DTW_data_k4_long = cluster_DTW_data_k4 %>% pivot_longer(cols='t12':'t192',
+                                                                names_to = "timestep",
+                                                                values_to = "DTW_m")
+cluster_DTW_data_k4_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k4_long$timestep))
+
+well_clusters<-ggplot(cluster_DTW_data_k4_long, aes(x=timestep,y=DTW_m, group=ename, color=well_id))+
+  geom_line(linewidth=1)+
+  theme_classic()+
+  xlab("Time (min)")+ylab("Depth (m)")+
+  facet_wrap(~cluster) 
+
+final_cluster <- well_clusters / tableGrob(cluster_by_well) +
+  plot_layout(heights = c(4,1))
+
+ggsave("plots/final_cluster.pdf", well_clusters)
