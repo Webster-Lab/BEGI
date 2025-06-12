@@ -480,7 +480,7 @@ lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
 tempdat = BEGI_EXO.stz.fd[["VDOW"]]
 plot.new()
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
-     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,130))
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,150))
 #rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
       pch=20,col="red", xlab="", xaxt = "n", type="o")
@@ -508,7 +508,7 @@ lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn.Tc),
 tempdat = BEGI_EXO.stz.fd[["VDOS"]]
 plot.new()
 plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
-     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,130))
+     pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(15,150))
 #rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
 lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$fDOM.QSU.mn),
       pch=20,col="red", xlab="", xaxt = "n", type="o")
