@@ -105,7 +105,7 @@ DO_AUC_ts =
   # scale_y_continuous(breaks = seq(0,10000,1000), limits = c(0,10000)) +
   # scale_y_break(c(4000,8000), space = 0.4, ticklabels = c(seq(0,10000,1000)), expand = c(0, 0)) +
   labs(x = "Time", 
-       y = str_wrap("Respiration Event Size (DO consumption)", width=25))+
+       y = str_wrap("Dissolved Oxygen Consumption Event Size", width=25))+
   theme_bw()+
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -157,7 +157,7 @@ DO_AUC_gwmean_log =
   geom_point(alpha = 0.7, size=5)+                                      
   geom_smooth(method = "lm", fill=NA) +
   labs(x = "Mean Depth to Groundwater Preceeding Event (2 days)", 
-       y = str_wrap("Respiration Event Size (log DO consumption)", width=25))+
+       y = str_wrap("Dissolved Oxygen Event Size (log DO consumption)", width=25))+
   geom_vline(xintercept=0, linetype = 'dashed') +
   theme_bw()+
   theme(panel.grid.major = element_blank(),
@@ -173,7 +173,7 @@ DO_AUC_gwmean =
   geom_point(alpha = 0.7, size=5)+                                      
   geom_smooth(method = "lm", fill=NA) +
   labs(x = "Mean Depth to Groundwater Preceeding Event (2 days)", 
-       y = str_wrap("Respiration Event Size (DO consumption)", width=25))+
+       y = str_wrap("Dissolved Oxygen Event Size (DO consumption)", width=25))+
   geom_vline(xintercept=0, linetype = 'dashed') +
   theme_bw()+
   theme(panel.grid.major = element_blank(),
@@ -315,7 +315,7 @@ visreg(m.5,"dtw_DO_event_mean",type="conditional",points.par=list(cex=1.2),
        fill=list(col="lightgrey"),
        cex.axis=1.4, line.par=list(col="black"),
        xlab=list("Depth to Groundwater Preceeding Event", cex=1.8),
-       ylab=list("Respiration Event Magnitude (log)", cex=1.8),
+       ylab=list("Dissolved Oxygen Event Magnitude (log)", cex=1.8),
        by='wellID',overlay=TRUE)
 # this doesn't show the random slopes or intercepts, which I really want but need to probably do some prediction to get
 ranef(m.5)
@@ -326,7 +326,7 @@ visreg(m.3,"dtw_DO_event_cv",type="conditional",points.par=list(cex=1.2),
        fill=list(col="lightgrey"),
        cex.axis=1.4, line.par=list(col="black"),
        xlab=list("Groundwater Variation Preceeding Event", cex=1.8),
-       ylab=list("Respiration Event Magnitude (log)", cex=1.8),
+       ylab=list("Dissolved Oxygen Event Magnitude (log)", cex=1.8),
        by='wellID',overlay=TRUE)
 # that point is influential and makes it significant, but it looks like the trend is there without it
 
