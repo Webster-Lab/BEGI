@@ -434,4 +434,4 @@ well_clusters<-ggplot(cluster_DTW_data_k4_long, aes(x=timestep,y=DTW_m, group=en
 final_cluster <- well_clusters / tableGrob(cluster_by_well) +
   plot_layout(heights = c(4,1))
 
-ggsave("plots/final_cluster.pdf", well_clusters)
+ggsave("plots/final_cluster.png", well_clusters, width = 9, height = 8, units = "in")
