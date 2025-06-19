@@ -879,3 +879,4 @@ r.squaredGLMM(m.3)
 # #Marginal R2:  the proportion of variance explained by the fixed factor(s) alone
 #Conditional R2: he proportion of variance explained by both the fixed and random factors
 
+
