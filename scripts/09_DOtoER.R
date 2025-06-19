@@ -663,3 +663,33 @@ ggsave("plots/boxplots.png", boxplots,width=20,height=8, units="in")
 
 #save dataframe
 saveRDS(odumER, "EXO_compiled/odumER.rds")
+
+#### Converting oxygen to carbon ####
+# We calculated ER as the integral of the negative rate of change of dissolved oxygen (g O2/m2)
+# I will be summing the year total of ER per each well (g O2/m2/year),
+# then converting to mol O2/m2/year, which when using a photosynthetic quotient of 1 has a 1:1 ratio with mols C,
+# then converting mol C/m2/year to g C/m2/year
+
+#summing year total of ER for each well (g O2/m2/year)
+odumER=readRDS("EXO_compiled/odumER.rds")
+
+SLOC_O2 <- sum(odumER[which(odumER$Well=='SLOC'),'ER'])
+SLOW_O2 <- sum(odumER[which(odumER$Well=='SLOW'),'ER'])
+VDOW_O2 <- sum(odumER[which(odumER$Well=='VDOW'),'ER'])
+VDOS_O2 <- sum(odumER[which(odumER$Well=='VDOS'),'ER'])
+
+#converting to mol O2/m2/year (31.9988 g O2 / 1 mol O2)
+SLOC_O2mol <- SLOC_O2/31.9988
+SLOW_O2mol <- SLOW_O2/31.9988
+VDOW_O2mol <- VDOW_O2/31.9988
+VDOS_O2mol <- VDOS_O2/31.9988
+
+#With PQ = 1, mol O2 = mol C
+#converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
+SLOC_C <- SLOC_O2mol * 12.011
+SLOW_C <- SLOW_O2mol * 12.011
+VDOW_C <- VDOW_O2mol * 12.011
+VDOS_C <- VDOS_O2mol * 12.011
+
+#df
+carbon_est <-data.frame(SLOC_C,SLOW_C,VDOW_C,VDOS_C)
