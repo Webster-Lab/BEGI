@@ -426,12 +426,15 @@ cluster_DTW_data_k4_long = cluster_DTW_data_k4 %>% pivot_longer(cols='t12':'t192
 cluster_DTW_data_k4_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k4_long$timestep))
 
 well_clusters<-ggplot(cluster_DTW_data_k4_long, aes(x=timestep,y=DTW_m, group=ename, color=well_id))+
-  geom_line(linewidth=1)+
+  geom_line(linewidth=1,)+
   theme_classic()+
   xlab("Time (min)")+ylab("Depth (m)")+
-  facet_wrap(~cluster) 
+  facet_wrap(~cluster) +
+  scale_color_manual(values=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))
 
 final_cluster <- well_clusters / tableGrob(cluster_by_well) +
   plot_layout(heights = c(4,1))
 
-ggsave("plots/final_cluster.png", well_clusters, width = 9, height = 8, units = "in")
+
+ggsave("plots/well_clusters.png", well_clusters, width = 9, height = 8, units = "in")
+ggsave("plots/final_cluster.png", final_cluster, width = 9, height = 10, units = "in")

@@ -656,7 +656,7 @@ print(odumD_bp)
 
 #layout boxplots of DO event, respiration, diffusion
 boxplots = 
-  DO_AUC_log + odumER_bp + odumD_bp +
+  DO_AUC_log + odumD_bp + odumER_bp +
   plot_layout(ncol=3)
 boxplots
 ggsave("plots/boxplots.png", boxplots,width=20,height=8, units="in")
