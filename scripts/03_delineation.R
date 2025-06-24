@@ -868,7 +868,7 @@ DO_AUC_no<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=DO))+geom_boxplot(outlier.sh
 print(DO_AUC_no)
 
 #log scale
-DO_AUC_log<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=log(DO)))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "DO Event Size (log mg/L)") 
+DO_AUC_log<-ggplot(data=DO_AUC,mapping=aes(x=Well, y=log(DO)))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "DO Event Size (log (g O2/m^3 *15 min))") 
 print(DO_AUC_log)
 
 #### DO negative rates of change ####

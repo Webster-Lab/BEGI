@@ -356,30 +356,7 @@ roc_all = readRDS("EXO_compiled/roc_all.rds")
 
 
 #### Convert DO rate of change mg to g ####
-
-#SLOC#
-for (name in names(roc_all[["SLOC_rates"]])){
- roc_all[["SLOC_rates"]][[name]]$rate_of_change_g <- 
-  roc_all[["SLOC_rates"]][[name]]$rate_of_change / 1000
-}
-
-#SLOW#
-for (name in names(roc_all[["SLOW_rates"]])){
-  roc_all[["SLOW_rates"]][[name]]$rate_of_change_g <- 
-    roc_all[["SLOW_rates"]][[name]]$rate_of_change / 1000
-}
-
-#VDOW#
-for (name in names(roc_all[["VDOW_rates"]])){
-  roc_all[["VDOW_rates"]][[name]]$rate_of_change_g <- 
-    roc_all[["VDOW_rates"]][[name]]$rate_of_change / 1000
-}
-
-#VDOS#
-for (name in names(roc_all[["VDOS_rates"]])){
-  roc_all[["VDOS_rates"]][[name]]$rate_of_change_g <- 
-    roc_all[["VDOS_rates"]][[name]]$rate_of_change / 1000
-}
+# mg O2/L/15 min -> g O2/m3/15 min
 
 #### Integral of DO rate of change ####
 
@@ -390,7 +367,7 @@ names(SLOC_DO_results) <- names(roc_all[["SLOC_rates"]])
 
 for (i in seq_along(roc_all[["SLOC_rates"]])) {
  x_vals <- as.numeric(roc_all[["SLOC_rates"]][[i]]$datetimeMT)
- y_vals <- roc_all[["SLOC_rates"]][[i]]$rate_of_change_g
+ y_vals <- roc_all[["SLOC_rates"]][[i]]$rate_of_change
 
 # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -405,7 +382,7 @@ for (i in seq_along(roc_all[["SLOC_rates"]])) {
    )
 }
 
-#View(SLOC_DO_results)
+View(SLOC_DO_results)
 
 #SLOW#
 
@@ -414,7 +391,7 @@ names(SLOW_DO_results) <- names(roc_all[["SLOW_rates"]])
 
 for (i in seq_along(roc_all[["SLOW_rates"]])) {
   x_vals <- as.numeric(roc_all[["SLOW_rates"]][[i]]$datetimeMT)
-  y_vals <- roc_all[["SLOW_rates"]][[i]]$rate_of_change_g
+  y_vals <- roc_all[["SLOW_rates"]][[i]]$rate_of_change
   
   # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -429,7 +406,7 @@ for (i in seq_along(roc_all[["SLOW_rates"]])) {
   )
 }
 
-#View(SLOW_DO_results)
+View(SLOW_DO_results)
 
 #VDOW#
 
@@ -438,7 +415,7 @@ names(VDOW_DO_results) <- names(roc_all[["VDOW_rates"]])
 
 for (i in seq_along(roc_all[["VDOW_rates"]])) {
   x_vals <- as.numeric(roc_all[["VDOW_rates"]][[i]]$datetimeMT)
-  y_vals <- roc_all[["VDOW_rates"]][[i]]$rate_of_change_g
+  y_vals <- roc_all[["VDOW_rates"]][[i]]$rate_of_change
   
   # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -453,7 +430,7 @@ for (i in seq_along(roc_all[["VDOW_rates"]])) {
   )
 }
 
-#View(VDOW_DO_results)
+View(VDOW_DO_results)
 
 #VDOS#
 
@@ -462,7 +439,7 @@ names(VDOS_DO_results) <- names(roc_all[["VDOS_rates"]])
 
 for (i in seq_along(roc_all[["VDOS_rates"]])) {
   x_vals <- as.numeric(roc_all[["VDOS_rates"]][[i]]$datetimeMT)
-  y_vals <- roc_all[["VDOS_rates"]][[i]]$rate_of_change_g
+  y_vals <- roc_all[["VDOS_rates"]][[i]]$rate_of_change
   
   # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -477,7 +454,7 @@ for (i in seq_along(roc_all[["VDOS_rates"]])) {
   )
 }
 
-#View(VDOS_DO_results)
+View(VDOS_DO_results)
 
 
 #### POSITIVE of DO rate of change (D) ####
@@ -488,7 +465,7 @@ names(SLOC_D) <- names(roc_all[["SLOC_rates"]])
 
 for (i in seq_along(roc_all[["SLOC_rates"]])) {
  x_vals <- as.numeric(roc_all[["SLOC_rates"]][[i]]$datetimeMT)
- y_vals <- roc_all[["SLOC_rates"]][[i]]$rate_of_change_g
+ y_vals <- roc_all[["SLOC_rates"]][[i]]$rate_of_change
 
 # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -507,7 +484,7 @@ for (i in seq_along(roc_all[["SLOC_rates"]])) {
   )
 }
 
-#View(SLOC_D)
+View(SLOC_D)
 
 #SLOW#
 SLOW_D <- numeric(length(roc_all[["SLOW_rates"]])) 
@@ -515,7 +492,7 @@ names(SLOW_D) <- names(roc_all[["SLOW_rates"]])
 
 for (i in seq_along(roc_all[["SLOW_rates"]])) {
   x_vals <- as.numeric(roc_all[["SLOW_rates"]][[i]]$datetimeMT)
-  y_vals <- roc_all[["SLOW_rates"]][[i]]$rate_of_change_g
+  y_vals <- roc_all[["SLOW_rates"]][[i]]$rate_of_change
   
   # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -534,7 +511,7 @@ for (i in seq_along(roc_all[["SLOW_rates"]])) {
   )
 }
 
-#View(SLOW_D)
+View(SLOW_D)
 
 #VDOW#
 VDOW_D <- numeric(length(roc_all[["VDOW_rates"]])) 
@@ -542,7 +519,7 @@ names(VDOW_D) <- names(roc_all[["VDOW_rates"]])
 
 for (i in seq_along(roc_all[["VDOW_rates"]])) {
   x_vals <- as.numeric(roc_all[["VDOW_rates"]][[i]]$datetimeMT)
-  y_vals <- roc_all[["VDOW_rates"]][[i]]$rate_of_change_g
+  y_vals <- roc_all[["VDOW_rates"]][[i]]$rate_of_change
   
   # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -561,7 +538,7 @@ for (i in seq_along(roc_all[["VDOW_rates"]])) {
   )
 }
 
-#View(VDOW_D)
+View(VDOW_D)
 
 #VDOS#
 VDOS_D <- numeric(length(roc_all[["VDOS_rates"]])) 
@@ -569,7 +546,7 @@ names(VDOS_D) <- names(roc_all[["VDOS_rates"]])
 
 for (i in seq_along(roc_all[["VDOS_rates"]])) {
   x_vals <- as.numeric(roc_all[["VDOS_rates"]][[i]]$datetimeMT)
-  y_vals <- roc_all[["VDOS_rates"]][[i]]$rate_of_change_g
+  y_vals <- roc_all[["VDOS_rates"]][[i]]$rate_of_change
   
   # Remove NA values
   valid_indices <- !is.na(y_vals)
@@ -588,7 +565,7 @@ for (i in seq_along(roc_all[["VDOS_rates"]])) {
   )
 }
 
-#View(VDOS_D)
+View(VDOS_D)
 
 #### Q - D = -ER ####
 
@@ -647,11 +624,11 @@ odumER$Eventdate <-c(BEGI_events[["Eventdate"]][["SLOC_dates"]],BEGI_events[["Ev
 odumER$D <-c(SLOC_D,SLOW_D,VDOW_D,VDOS_D)
 
 #ER boxplot
-odumER_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Ecosystem Respiration (g O2/m^2)") 
+odumER_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Ecosystem Respiration (g O2/m^2/event)") 
 print(odumER_bp)
 
 #D boxplot
-odumD_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Oxygen Uptake via Diffusion (g O2/m^2)")
+odumD_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Oxygen Uptake via Diffusion (g O2/m^2/event)")
 print(odumD_bp)
 
 #layout boxplots of DO event, respiration, diffusion
@@ -684,12 +661,17 @@ SLOW_O2mol <- SLOW_O2/31.9988
 VDOW_O2mol <- VDOW_O2/31.9988
 VDOS_O2mol <- VDOS_O2/31.9988
 
-#With PQ = 1, mol O2 = mol C
+#With PQ = 1.2, mol O2 * 1/1.2 = mol C
+SLOC_Cmol <- SLOC_O2mol * 1/1.2
+SLOW_Cmol <- SLOW_O2mol * 1/1.2
+VDOW_Cmol <- VDOW_O2mol * 1/1.2
+VDOS_Cmol <- VDOS_O2mol * 1/1.2
+
 #converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
-SLOC_C <- SLOC_O2mol * 12.011
-SLOW_C <- SLOW_O2mol * 12.011
-VDOW_C <- VDOW_O2mol * 12.011
-VDOS_C <- VDOS_O2mol * 12.011
+SLOC_C <- SLOC_Cmol * 12.011
+SLOW_C <- SLOW_Cmol * 12.011
+VDOW_C <- VDOW_Cmol * 12.011
+VDOS_C <- VDOS_Cmol * 12.011
 
 #df
 carbon_est <-data.frame(SLOC_C,SLOW_C,VDOW_C,VDOS_C)
