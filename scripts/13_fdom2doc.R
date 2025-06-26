@@ -387,16 +387,16 @@ SLOW_mean_fdom <- BEGI_EXO.tc.fd[["SLOW"]] %>%
 #complete DOC data
 #VDOW#
 docVDOW$fdom <- VDOW_mean_fdom[match(docVDOW$docdata.MatrixSpike,names(VDOW_mean_fdom))]
-docVDOW <- docVDOW[-c(3,5),] #removes 5 and 10 mg/L 
+#docVDOW <- docVDOW[-c(3,5),] #removes 5 and 10 mg/L 
 #VDOS#
 docVDOS$fdom <- VDOS_mean_fdom[match(docVDOS$docdata.MatrixSpike,names(VDOS_mean_fdom))]
-docVDOS <- docVDOS[-c(3,5),] #removes 5 and 10 mg/L
+#docVDOS <- docVDOS[-c(3,5),] #removes 5 and 10 mg/L
 #SLOC#
 docSLOC$fdom <- SLOC_mean_fdom[match(docSLOC$docdata.MatrixSpike,names(SLOC_mean_fdom))]
-docSLOC <- docSLOC[-c(3,5),] #removes 5 and 10 mg/L
+#docSLOC <- docSLOC[-c(3,5),] #removes 5 and 10 mg/L
 #SLOW#
 docSLOW$fdom <- SLOW_mean_fdom[match(docSLOW$docdata.MatrixSpike,names(SLOW_mean_fdom))]
-docSLOW <- docSLOW[-c(3,5),] #removes 5 and 10 mg/L
+#docSLOW <- docSLOW[-c(3,5),] #removes 5 and 10 mg/L
 
 
 

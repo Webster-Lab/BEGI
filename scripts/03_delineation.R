@@ -989,269 +989,269 @@ print(DO_roc_bp)
 #Use linear equation to convert all fDOM values to DOC
 #options to look at fdom daily mean, fdom values preceeding each well servicing, and first fdom after each well servicing (with post-service data removed)
 
-# #Import temp corrected fDOM data
-# EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
-# 
-# #get DOC data from google drive
-# doc_tibble <- googledrive::as_id("https://drive.google.com/drive/folders/1zdzsIXO5LIzbcg2RzfE4mz3dBKvBmrO-")
-# 
-# doc <- googledrive::drive_ls(path = doc_tibble, type = "xlsx")
-# 2
-# 
-# googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-01-22_BEGI_rerun.xlsx"], 
-#                             path = "NPOC-TN_2025-01-22_BEGI_rerun.xlsx",
-#                             overwrite = T)
-# docdata1 <- read_xlsx("NPOC-TN_2025-01-22_BEGI_rerun.xlsx", sheet = 9, skip = 1)
-# 
-# googledrive::drive_download(file = doc$id[doc$name=="240620_BEGI_Data.xlsx"], 
-#                             path = "240620_BEGI_Data.xlsx",
-#                             overwrite = T)
-# docdata2 <- read_xlsx("240620_BEGI_Data.xlsx")
-# 
-# #clean up
-# docdata1 <- select(docdata1,-6:-8)
-# names(docdata1)[names(docdata1) == '...1'] <- 'date'
-# names(docdata1)[names(docdata1) == '...2'] <- 'WellID'
-# names(docdata1)[names(docdata1) == '...3'] <- 'Sample'
-# 
-# names(docdata2)[names(docdata2) == 'Collection Date'] <- 'date'
-# names(docdata2)[names(docdata2) == 'NPOC (mg C/L)'] <- 'NPOC'
-# names(docdata2)[names(docdata2) == 'TDN (mg N/L)'] <- 'TN'
-# 
-# #stitch
-# docdata <- merge(docdata1, docdata2, all = TRUE)
-# rm(docdata1, docdata2)
-# #filter by well
-# docdata <- docdata %>%
-#   spread (WellID, NPOC)
-# docdata$date <- as.Date(docdata$date)
-# 
-# #read in servicing data#
-# # read in file and filter to EXO1 removal and deployments
-# service = readxl::read_excel("googledrive/sensor_event_log.xlsx")
-# service = service[service$model=="EXO1",]
-# service = service[service$observation=="removed" | service$observation=="deployed",]
-# 
-# # format date and time
-# service$datetime = paste(service$date,  service$time, sep = " ")
-# # convert to POIXct and set timezone
-# service$datetimeMT<-as.POSIXct(service$datetime, 
-#                                format = "%Y-%m-%d %H:%M",
-#                                tz="US/Mountain")
-# service$date = as.Date(service$date)
-# 
-# # remove rows with no exact times
-# servicetimes = service[!is.na(service$datetimeMT),]
-# 
-# # service dates
-# 
-# service.VDOW = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="VDOW"]
-# service.VDOS = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="VDOS"]
-# service.SLOC = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOC"]
-# service.SLOW = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOW"]
-# 
-# # filter docdata to df of each well
-# docVDOW <- data.frame(docdata$date,
-#                       docdata$Sample,
-#                       docdata$TN,
-#                       docdata$VDOW)
-# docVDOW <- na.omit(docVDOW)
-# docVDOW <- docVDOW[-1,] #no 9/15 measurements
-# 
-# docVDOS <- data.frame(docdata$date,
-#                       docdata$Sample,
-#                       docdata$TN,
-#                       docdata$VDOS)
-# docVDOS <- na.omit(docVDOS)
-# docVDOS <- docVDOS[-1,] 
-# 
-# docSLOC <- data.frame(docdata$date,
-#                       docdata$Sample,
-#                       docdata$TN,
-#                       docdata$SLOC)
-# docSLOC <- na.omit(docSLOC)
-# docSLOC <- docSLOC[-1,] 
-# 
-# docSLOW <- data.frame(docdata$date,
-#                       docdata$Sample,
-#                       docdata$TN,
-#                       docdata$SLOW)
-# docSLOW <- na.omit(docSLOW)
-# docSLOW <- docSLOW[-1,]
-# 
-# 
-# #VDOW
-# fDOM_df <- data.frame(
-#   datetimeMT = as.POSIXct(EXOz.tc[["VDOW"]]$datetimeMT),
-#   date = as.Date(EXOz.tc[["VDOW"]]$datetimeMT),
-#   fDOM = EXOz.tc[["VDOW"]]$fDOM.QSU.mn.Tc)
-# 
-# #remove NAs to get post-service fdom
-# fDOM_df <- na.omit(fDOM_df)
-# #
-# 
-# #daily mean of VDOW fDOM
-# #daily_fDOM <- aggregate(fDOM ~ date, data = fDOM_df, FUN = mean)
-# #merged_VDOW <- merge(daily_fDOM, docdata[, c("date", "VDOW")], by = "date")
-# #merged_VDOW <- na.omit(merged_VDOW)
-# #plot(merged_VDOW$VDOW ~ merged_VDOW$fDOM)
-# #m.VDOW = lm(fDOM ~ VDOW, data = merged_VDOW)
-# #abline(m.VDOW, col = "blue", lwd = 2)
-# #summary(m.VDOW)
-# #cf <- coef(m.VDOW)
-# #Intercept <- cf[1]
-# #Slope <- cf[2]
-# 
-# # Index of last fDOM measurement before service datetime
-# prev_index <- findInterval(service.VDOW, fDOM_df$datetimeMT) -1
-# valid <- prev_index > 0
-# 
-# #Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
-# #should consider using T-corrected fdom data WITHOUT post-service data being removed
-# next_index <- findInterval(service.VDOW, fDOM_df$datetimeMT) +1
-# 
-# # Get matched times and values
-# matched_service_time <- service.VDOW[valid]
-# matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
-# matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
-# 
-# npoc_vals <- docVDOW$docdata.VDOW[valid]
-# 
-# merged_df <- data.frame(
-#   service_time = matched_service_time,
-#   fDOM_time = matched_fDOM_time,
-#   NPOC = npoc_vals,
-#   fDOM = matched_fDOM_vals
-# )
-# 
-# plot(merged_df$NPOC, merged_df$fDOM,
-#      xlab = "NPOC (VDOW)",
-#      ylab = "fDOM (before sample)",
-#      main = "fDOM vs NPOC (preceeding fDOM measurement)")
-# m.VDOW <- lm(fDOM ~ NPOC, data = merged_df)
-# abline(m.VDOW, col = "blue", lwd = 2)
-# summary(m.VDOW)
-# 
-# 
-# #VDOS
-# fDOM_df <- data.frame(
-#   datetimeMT = as.POSIXct(EXOz.tc[["VDOS"]]$datetimeMT),
-#   date = as.Date(EXOz.tc[["VDOS"]]$datetimeMT),
-#   fDOM = EXOz.tc[["VDOS"]]$fDOM.QSU.mn.Tc)
-# #remove NAs to get post-service fdom
-# fDOM_df <- na.omit(fDOM_df)
-# #
-# 
-# # Index of last fDOM measurement before service datetime
-# prev_index <- findInterval(service.VDOS, fDOM_df$datetimeMT) -1
-# valid <- prev_index > 0 #or next_index
-# 
-# #Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
-# #should consider using T corrected fdom data WITHOUT post-service data being removed
-# next_index <- findInterval(service.VDOS, fDOM_df$datetimeMT) +1
-# 
-# # Get matched times and values
-# matched_service_time <- service.VDOS[valid]
-# matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
-# matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
-# 
-# npoc_vals <- docVDOS$docdata.VDOS[valid]
-# 
-# merged_df <- data.frame(
-#   service_time = matched_service_time,
-#   fDOM_time = matched_fDOM_time,
-#   NPOC = npoc_vals,
-#   fDOM = matched_fDOM_vals
-# )
-# 
-# plot(merged_df$NPOC, merged_df$fDOM,
-#      xlab = "NPOC (VDOS)",
-#      ylab = "fDOM (before sample)",
-#      main = "fDOM vs NPOC (preceding fDOM measurement)")
-# m.VDOS <- lm(fDOM ~ NPOC, data = merged_df)
-# abline(m.VDOS, col = "blue", lwd = 2)
-# summary(m.VDOS)
-# 
-# #SLOC
-# fDOM_df <- data.frame(
-#   datetimeMT = as.POSIXct(EXOz.tc[["SLOC"]]$datetimeMT),
-#   date = as.Date(EXOz.tc[["SLOC"]]$datetimeMT),
-#   fDOM = EXOz.tc[["SLOC"]]$fDOM.QSU.mn.Tc)
-# #remove NAs to get post-service fdom
-# fDOM_df <- na.omit(fDOM_df)
-# #
-# 
-# # Index of last fDOM measurement before service datetime
-# prev_index <- findInterval(service.SLOC, fDOM_df$datetimeMT) -1
-# valid <- prev_index > 0
-# 
-# #Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
-# #should consider using T corrected fdom data WITHOUT post-service data being removed
-# next_index <- findInterval(service.SLOC, fDOM_df$datetimeMT) +1
-# 
-# # Get matched times and values
-# matched_service_time <- service.SLOC[valid]
-# matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
-# matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
-# 
-# npoc_vals <- docSLOC$docdata.SLOC[valid]
-# 
-# merged_df <- data.frame(
-#   service_time = matched_service_time,
-#   fDOM_time = matched_fDOM_time,
-#   NPOC = npoc_vals,
-#   fDOM = matched_fDOM_vals
-# )
-# 
-# #remove outlier to see if R2 improves. it doesn't..
-# #merged_df <- merged_df[-23,]
-# 
-# plot(merged_df$NPOC, merged_df$fDOM,
-#      xlab = "NPOC (SLOC)",
-#      ylab = "fDOM (before sample)",
-#      main = "fDOM vs NPOC (preceding fDOM measurement)")
-# m.SLOC <- lm(fDOM ~ NPOC, data = merged_df)
-# abline(m.SLOC, col = "blue", lwd = 2)
-# summary(m.SLOC)
-# 
-# #SLOW
-# fDOM_df <- data.frame(
-#   datetimeMT = as.POSIXct(EXOz.tc[["SLOW"]]$datetimeMT),
-#   date = as.Date(EXOz.tc[["SLOW"]]$datetimeMT),
-#   fDOM = EXOz.tc[["SLOW"]]$fDOM.QSU.mn.Tc)
-# #remove NAs to get post-service fdom
-# fDOM_df <- na.omit(fDOM_df)
-# #
-# 
-# # Index of last fDOM measurement before service datetime
-# prev_index <- findInterval(service.SLOW, fDOM_df$datetimeMT) -1
-# valid <- prev_index > 0
-# 
-# #Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
-# #should consider using T corrected fdom data WITHOUT post-service data being removed
-# next_index <- findInterval(service.SLOW, fDOM_df$datetimeMT) +1
-# 
-# # Get matched times and values
-# matched_service_time <- service.SLOW[valid]
-# matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
-# matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
-# 
-# npoc_vals <- docSLOW$docdata.SLOW[valid]
-# 
-# merged_df <- data.frame(
-#   service_time = matched_service_time,
-#   fDOM_time = matched_fDOM_time,
-#   NPOC = npoc_vals,
-#   fDOM = matched_fDOM_vals
-# )
-# 
-# plot(merged_df$NPOC, merged_df$fDOM,
-#      xlab = "NPOC (SLOW)",
-#      ylab = "fDOM (before sample)",
-#      main = "fDOM vs NPOC (preceding fDOM measurement)")
-# m.SLOW <- lm(fDOM ~ NPOC, data = merged_df)
-# abline(m.SLOW, col = "blue", lwd = 2)
-# summary(m.SLOW)
+#Import temp corrected fDOM data
+EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
+
+#get DOC data from google drive
+doc_tibble <- googledrive::as_id("https://drive.google.com/drive/folders/1zdzsIXO5LIzbcg2RzfE4mz3dBKvBmrO-")
+
+doc <- googledrive::drive_ls(path = doc_tibble, type = "xlsx")
+2
+
+googledrive::drive_download(file = doc$id[doc$name=="NPOC-TN_2025-01-22_BEGI_rerun.xlsx"],
+                            path = "NPOC-TN_2025-01-22_BEGI_rerun.xlsx",
+                            overwrite = T)
+docdata1 <- read_xlsx("NPOC-TN_2025-01-22_BEGI_rerun.xlsx", sheet = 9, skip = 1)
+
+googledrive::drive_download(file = doc$id[doc$name=="240620_BEGI_Data.xlsx"],
+                            path = "240620_BEGI_Data.xlsx",
+                            overwrite = T)
+docdata2 <- read_xlsx("240620_BEGI_Data.xlsx")
+
+#clean up
+docdata1 <- select(docdata1,-6:-8)
+names(docdata1)[names(docdata1) == '...1'] <- 'date'
+names(docdata1)[names(docdata1) == '...2'] <- 'WellID'
+names(docdata1)[names(docdata1) == '...3'] <- 'Sample'
+
+names(docdata2)[names(docdata2) == 'Collection Date'] <- 'date'
+names(docdata2)[names(docdata2) == 'NPOC (mg C/L)'] <- 'NPOC'
+names(docdata2)[names(docdata2) == 'TDN (mg N/L)'] <- 'TN'
+
+#stitch
+docdata <- merge(docdata1, docdata2, all = TRUE)
+rm(docdata1, docdata2)
+#filter by well
+docdata <- docdata %>%
+  spread (WellID, NPOC)
+docdata$date <- as.Date(docdata$date)
+
+#read in servicing data#
+# read in file and filter to EXO1 removal and deployments
+service = readxl::read_excel("googledrive/sensor_event_log.xlsx")
+service = service[service$model=="EXO1",]
+service = service[service$observation=="removed" | service$observation=="deployed",]
+
+# format date and time
+service$datetime = paste(service$date,  service$time, sep = " ")
+# convert to POIXct and set timezone
+service$datetimeMT<-as.POSIXct(service$datetime,
+                               format = "%Y-%m-%d %H:%M",
+                               tz="US/Mountain")
+service$date = as.Date(service$date)
+
+# remove rows with no exact times
+servicetimes = service[!is.na(service$datetimeMT),]
+
+# service dates
+
+service.VDOW = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="VDOW"]
+service.VDOS = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="VDOS"]
+service.SLOC = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOC"]
+service.SLOW = servicetimes$datetimeMT[servicetimes$observation=="removed" & servicetimes$location=="SLOW"]
+
+# filter docdata to df of each well
+docVDOW <- data.frame(docdata$date,
+                      docdata$Sample,
+                      docdata$TN,
+                      docdata$VDOW)
+docVDOW <- na.omit(docVDOW)
+docVDOW <- docVDOW[-1,] #no 9/15 measurements
+
+docVDOS <- data.frame(docdata$date,
+                      docdata$Sample,
+                      docdata$TN,
+                      docdata$VDOS)
+docVDOS <- na.omit(docVDOS)
+docVDOS <- docVDOS[-1,]
+
+docSLOC <- data.frame(docdata$date,
+                      docdata$Sample,
+                      docdata$TN,
+                      docdata$SLOC)
+docSLOC <- na.omit(docSLOC)
+docSLOC <- docSLOC[-1,]
+
+docSLOW <- data.frame(docdata$date,
+                      docdata$Sample,
+                      docdata$TN,
+                      docdata$SLOW)
+docSLOW <- na.omit(docSLOW)
+docSLOW <- docSLOW[-1,]
+
+
+#VDOW
+fDOM_df <- data.frame(
+  datetimeMT = as.POSIXct(EXOz.tc[["VDOW"]]$datetimeMT),
+  date = as.Date(EXOz.tc[["VDOW"]]$datetimeMT),
+  fDOM = EXOz.tc[["VDOW"]]$fDOM.QSU.mn.Tc)
+
+#remove NAs to get post-service fdom
+fDOM_df <- na.omit(fDOM_df)
+#
+
+#daily mean of VDOW fDOM
+#daily_fDOM <- aggregate(fDOM ~ date, data = fDOM_df, FUN = mean)
+#merged_VDOW <- merge(daily_fDOM, docdata[, c("date", "VDOW")], by = "date")
+#merged_VDOW <- na.omit(merged_VDOW)
+#plot(merged_VDOW$VDOW ~ merged_VDOW$fDOM)
+#m.VDOW = lm(fDOM ~ VDOW, data = merged_VDOW)
+#abline(m.VDOW, col = "blue", lwd = 2)
+#summary(m.VDOW)
+#cf <- coef(m.VDOW)
+#Intercept <- cf[1]
+#Slope <- cf[2]
+
+# Index of last fDOM measurement before service datetime
+prev_index <- findInterval(service.VDOW, fDOM_df$datetimeMT) -1
+valid <- prev_index > 0
+
+#Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
+#should consider using T-corrected fdom data WITHOUT post-service data being removed
+next_index <- findInterval(service.VDOW, fDOM_df$datetimeMT) +1
+
+# Get matched times and values
+matched_service_time <- service.VDOW[valid]
+matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
+matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
+
+npoc_vals <- docVDOW$docdata.VDOW[valid]
+
+merged_df <- data.frame(
+  service_time = matched_service_time,
+  fDOM_time = matched_fDOM_time,
+  NPOC = npoc_vals,
+  fDOM = matched_fDOM_vals
+)
+
+plot(merged_df$NPOC, merged_df$fDOM,
+     xlab = "NPOC (VDOW)",
+     ylab = "fDOM (before sample)",
+     main = "fDOM vs NPOC (preceeding fDOM measurement)")
+m.VDOW <- lm(fDOM ~ NPOC, data = merged_df)
+abline(m.VDOW, col = "blue", lwd = 2)
+summary(m.VDOW)
+
+
+#VDOS
+fDOM_df <- data.frame(
+  datetimeMT = as.POSIXct(EXOz.tc[["VDOS"]]$datetimeMT),
+  date = as.Date(EXOz.tc[["VDOS"]]$datetimeMT),
+  fDOM = EXOz.tc[["VDOS"]]$fDOM.QSU.mn.Tc)
+#remove NAs to get post-service fdom
+fDOM_df <- na.omit(fDOM_df)
+#
+
+# Index of last fDOM measurement before service datetime
+prev_index <- findInterval(service.VDOS, fDOM_df$datetimeMT) -1
+valid <- prev_index > 0 #or next_index
+
+#Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
+#should consider using T corrected fdom data WITHOUT post-service data being removed
+next_index <- findInterval(service.VDOS, fDOM_df$datetimeMT) +1
+
+# Get matched times and values
+matched_service_time <- service.VDOS[valid]
+matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
+matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
+
+npoc_vals <- docVDOS$docdata.VDOS[valid]
+
+merged_df <- data.frame(
+  service_time = matched_service_time,
+  fDOM_time = matched_fDOM_time,
+  NPOC = npoc_vals,
+  fDOM = matched_fDOM_vals
+)
+
+plot(merged_df$NPOC, merged_df$fDOM,
+     xlab = "NPOC (VDOS)",
+     ylab = "fDOM (before sample)",
+     main = "fDOM vs NPOC (preceding fDOM measurement)")
+m.VDOS <- lm(fDOM ~ NPOC, data = merged_df)
+abline(m.VDOS, col = "blue", lwd = 2)
+summary(m.VDOS)
+
+#SLOC
+fDOM_df <- data.frame(
+  datetimeMT = as.POSIXct(EXOz.tc[["SLOC"]]$datetimeMT),
+  date = as.Date(EXOz.tc[["SLOC"]]$datetimeMT),
+  fDOM = EXOz.tc[["SLOC"]]$fDOM.QSU.mn.Tc)
+#remove NAs to get post-service fdom
+fDOM_df <- na.omit(fDOM_df)
+#
+
+# Index of last fDOM measurement before service datetime
+prev_index <- findInterval(service.SLOC, fDOM_df$datetimeMT) -1
+valid <- prev_index > 0
+
+#Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
+#should consider using T corrected fdom data WITHOUT post-service data being removed
+next_index <- findInterval(service.SLOC, fDOM_df$datetimeMT) +1
+
+# Get matched times and values
+matched_service_time <- service.SLOC[valid]
+matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
+matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
+
+npoc_vals <- docSLOC$docdata.SLOC[valid]
+
+merged_df <- data.frame(
+  service_time = matched_service_time,
+  fDOM_time = matched_fDOM_time,
+  NPOC = npoc_vals,
+  fDOM = matched_fDOM_vals
+)
+
+#remove outlier to see if R2 improves. it doesn't..
+#merged_df <- merged_df[-23,]
+
+plot(merged_df$NPOC, merged_df$fDOM,
+     xlab = "NPOC (SLOC)",
+     ylab = "fDOM (before sample)",
+     main = "fDOM vs NPOC (preceding fDOM measurement)")
+m.SLOC <- lm(fDOM ~ NPOC, data = merged_df)
+abline(m.SLOC, col = "blue", lwd = 2)
+summary(m.SLOC)
+
+#SLOW
+fDOM_df <- data.frame(
+  datetimeMT = as.POSIXct(EXOz.tc[["SLOW"]]$datetimeMT),
+  date = as.Date(EXOz.tc[["SLOW"]]$datetimeMT),
+  fDOM = EXOz.tc[["SLOW"]]$fDOM.QSU.mn.Tc)
+#remove NAs to get post-service fdom
+fDOM_df <- na.omit(fDOM_df)
+#
+
+# Index of last fDOM measurement before service datetime
+prev_index <- findInterval(service.SLOW, fDOM_df$datetimeMT) -1
+valid <- prev_index > 0
+
+#Index of fDOM measurement AFTER service datetime (and after fdom measurements returned to "normal")
+#should consider using T corrected fdom data WITHOUT post-service data being removed
+next_index <- findInterval(service.SLOW, fDOM_df$datetimeMT) +1
+
+# Get matched times and values
+matched_service_time <- service.SLOW[valid]
+matched_fDOM_time <- fDOM_df$datetimeMT[prev_index[valid]]
+matched_fDOM_vals <- fDOM_df$fDOM[prev_index[valid]]
+
+npoc_vals <- docSLOW$docdata.SLOW[valid]
+
+merged_df <- data.frame(
+  service_time = matched_service_time,
+  fDOM_time = matched_fDOM_time,
+  NPOC = npoc_vals,
+  fDOM = matched_fDOM_vals
+)
+
+plot(merged_df$NPOC, merged_df$fDOM,
+     xlab = "NPOC (SLOW)",
+     ylab = "fDOM (before sample)",
+     main = "fDOM vs NPOC (preceding fDOM measurement)")
+m.SLOW <- lm(fDOM ~ NPOC, data = merged_df)
+abline(m.SLOW, col = "blue", lwd = 2)
+summary(m.SLOW)
 # 
 #### fDOM to DOC calibration without service times removed ####
 # #Import temp corrected fDOM data

@@ -716,10 +716,14 @@ dev.off()
 fdom_gwmean_log = 
   ggplot(fdom_events, aes(x = fdom_event_mean, y = log(fDOM), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
-  geom_smooth(method = "lm", fill=NA) +
+  #geom_smooth(method = "lm", fill=NA) +
   labs(x = "Mean Depth to Groundwater Preceeding Event (2 days)", 
        y = str_wrap("fDOM consumption (log QSU)", width=25))+
   geom_vline(xintercept=0, linetype = 'dashed') +
+  geom_abline(intercept = 1.9631595+0.1180208, slope = 0.3755233, color="#440154FF", size = 1.5) + 
+  geom_abline(intercept = 1.9631595-0.1593235, slope = 0.3755233, color="#31688EFF", size = 1.5) +
+  geom_abline(intercept = 1.9631595-0.1186674, slope = 0.3755233, color="#35B779FF", size = 1.5) +
+  geom_abline(intercept = 1.9631595+0.1599701, slope = 0.3755233, color="#FDE725FF", size = 1.5) +
   theme_bw()+
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
