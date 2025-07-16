@@ -811,6 +811,7 @@ DO_event_mv5 <- data.frame(WellID,Eventdates,DO_event_mean5,DO_event_cv5)
 View(DO_event_mv5)
 
 
+
 #### Stitched dataframe of all event mean/var + export ####
 
 DO_event_mvall <- merge(DO_event_mv1, DO_event_mv, by = c("WellID","Eventdates"), all = TRUE)
@@ -818,8 +819,10 @@ DO_event_mvall <- merge(DO_event_mvall, DO_event_mv5, by = c("WellID","Eventdate
 View(DO_event_mvall)
 
 write_csv(DO_event_mvall,"DTW_compiled/DO_mv.csv")
+saveRDS(DO_event_mvall,"DTW_compiled/DO_mv.rds")
 
 #### Event dtw timeseries ####
+#this code pulls out the timeseries depth to water data for the 2 days preceding an event to use in DTW cluster analysis
 #Import DTW data
 DTW_df = readRDS("DTW_compiled/BEGI_PT_DTW_all.rds")
 
@@ -946,7 +949,6 @@ event_dtw <- rbind(SLOC_dtw,SLOW_dtw,VDOW_dtw,VDOS_dtw)
 #save
 saveRDS(event_dtw, "DTW_compiled/event_dtw.rds")
 
-
 #### fDOM mean preceding event ####
 #import EXOz.tc
 EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
@@ -979,3 +981,8 @@ pre_event_all <- bind_rows(
 mean_fDOM_all_sites <- mean(pre_event_all$fDOM.QSU.mn, na.rm = TRUE)
 
 mean_fDOM_all_sites
+
+
+
+
+

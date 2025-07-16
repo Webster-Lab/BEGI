@@ -61,7 +61,8 @@ DO_ROC[sapply(DO_ROC, is.character)] <- lapply(DO_ROC[sapply(DO_ROC, is.characte
 names(DO_ROC)[names(DO_ROC) == 'DO'] <- 'DO_ROC'
 
 # mean and variance summary of depth to water (DTW) for each event
-dtw_events = read.csv("DTW_compiled/DO_mv.csv")
+dtw_events = readRDS("DTW_compiled/DO_mv.rds")
+#dtw_events = read_csv("DTW_compiled/DO_mv.csv")
 names(dtw_events)[names(dtw_events) == 'WellID'] <- 'wellID'
 names(dtw_events)[names(dtw_events) == 'Eventdates'] <- 'Eventdate'
 dtw_events$Eventdate = as.POSIXct(paste(substr(dtw_events$Eventdate, start=1,stop=10),

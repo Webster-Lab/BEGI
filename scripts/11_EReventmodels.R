@@ -48,7 +48,8 @@ names(odumER)[names(odumER) == 'Event'] <- 'eventID'
 # DOevents = DO_AUC[,2:5]
 
 # mean and variance summary of depth to water (DTW) for each event
-dtw_events = read.csv("DTW_compiled/DO_mv.csv")
+#dtw_events = read.csv("DTW_compiled/DO_mv.csv")
+dtw_events = readRDS("DTW_compiled/DO_mv.rds")
 names(dtw_events)[names(dtw_events) == 'WellID'] <- 'wellID'
 names(dtw_events)[names(dtw_events) == 'Eventdates'] <- 'Eventdate'
 dtw_events$Eventdate = as.POSIXct(paste(substr(dtw_events$Eventdate, start=1,stop=10),
