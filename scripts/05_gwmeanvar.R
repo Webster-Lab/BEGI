@@ -946,3 +946,36 @@ event_dtw <- rbind(SLOC_dtw,SLOW_dtw,VDOW_dtw,VDOS_dtw)
 #save
 saveRDS(event_dtw, "DTW_compiled/event_dtw.rds")
 
+
+#### fDOM mean preceding event ####
+#import EXOz.tc
+EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
+
+#fdom 2 days before every event
+get_pre_event_fDOM <- function(events_list, site_data) {
+  result <- data.frame()
+  for (i in seq_along(events_list)) {
+    event_time <- events_list[[i]]$datetimeMT[1]
+    start_time <- event_time - (60 * 60 * 48)  
+    end_time <- event_time
+    
+    fdom_segment <- site_data %>%
+      filter(datetimeMT >= start_time & datetimeMT <= end_time) %>%
+      select(datetimeMT, fDOM.QSU.mn)
+    
+    result <- bind_rows(result, fdom_segment)
+  }
+  return(result)
+}
+#pre-event fdom from each site
+pre_event_all <- bind_rows(
+  get_pre_event_fDOM(BEGI_events[["fDOM_events"]][["SLOC_fDOM"]], EXOz.tc[["SLOC"]]),
+  get_pre_event_fDOM(BEGI_events[["fDOM_events"]][["SLOW_fDOM"]], EXOz.tc[["SLOW"]]),
+  get_pre_event_fDOM(BEGI_events[["fDOM_events"]][["VDOW_fDOM"]], EXOz.tc[["VDOW"]]),
+  get_pre_event_fDOM(BEGI_events[["fDOM_events"]][["VDOS_fDOM"]], EXOz.tc[["VDOS"]])
+)
+
+#mean
+mean_fDOM_all_sites <- mean(pre_event_all$fDOM.QSU.mn, na.rm = TRUE)
+
+mean_fDOM_all_sites

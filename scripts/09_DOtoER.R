@@ -624,11 +624,15 @@ odumER$Eventdate <-c(BEGI_events[["Eventdate"]][["SLOC_dates"]],BEGI_events[["Ev
 odumER$D <-c(SLOC_D,SLOW_D,VDOW_D,VDOS_D)
 
 #ER boxplot
-odumER_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Ecosystem Respiration (g O2/m^2/event)") 
+odumER_bp<-ggplot(data=ER_events,mapping=aes(x=wellID, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 18) +
+  labs(y = "Ecosystem Respiration (O2 m-2 event-1)", x = "Well") 
 print(odumER_bp)
 
 #D boxplot
-odumD_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+labs(y = "Oxygen Uptake via Diffusion (g O2/m^2/event)")
+odumD_bp<-ggplot(data=ER_events,mapping=aes(x=wellID, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 18) +
+  labs(y = "Oxygen Uptake via Diffusion (O2 m-2 event-1)", x = "Well")
 print(odumD_bp)
 
 #layout boxplots of DO event, respiration, diffusion

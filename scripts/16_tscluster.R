@@ -266,7 +266,7 @@ meancurvesp = ggplot(mean_k4_cluster, aes(x=timestep,y=DTW_m_mean))+
   theme_classic()+
   xlab("Time (min)")+ylab("Depth (m)")+
   facet_wrap(~cluster)
-
+ggsave("plots/meancurvesp.png", meancurvesp, width = 9, height = 8, units = "in")
 #### save results ####
 
 write.csv(cluster_DTW_data_k4, "DTW_compiled/DTW_clusters_k4_smoothed_norm.csv", row.names = FALSE)

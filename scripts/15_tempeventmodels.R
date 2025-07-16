@@ -30,6 +30,10 @@ library(lmerTest)
 library(MuMIn)
 library(lattice)
 library(patchwork)
+library(scales)
+library(ggbreak)
+library(viridis)
+library(gridExtra)
 
 
 # replace NaNs with NA
@@ -439,6 +443,52 @@ r.squaredGLMM(m.1)
 r.squaredGLMM(m.2)
 # #Marginal R2:  the proportion of variance explained by the fixed factor(s) alone
 #Conditional R2: he proportion of variance explained by both the fixed and random factors
+
+
+
+
+
+
+#### plot results ####
+
+
+temp_gwvar = 
+  ggplot(wt_events, aes(x = temp_event_cv, y = log(DO_AUC), color=wellID))+
+  geom_point(alpha = 0.7, size=5)+                                      
+  #geom_smooth(method = "lm", fill=NA) +
+  labs(x = str_wrap("Water temperature Coef. of Variation Preceding Event (2 days)", width=35),
+       y = str_wrap("Dissolved Oxygen Consumption Event Size", width=40))+
+  theme_bw()+
+  scale_y_continuous(
+    breaks = pretty(log(wt_events$DO_AUC)),
+    labels = function(x) round(exp(x), 1)
+  ) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank(),
+        text = element_text(size = 20))+
+  scale_color_viridis(discrete = TRUE, option = "D")
+temp_gwvar
+ggsave("plots/temp_gwvar.png",temp_gwvar, width = 9, height = 8, units = "in")
+
+temp_gwmean = 
+  ggplot(wt_events, aes(x = temp_event_mean, y = log(DO_AUC), color=wellID))+
+  geom_point(alpha = 0.7, size=5)+                                      
+  #geom_smooth(method = "lm", fill=NA) +
+  labs(x = str_wrap("Mean Water Temperature Preceding Event (2 days)", width=35),
+       y = str_wrap("Dissolved Oxygen Consumption Event Size", width=40))+
+  theme_bw()+
+  scale_y_continuous(
+    breaks = pretty(log(wt_events$DO_AUC)),
+    labels = function(x) round(exp(x), 1)
+  ) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank(),
+        text = element_text(size = 20))+
+  scale_color_viridis(discrete = TRUE, option = "D")
+temp_gwmean
+ggsave("plots/temp_gwmean.png",temp_gwmean, width = 9, height = 8, units = "in")
 
 
 
