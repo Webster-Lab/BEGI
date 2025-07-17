@@ -615,22 +615,22 @@ odumER<-data.frame(ER=c(SLOC_ER,SLOW_ER,VDOW_ER,VDOS_ER),
                   Well=rep(c("SLOC","SLOW","VDOW","VDOS"),
                           times=c(length(SLOC_ER),length(SLOW_ER),length(VDOW_ER),length(VDOS_ER))))
 odumER$Event<-c('SLOC_DO1','SLOC_DO2','SLOC_DO3','SLOC_DO4','SLOC_DO5','SLOC_DO6','SLOC_DO7','SLOC_DO8','SLOC_DO9','SLOC_DO10',
-               'SLOC_DO11','SLOC_DO12','SLOC_DO13','SLOC_DO14','SLOC_DO15','SLOC_DO16','SLOC_DO17','SLOC_DO18','SLOC_DO19','SLOC_DO20',
-              'SLOC_DO21','SLOW_DO1','SLOW_DO2','SLOW_DO3','SLOW_DO4','SLOW_DO5','SLOW_DO6','SLOW_DO7','SLOW_DO8','SLOW_DO9','SLOW_DO10',
+               'SLOC_DO11','SLOC_DO12','SLOC_DO13','SLOC_DO14','SLOC_DO15','SLOC_DO16','SLOC_DO17','SLOC_DO18',
+               'SLOW_DO1','SLOW_DO2','SLOW_DO3','SLOW_DO4','SLOW_DO5','SLOW_DO6','SLOW_DO7','SLOW_DO8','SLOW_DO9',
              'VDOW_DO1','VDOW_DO2','VDOW_DO3','VDOW_DO4','VDOW_DO5','VDOW_DO6','VDOW_DO7','VDOW_DO8','VDOW_DO9','VDOW_DO10',
-            'VDOW_DO11','VDOW_DO12','VDOW_DO13','VDOW_DO14','VDOW_DO15','VDOW_DO16','VDOW_DO17','VDOW_DO18',
+            'VDOW_DO11','VDOW_DO12','VDOW_DO13','VDOW_DO14','VDOW_DO15',
            'VDOS_DO1','VDOS_DO2','VDOS_DO3','VDOS_DO4','VDOS_DO5','VDOS_DO6','VDOS_DO7','VDOS_DO8','VDOS_DO9','VDOS_DO10')
 odumER$Eventdate <-c(BEGI_events[["Eventdate"]][["SLOC_dates"]],BEGI_events[["Eventdate"]][["SLOW_dates"]],BEGI_events[["Eventdate"]][["VDOW_dates"]],BEGI_events[["Eventdate"]][["VDOS_dates"]]) 
 odumER$D <-c(SLOC_D,SLOW_D,VDOW_D,VDOS_D)
 
 #ER boxplot
-odumER_bp<-ggplot(data=ER_events,mapping=aes(x=wellID, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+odumER_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
   theme_grey(base_size = 18) +
   labs(y = "Ecosystem Respiration (O2 m-2 event-1)", x = "Well") 
 print(odumER_bp)
 
 #D boxplot
-odumD_bp<-ggplot(data=ER_events,mapping=aes(x=wellID, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+odumD_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
   theme_grey(base_size = 18) +
   labs(y = "Oxygen Uptake via Diffusion (O2 m-2 event-1)", x = "Well")
 print(odumD_bp)

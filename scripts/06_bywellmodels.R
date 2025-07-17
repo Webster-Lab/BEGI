@@ -6,7 +6,7 @@
 # There are 2 wells within each site (SLOC, SLOW, VDOS, and VDOW).
 # There are multiple respiration events in each well: 
 # SLOC SLOW VDOS VDOW 
-# 21   10   10   18 
+# 18    9   10   15 
 
 #### libraries & fxns ####
 

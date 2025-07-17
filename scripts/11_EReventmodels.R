@@ -7,7 +7,7 @@
 
 # There are multiple respiration events in each well: 
 # SLOC SLOW VDOS VDOW 
-# 21   10   10   18 
+# 18    9   10   15
 
 # For each respiration event, we have quantified the mean and variance of depth to water for a time period preceeding the respiration event. We will start by testing 2 days before the event, and later wee will try shorter and longer time periods for relationships with respiration.
 
@@ -123,7 +123,7 @@ summary(ER_events)
 # 2 days
 psych::pairs.panels(ER_events[c("ER", "dtw_ER_event_mean2", "dtw_ER_event_cv2")], stars = TRUE)
 psych::pairs.panels(ER_events[c("D", "dtw_ER_event_mean2", "dtw_ER_event_cv2")], stars = TRUE)
-# event gw mean and gw var are fairly correlated (-0.41), so we probably shouldn't include them in the same model or test for an interaction without testing for variance inflations factors. 
+# event gw mean and gw var are fairly correlated (-0.35), so we probably shouldn't include them in the same model or test for an interaction without testing for variance inflations factors. 
 # no obvious correlation between DO ER or D and dtw stats, but we'll see how it looks when we group it by site and well in the models!
 
 # 1 day
