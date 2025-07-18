@@ -645,11 +645,13 @@ ggsave("plots/boxplots.png", boxplots,width=20,height=8, units="in")
 #save dataframe
 saveRDS(odumER, "EXO_compiled/odumER.rds")
 
-#### Converting oxygen to carbon ####
+#### Converting oxygen to carbon with RQ ####
 # We calculated ER as the integral of the negative rate of change of dissolved oxygen (g O2/m2)
 # I will be summing the year total of ER per each well (g O2/m2/year),
-# then converting to mol O2/m2/year, which when using a photosynthetic quotient of 1 has a 1:1 ratio with mols C,
+# then converting to mol O2/m2/year, which when using a respiratory quotient of 1 has a 1:1 ratio with mols C,
 # then converting mol C/m2/year to g C/m2/year
+# RQ = (delta)O2/(detla)CO2
+# ER (moles CO2) = ER (moles O2) * RQ
 
 #summing year total of ER for each well (g O2/m2/year)
 odumER=readRDS("EXO_compiled/odumER.rds")
@@ -665,11 +667,13 @@ SLOW_O2mol <- SLOW_O2/31.9988
 VDOW_O2mol <- VDOW_O2/31.9988
 VDOS_O2mol <- VDOS_O2/31.9988
 
-#With PQ = 1.2, mol O2 * 1/1.2 = mol C
-SLOC_Cmol <- SLOC_O2mol * 1/1.2
-SLOW_Cmol <- SLOW_O2mol * 1/1.2
-VDOW_Cmol <- VDOW_O2mol * 1/1.2
-VDOS_Cmol <- VDOS_O2mol * 1/1.2
+#With RQ = 1.2, mol O2 * 1.2 = mol CO2
+SLOC_Cmol <- SLOC_O2mol * 1.2
+SLOW_Cmol <- SLOW_O2mol * 1.2
+VDOW_Cmol <- VDOW_O2mol * 1.2
+VDOS_Cmol <- VDOS_O2mol * 1.2
+
+# 1 mol CO2 = 1 mol C
 
 #converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
 SLOC_C <- SLOC_Cmol * 12.011
@@ -677,5 +681,39 @@ SLOW_C <- SLOW_Cmol * 12.011
 VDOW_C <- VDOW_Cmol * 12.011
 VDOS_C <- VDOS_Cmol * 12.011
 
+# upper CI #
+#With RQ = 4.0, mol O2 * 4.0 = mol CO2
+SLOC_Cmolh <- SLOC_O2mol * 4
+SLOW_Cmolh <- SLOW_O2mol * 4
+VDOW_Cmolh <- VDOW_O2mol * 4
+VDOS_Cmolh <- VDOS_O2mol * 4
+
+# 1 mol CO2 = 1 mol C
+
+#converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
+SLOC_Ch <- SLOC_Cmolh * 12.011
+SLOW_Ch <- SLOW_Cmolh * 12.011
+VDOW_Ch <- VDOW_Cmolh * 12.011
+VDOS_Ch <- VDOS_Cmolh * 12.011
+
+# lower CI #
+#With RQ = 0.5, mol O2 * 0.5 = mol CO2
+SLOC_Cmoll <- SLOC_O2mol * 0.5
+SLOW_Cmoll <- SLOW_O2mol * 0.5
+VDOW_Cmoll <- VDOW_O2mol * 0.5
+VDOS_Cmoll <- VDOS_O2mol * 0.5
+
+# 1 mol CO2 = 1 mol C
+
+#converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
+SLOC_Cl <- SLOC_Cmoll * 12.011
+SLOW_Cl <- SLOW_Cmoll * 12.011
+VDOW_Cl <- VDOW_Cmoll * 12.011
+VDOS_Cl <- VDOS_Cmoll * 12.011
+
 #df
-carbon_est <-data.frame(SLOC_C,SLOW_C,VDOW_C,VDOS_C)
+SLOC_est <-c(SLOC_Cl,SLOC_C,SLOC_Ch)
+SLOW_est <-c(SLOW_Cl,SLOW_C,SLOW_Ch)
+VDOW_est <-c(VDOW_Cl,VDOW_C,VDOW_Ch)
+VDOS_est <-c(VDOS_Cl,VDOS_C,VDOS_Ch)
+carbon_est <-data.frame(SLOC_est,SLOW_est,VDOW_est,VDOS_est)

@@ -897,8 +897,8 @@ for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
   
   #Plots
   g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
-    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    #geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+     #         inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
     geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
     scale_x_datetime(limits = c(start_time, end_time)) +
     geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
@@ -907,8 +907,8 @@ for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
     #geom_line(data=tempdatDOe, aes(x = datetimeMT, y = ODO.mg.L.mn), color="yellow", linewidth=5, alpha=.5)
   
   g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
-    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+   # geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    #          inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
     geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
     scale_x_datetime(limits = c(start_time, end_time)) +
     geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
@@ -917,8 +917,8 @@ for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
   
   
   g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOS)) +
-    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+   # geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    #          inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
     geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
     scale_x_datetime(limits = c(start_time, end_time)) +
     geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
@@ -926,8 +926,8 @@ for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
           plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
   g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
-    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    #geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+     #         inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
     geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
     scale_x_datetime(limits = c(start_time, end_time)) +
     geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
@@ -935,8 +935,8 @@ for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
           plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
   g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
-    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    #geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+     #         inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
     geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
     scale_x_datetime(limits = c(start_time, end_time)) +
     geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
@@ -944,9 +944,9 @@ for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
           plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
   
   g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
-    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
-    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    # geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    #           inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+     geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
     scale_x_datetime(limits = c(start_time, end_time),
                      date_labels = "%b %d %H:%M") +
     labs(y = "SpCond (µS/cm)", x = "Datetime") +
