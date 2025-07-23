@@ -20,7 +20,7 @@ library(scales)
 #### Import compiled EXO1 RDS file ####
 #BEGI_EXO.or2 = readRDS("EXO_compiled/BEGI_EXO.or2.rds")
 
-#Changing BEGI_EXO.or2 to EXOz.dtw to include temp corrected fDOM data in each dataframe
+#Changing BEGI_EXO.or2 to EXOz.dtw to include temp corrected fDOM data in each dataframe and depth to water
 EXOz.dtw = readRDS("EXO_compiled/BEGI_EXOz.dtw.rds")
 
 #### Correct negative DO values ####

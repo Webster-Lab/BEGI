@@ -953,6 +953,8 @@ saveRDS(event_dtw, "DTW_compiled/event_dtw.rds")
 #import EXOz.tc
 EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
 
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
+
 #fdom 2 days before every event
 get_pre_event_fDOM <- function(events_list, site_data) {
   result <- data.frame()

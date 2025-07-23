@@ -245,12 +245,13 @@ ranef(m.2)
 
 ### plot of predicted model
 # for all sites
-visreg(m.1,"fdom_event_mean",type="conditional",points.par=list(cex=1.2),
+visreg(m.1,"fdom_event_mean",type="conditional",
        fill=list(col="lightgrey"),
+       points.par=list(cex=2, col=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF")),
        cex.axis=1.4, line.par=list(col="black"),
-       xlab=list("Groundwater Mean Preceeding Event", cex=1.8),
-       ylab=list("fDOM loss (log QSU)", cex=1.8),
-       by='wellID',overlay=TRUE) # this looks significant, but it isn't because it's just driven by different means of each site and well. This is why including random effects is important!
+       xlab=list("Groundwater Mean Preceding Event (2 days)", cex=1.2),
+       ylab=list("fDOM Loss (log QSU)", cex=1.2),
+       by='wellID',overlay=TRUE, legend = FALSE) # this looks significant, but it isn't because it's just driven by different means of each site and well. This is why including random effects is important!
 # for all sites
 visreg(m.2,"fdom_event_cv",type="conditional",points.par=list(cex=1.2),
        fill=list(col="lightgrey"),

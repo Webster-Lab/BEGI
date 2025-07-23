@@ -27,7 +27,7 @@ library(patchwork)
 dat = readRDS("DTW_compiled/event_dtw.rds")
 
 # name events and make names into row names
-dat$ename = paste("e", c(1:59), sep="")
+dat$ename = paste("e", c(1:52), sep="")
 rownames(dat) = dat$ename
 
 # save date/time stamps of events separately 
@@ -113,7 +113,7 @@ k_table<-sapply(depth_clust_k, cvi, type = "internal")
 k_table
 # Note:
 ## some indices should maximized ("Sil","SF","CH","D") and some should be minimized ("DB","DBstar","COP")
-# majority vote shows that k=4 is ideal
+# looks like with new data, 2 or 3 may be ideal
 
 # look at cluster no. of 2 to 6 max
 # NOTE: this can take a long time to run! suggest running on a computer with lots of RAM/memory...
@@ -124,7 +124,7 @@ k_table<-sapply(depth_clust_k, cvi, type = "internal")
 k_table
 # Note:
 ## some indices should maximized ("Sil","SF","CH","D") and some should be minimized ("DB","DBstar","COP")
-# majority vote shows that k=4 is ideal
+# looks like with new data, 2 or 3 may be ideal
 
 
 #### Performing DTW Clustering ####
@@ -157,9 +157,20 @@ k_table
 
 set.seed(666)
 # run analysis with k=4
-depth_clust_k4 <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="pam")
-depth_clust_k4
-plot(depth_clust_k4)
+# depth_clust_k4 <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="pam")
+# depth_clust_k4
+# plot(depth_clust_k4)
+
+# run analysis with k=2
+depth_clust_k2 <- tsclust(series = dat_s_n, k = 2, distance = 'dtw_basic',centroid="pam")
+depth_clust_k2
+plot(depth_clust_k2)
+
+# run analysis with k=3
+depth_clust_k3 <- tsclust(series = dat_s_n, k = 3, distance = 'dtw_basic',centroid="pam")
+depth_clust_k3
+plot(depth_clust_k3)
+#optimal
 
 # # run analysis with k=4
 # depth_clust_k4_dba <- tsclust(series = dat_s_n, k = 4, distance = 'dtw_basic',centroid="dba")
@@ -176,11 +187,11 @@ plot(depth_clust_k4)
 #### Merge Cluster Data With original Data ####
 
 # format cluster data
-## 59 was the # of original curves
-cluster_data1<-as.data.frame(list(DTW=list(cumsum(rep(1,59))),cluster=list(depth_clust_k4@cluster)))
+## 52 was the # of original curves
+cluster_data1<-as.data.frame(list(DTW=list(cumsum(rep(1,52))),cluster=list(depth_clust_k3@cluster)))
 colnames(cluster_data1)<-c("DTW_id","cluster")
 # merge data df's together
-cluster_DTW_data_k4<-cbind(times, cluster_data1,dat_s_n)
+cluster_DTW_data_k3<-cbind(times, cluster_data1,dat_s_n)
 # 
 # # format cluster data
 # ## 59 was the # of original curves
@@ -201,14 +212,14 @@ cluster_DTW_data_k4<-cbind(times, cluster_data1,dat_s_n)
 
 # view summary of results
 # includes the number of curves in each cluster, and the average distance of curves from the "ideal" curve 
-depth_clust_k4
+depth_clust_k3
 # depth_clust_k4_dba
 # depth_clust_k4_shape
 
 # there are a couple ways to plot results
 
 ## 1- with the output of the dtwclust function
-plot(depth_clust_k4)
+plot(depth_clust_k3)
 # plot(depth_clust_k4_dba)
 # plot(depth_clust_k4_shape)
 # this shows the centroid cluster (the one most representative of the cluster) in thick dashed line
@@ -216,60 +227,59 @@ plot(depth_clust_k4)
 
 ## 2- extract the centroid from each dtwclust object and plot with ggplot
 # can find centroids (by their list number) in the output of the dtwclust function
-attr(depth_clust_k4@centroids,"series_id")
-## events 7 41 58  5 are the centroids for each cluster
+attr(depth_clust_k3@centroids,"series_id")
+## events 24 22 14 are the centroids for each cluster
 
-dat_s_n_forplot = data.frame(t(dat_s_n[c(7,58,41,22),]))
+dat_s_n_forplot = data.frame(t(dat_s_n[c(24,22,14),]))
 names(dat_s_n_forplot) = colnames(dat_s_n_forplot)
 dat_s_n_forplot$t = rownames(dat_s_n_forplot)
-dat_s_n_forplot_long = dat_s_n_forplot %>% pivot_longer(cols='e7':'e22',
+dat_s_n_forplot_long = dat_s_n_forplot %>% pivot_longer(cols='e24':'e14',
                                                         names_to = "event",
                                                         values_to = "DTW_m")
 dat_s_n_forplot_long$timestep = as.numeric(gsub('t', '', dat_s_n_forplot_long$t))
 dat_s_n_forplot_long =
   dat_s_n_forplot_long %>%
   mutate(cluster = case_match(event, 
-                              "e7" ~ 1,
-                              "e58" ~ 2,
-                              "e41" ~ 3,
-                              "e22" ~ 4))
+                              "e24" ~ 1,
+                              "e22" ~ 2,
+                              "e14" ~ 3))
 
 centriodcurvesp = 
   ggplot(dat_s_n_forplot_long, aes(x=timestep,y=DTW_m))+
   geom_line(linewidth=2)+
   theme_classic()+
-  xlab("Time (min)")+ylab("Depth (m)")+
+  xlab("Time (min)")+ylab("Normalized Depth (m)")+
   facet_wrap(~cluster)
 
 
 # plot all curves of each cluster
-cluster_DTW_data_k4_long = cluster_DTW_data_k4 %>% pivot_longer(cols='t12':'t192',
+cluster_DTW_data_k3_long = cluster_DTW_data_k3 %>% pivot_longer(cols='t12':'t192',
                                                                names_to = "timestep",
                                                                values_to = "DTW_m")
-cluster_DTW_data_k4_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k4_long$timestep))
+cluster_DTW_data_k3_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k3_long$timestep))
 
-ggplot(cluster_DTW_data_k4_long, aes(x=timestep,y=DTW_m, color=ename))+
-  geom_line(linewidth=2)+
+ggplot(cluster_DTW_data_k3_long, aes(x=timestep,y=DTW_m, color=ename))+
+  geom_line(linewidth=1)+
   theme_classic()+
   xlab("Time (min)")+ylab("Depth (m)")+
   facet_wrap(~cluster)
 
 
 # plot the mean of all curves in each cluster
-mean_k4_cluster = 
-  cluster_DTW_data_k4_long %>%
+mean_k3_cluster = 
+  cluster_DTW_data_k3_long %>%
   group_by(cluster,timestep) %>%
   summarise(DTW_m_mean = mean(DTW_m))
   
-meancurvesp = ggplot(mean_k4_cluster, aes(x=timestep,y=DTW_m_mean))+
+meancurvesp = ggplot(mean_k3_cluster, aes(x=timestep,y=DTW_m_mean))+
   geom_line(linewidth=2)+
   theme_classic()+
-  xlab("Time (min)")+ylab("Depth (m)")+
+  xlab("Time (min)")+ylab("Normalized Depth (m)")+
   facet_wrap(~cluster)
 ggsave("plots/meancurvesp.png", meancurvesp, width = 9, height = 8, units = "in")
 #### save results ####
 
-write.csv(cluster_DTW_data_k4, "DTW_compiled/DTW_clusters_k4_smoothed_norm.csv", row.names = FALSE)
+write.csv(cluster_DTW_data_k3, "DTW_compiled/DTW_clusters_k3_smoothed_norm.csv", row.names = FALSE)
 
 # qualitative descriptions based on centroid="pam" k4 results:
 # note that the data is depth to water in meters below the surface. We often multiply by -1 to view it as below the surface, but that is not the case in these plots. I am interpreting it in the negative so that the interpretation is more intuative (e.g., "net rise" = water got closer to surface)
@@ -280,7 +290,7 @@ write.csv(cluster_DTW_data_k4, "DTW_compiled/DTW_clusters_k4_smoothed_norm.csv",
 # ^ this is the old analysis! change for this one. 
 
 #based on these 3 plots:
-plot(depth_clust_k4)
+plot(depth_clust_k3)
 meancurvesp
 centriodcurvesp
 
@@ -388,47 +398,43 @@ plot(depth_clust_k3)
 
 
 #### plot cluster with Well ID ####
-cluster_DTW_data_k4 <- read_csv("DTW_compiled/DTW_clusters_k4_smoothed_norm.csv")
+cluster_DTW_data_k3 <- read_csv("DTW_compiled/DTW_clusters_k3_smoothed_norm.csv")
 
 #import BEGI events (with tc data)
 BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
 
 #Match event_time with Eventdate for each well
 #Turns out the events in the csv are in order for each well's Eventdate list :D
-cluster_DTW_data_k4$well_id <- rep(c("SLOC","SLOW","VDOW","VDOS"),
+cluster_DTW_data_k3$well_id <- rep(c("SLOC","SLOW","VDOW","VDOS"),
                                    times = c(length(BEGI_events[["Eventdate"]][["SLOC_dates"]]),
                                              length(BEGI_events[["Eventdate"]][["SLOW_dates"]]),
                                              length(BEGI_events[["Eventdate"]][["VDOW_dates"]]),
                                              length(BEGI_events[["Eventdate"]][["VDOS_dates"]])))
 
 #count of what clusters occurred in each well
-cluster_by_well <- data.frame(SLOC = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'SLOC'),
-                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'SLOC'),
-                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'SLOC'),
-                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'SLOC')),
-                              SLOW = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'SLOW'),
-                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'SLOW'),
-                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'SLOW'),
-                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'SLOW')),
-                              VDOW = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'VDOW'),
-                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'VDOW'),
-                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'VDOW'),
-                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'VDOW')),
-                              VDOS = c(sum(cluster_DTW_data_k4$cluster == 1 & cluster_DTW_data_k4$well_id == 'VDOS'),
-                                       sum(cluster_DTW_data_k4$cluster == 2 & cluster_DTW_data_k4$well_id == 'VDOS'),
-                                       sum(cluster_DTW_data_k4$cluster == 3 & cluster_DTW_data_k4$well_id == 'VDOS'),
-                                       sum(cluster_DTW_data_k4$cluster == 4 & cluster_DTW_data_k4$well_id == 'VDOS')))
+cluster_by_well <- data.frame(SLOC = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'SLOC'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'SLOC'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'SLOC')),
+                              SLOW = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'SLOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'SLOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'SLOW')),
+                              VDOW = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'VDOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'VDOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'VDOW')),
+                              VDOS = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'VDOS'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'VDOS'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'VDOS')))
 
 # plot all curves of each cluster
-cluster_DTW_data_k4_long = cluster_DTW_data_k4 %>% pivot_longer(cols='t12':'t192',
+cluster_DTW_data_k3_long = cluster_DTW_data_k3 %>% pivot_longer(cols='t12':'t192',
                                                                 names_to = "timestep",
                                                                 values_to = "DTW_m")
-cluster_DTW_data_k4_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k4_long$timestep))
+cluster_DTW_data_k3_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k3_long$timestep))
 
-well_clusters<-ggplot(cluster_DTW_data_k4_long, aes(x=timestep,y=DTW_m, group=ename, color=well_id))+
+well_clusters<-ggplot(cluster_DTW_data_k3_long, aes(x=timestep,y=DTW_m, group=ename, color=well_id))+
   geom_line(linewidth=1,)+
   theme_classic()+
-  xlab("Time (min)")+ylab("Depth (m)")+
+  xlab("Time (min)")+ylab("Normalized Depth (m)")+
   facet_wrap(~cluster) +
   scale_color_manual(values=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))
 
@@ -436,5 +442,5 @@ final_cluster <- well_clusters / tableGrob(cluster_by_well) +
   plot_layout(heights = c(4,1))
 
 
-ggsave("plots/well_clusters.png", well_clusters, width = 9, height = 8, units = "in")
-ggsave("plots/final_cluster.png", final_cluster, width = 9, height = 10, units = "in")
+ggsave("plots/well_clusters.png", well_clusters, width = 12, height = 7, units = "in")
+ggsave("plots/final_cluster.png", final_cluster, width = 14, height = 9, units = "in")

@@ -36,6 +36,8 @@ library(scales)
 library(ggbreak)
 library(viridis)
 library(gridExtra)
+library(ggeffects)
+library(broom.mixed)
 
 # replace NaNs with NA
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
@@ -63,7 +65,8 @@ DO_ROC[sapply(DO_ROC, is.character)] <- lapply(DO_ROC[sapply(DO_ROC, is.characte
 names(DO_ROC)[names(DO_ROC) == 'DO'] <- 'DO_ROC'
 
 # mean and variance summary of depth to water (DTW) for each event
-dtw_events = read.csv("DTW_compiled/DO_mv_2days.csv")
+dtw_events = readRDS("DTW_compiled/DO_mv.rds")
+#dtw_events = read.csv("DTW_compiled/DO_mv_2days.csv")
 names(dtw_events)[names(dtw_events) == 'WellID'] <- 'wellID'
 names(dtw_events)[names(dtw_events) == 'Eventdates'] <- 'Eventdate'
 dtw_events$Eventdate = as.POSIXct(paste(substr(dtw_events$Eventdate, start=1,stop=10),
@@ -144,11 +147,42 @@ DO_AUC_ts
 ggsave("plots/DO_AUC_overtime.png",DO_AUC_ts, width = 15, height = 8, units = "in")
 
 #### plot respriation events vs gw variance ####
+#model results
+m.2 = nlme::lme(log(DO_AUC) ~ dtw_DO_event_cv, 
+                data=DO_events_all, random=~1|siteID/wellID, method="ML")
+
+#create new data frame for prediction
+new_data <- DO_events_all %>% 
+  select(dtw_DO_event_cv, wellID) %>% 
+  distinct()
+
+#add predictions
+new_data$pred <- predict(m.2, newdata = new_data, level = 0)
+
+#standard erros
+X <- model.matrix(~ dtw_DO_event_cv, new_data)
+betas <- fixef(m.2)
+vcov_mat <- vcov(m.2)
+se_fit <- sqrt(diag(X %*% vcov_mat %*% t(X)))
+
+#95% CI
+new_data <- new_data %>%
+  mutate(
+    lower = pred - 1.96 * se_fit,
+    upper = pred + 1.96 * se_fit
+  )
+
 
 DO_AUC_gwvar_log = 
   ggplot(DO_events_all, aes(x = dtw_DO_event_cv, y = log(DO_AUC), color=wellID))+
-  geom_point(alpha = 0.7, size=5)+                                      
-  geom_smooth(method = "lm", fill=NA) +
+  #geom_point(alpha = 0.7, size=5)+
+  geom_abline(intercept = 4.056911, slope = 0.617108, color="#440154FF", size = 1.5) + 
+  geom_point(alpha = 0.7, size=3,aes(colour=factor(wellID)))+
+  geom_ribbon(data = new_data, 
+              aes(x = dtw_DO_event_cv, ymin = lower, ymax = upper),
+              inherit.aes = FALSE, fill = "#440154FF", alpha = 0.3) +
+  #geom_smooth(method=lm, colour="#440154FF", se=T, size=1.5)+
+  #geom_smooth(method=lm, aes(colour=factor(wellID)), se=F, size=0.5)
   labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceding Event (2 days)", width=35),
        y = str_wrap("Dissolved Oxygen Consumption Event Size (g O2 m-3 15 min-1)", width=40))+
   theme_bw()+
@@ -160,20 +194,20 @@ DO_AUC_gwvar_log =
 DO_AUC_gwvar_log
 ggsave("plots/DO_AUC_gwvar_log.png",DO_AUC_gwvar_log, width = 9, height = 8, units = "in")
 
-DO_ROC_gwvar = 
-  ggplot(DO_events_all, aes(x = dtw_DO_event_cv, y = log(DO_ROC*-1), color=wellID))+
-  geom_point(alpha = 0.7, size=5)+                                      
-  geom_smooth(method = "lm", fill=NA) +
-  labs(x = "Groundwater Variation Preceding Event", 
-       y = str_wrap("Dissolved Oxygen Consumption Rate (log % saturation change per 15 min)", width=36))+
-  theme_bw()+
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.title = element_blank(),
-        text = element_text(size = 20))+
-  scale_color_viridis(discrete = TRUE, option = "D")
-DO_ROC_gwvar
-ggsave("plots/DO_ROC_gwvar_log.png",DO_ROC_gwvar, width = 9, height = 8, units = "in")
+# DO_ROC_gwvar = 
+#   ggplot(DO_events_all, aes(x = dtw_DO_event_cv, y = log(DO_ROC*-1), color=wellID))+
+#   geom_point(alpha = 0.7, size=5)+                                      
+#   geom_smooth(method = "lm", fill=NA) +
+#   labs(x = "Groundwater Variation Preceding Event", 
+#        y = str_wrap("Dissolved Oxygen Consumption Rate (log % saturation change per 15 min)", width=36))+
+#   theme_bw()+
+#   theme(panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         legend.title = element_blank(),
+#         text = element_text(size = 20))+
+#   scale_color_viridis(discrete = TRUE, option = "D")
+# DO_ROC_gwvar
+# ggsave("plots/DO_ROC_gwvar_log.png",DO_ROC_gwvar, width = 9, height = 8, units = "in")
 
 
 #### plot respriation events vs gw mean ####
@@ -335,13 +369,16 @@ ranef(m.5)
 
 ### plot of predicted model
 
-visreg(m.2,"dtw_DO_event_cv",type="conditional",
+DO_gwvar <- visreg(m.2,"dtw_DO_event_cv",type="conditional",
        fill=list(col="lightgrey"),
        points.par=list(cex=2, col=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF")),
        cex.axis=1.4, line.par=list(col="black"),
-       xlab=list("Depth to Groundwater Coef. of Variation Preceeding Event (2 days)", cex=1.2),
-       ylab=list("Dissolved Oxygen Consumption Event Size (log scale)", cex=1.2),
+       xlab=list("Depth to Groundwater Coef. of Variation Preceding Event (2 days)", cex=1.2),
+       ylab=list("Dissolved Oxygen Consumption Event Size (g O2 m-3 15 min-1)", cex=1.2),
        by='wellID',overlay=TRUE, legend=FALSE)
+DO_gwvar
+ggsave("plots/DO_gwvar.png",DO_gwvar, width = 9, height = 8, units = "in")
+
 
 visreg(m.5,"dtw_DO_event_mean",type="conditional",points.par=list(cex=1.2),
        fill=list(col="lightgrey"),
@@ -466,7 +503,8 @@ names(odumER)[names(odumER) == 'Event'] <- 'eventID'
 # DOevents = DO_AUC[,2:5]
 
 # mean and variance summary of depth to water (DTW) for each event
-dtw_events = read.csv("DTW_compiled/DO_mv.csv")
+#dtw_events = read.csv("DTW_compiled/DO_mv.csv")
+dtw_events = readRDS("DTW_compiled/DO_mv.rds")
 names(dtw_events)[names(dtw_events) == 'WellID'] <- 'wellID'
 names(dtw_events)[names(dtw_events) == 'Eventdates'] <- 'Eventdate'
 dtw_events$Eventdate = as.POSIXct(paste(substr(dtw_events$Eventdate, start=1,stop=10),

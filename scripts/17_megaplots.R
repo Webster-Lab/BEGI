@@ -60,6 +60,9 @@ BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
 #import EXOz.tc
 EXOz.tc = readRDS("EXO_compiled/BEGI_EXOz.tc.rds")
 
+#import sonde data WITHOUT service times removed
+EXO.ts = readRDS("EXO_compiled/BEGI_EXOz.ts.tc.rds")
+
 
 
 # check time zone formatting
@@ -68,7 +71,10 @@ lubridate::tz(EXOz.tc[["SLOW"]]$datetimeMT)
 lubridate::tz(EXOz.tc[["VDOS"]]$datetimeMT)
 lubridate::tz(EXOz.tc[["VDOW"]]$datetimeMT)
 
-
+lubridate::tz(EXO.ts[["SLOC"]]$datetimeMT)
+lubridate::tz(EXO.ts[["SLOW"]]$datetimeMT)
+lubridate::tz(EXO.ts[["VDOS"]]$datetimeMT)
+lubridate::tz(EXO.ts[["VDOW"]]$datetimeMT)
 
 
 
@@ -1408,3 +1414,402 @@ for (i in seq_along(BEGI_events[["DO_events"]][["VDOS_DO"]])) {
 #     width = 6, height = 11 
 #   )
 # }
+
+#### plot example of sonde servicing triggering respiration VDOW ####
+# EXO.ts[["VDOW"]]
+#11/2/23 - 11/6/23
+ 
+tempdat <- EXO.ts[["VDOW"]][EXO.ts[["VDOW"]]$datetimeMT >= as.POSIXct("2023-11-02 00:00:01 MDT") &
+  EXO.ts[["VDOW"]]$datetimeMT <= as.POSIXct("2023-11-07 00:00:01 MDT"), ]
+  
+tempdtw <- DTW_VDOW[
+  DTW_VDOW$DTW_df.datetimeMT >= min(tempdat$datetimeMT) &
+    DTW_VDOW$DTW_df.datetimeMT <= max(tempdat$datetimeMT), ]
+  
+  
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOW)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+             inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+             inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+             inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT)),
+                     date_labels = "%b %d %H:%M") +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/VDOW/events/VDOW_wellmix1.pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
+
+#3/5/24 - 3/10/24
+  
+tempdat <- EXO.ts[["VDOW"]][EXO.ts[["VDOW"]]$datetimeMT >= as.POSIXct("2024-03-04 00:00:01 MDT") &
+                EXO.ts[["VDOW"]]$datetimeMT <= as.POSIXct("2024-03-11 00:00:01 MDT"), ]
+  
+tempdtw <- DTW_VDOW[
+  DTW_VDOW$DTW_df.datetimeMT >= min(tempdat$datetimeMT) &
+    DTW_VDOW$DTW_df.datetimeMT <= max(tempdat$datetimeMT), ]
+
+  
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOW)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOW$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT)),
+                     date_labels = "%b %d %H:%M") +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/VDOW/events/VDOW_wellmix2.pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
+  
+  
+#### plot example of sonde servicing triggering respiration VDOS ####
+  
+#11/2/23 - 11/6/23 
+  tempdat <- EXO.ts[["VDOS"]][EXO.ts[["VDOS"]]$datetimeMT >= as.POSIXct("2023-11-02 00:00:01 MDT") &
+                                EXO.ts[["VDOS"]]$datetimeMT <= as.POSIXct("2023-11-06 12:00:01 MDT"), ]
+  
+  tempdtw <- DTW_VDOS[
+    DTW_VDOS$DTW_df.datetimeMT >= min(tempdat$datetimeMT) &
+      DTW_VDOS$DTW_df.datetimeMT <= max(tempdat$datetimeMT), ]
+  
+  
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOS)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT)),
+                     date_labels = "%b %d %H:%M") +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/VDOS/events/VDOS_wellmix1.pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
+  
+#11/10/23 - 11/17/23
+  tempdat <- EXO.ts[["VDOS"]][EXO.ts[["VDOS"]]$datetimeMT >= as.POSIXct("2023-11-10 00:00:01 MDT") &
+                                EXO.ts[["VDOS"]]$datetimeMT <= as.POSIXct("2023-11-15 00:00:01 MDT"), ]
+  
+  tempdtw <- DTW_VDOS[
+    DTW_VDOS$DTW_df.datetimeMT >= min(tempdat$datetimeMT) &
+      DTW_VDOS$DTW_df.datetimeMT <= max(tempdat$datetimeMT), ]
+  
+  
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOS)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT)),
+                     date_labels = "%b %d %H:%M") +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/VDOS/events/VDOS_wellmix2.pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
+  
+
+#7/9/24 - 7/18/24
+  tempdat <- EXO.ts[["VDOS"]][EXO.ts[["VDOS"]]$datetimeMT >= as.POSIXct("2024-07-08 00:00:01 MDT") &
+                                EXO.ts[["VDOS"]]$datetimeMT <= as.POSIXct("2024-07-14 12:00:01 MDT"), ]
+  
+  tempdtw <- DTW_VDOS[
+    DTW_VDOS$DTW_df.datetimeMT >= min(tempdat$datetimeMT) &
+      DTW_VDOS$DTW_df.datetimeMT <= max(tempdat$datetimeMT), ]
+  
+  
+  #Plots
+  g1 <- ggplot(tempdat, aes(x = datetimeMT, y = ODO.mg.L.mn)) + 
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "DO (mg/l)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g2 <- ggplot(tempdat, aes(x = datetimeMT, y = fDOM.QSU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() +labs(y = "fDOM (QSU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  
+  g3 <- ggplot(tempdtw, aes(x = DTW_df.datetimeMT, y = -DTW_df.VDOS)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "GW Depth (m)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g4 <- ggplot(tempdat, aes(x = datetimeMT, y = Turbidity.FNU.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs (y = "Turbidity (FNU)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g5 <- ggplot(tempdat, aes(x = datetimeMT, y = Temp..C.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT))) +
+    geom_line(na.rm = TRUE) + theme_minimal() + labs(y = "Temp (°C)") +
+    theme(axis.text.x = element_blank(), axis.title.x = element_blank(),
+          plot.title = element_blank(),plot.margin = margin(0, 5, 0, 5))
+  
+  g6 <- ggplot(tempdat, aes(x = datetimeMT, y = SpCond.µS.cm.mn)) +
+    geom_rect(data = shade_df, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              inherit.aes = FALSE, fill = "lightgrey", alpha = 0.5) +
+    geom_vline(xintercept = as.POSIXct(service.VDOS$datetimeMT), color = "red", linetype = "dashed") +
+    scale_x_datetime(limits = c(min(tempdat$datetimeMT), max(tempdat$datetimeMT)),
+                     date_labels = "%b %d %H:%M") +
+    labs(y = "SpCond (µS/cm)", x = "Datetime") +
+    geom_line(na.rm = TRUE) + theme_minimal() +
+    theme( plot.title = element_blank(), plot.margin = margin(0, 5, 0, 5))
+  
+  # Combine with patchwork
+  full_plot <- g1 / g2 / g3 / g4 / g5 / g6 +
+    plot_layout(ncol = 1, heights = rep(1, 6)) & 
+    theme(axis.title.y = element_text(angle = 90, vjust = 0.5))
+  
+  # Save
+  ggsave(
+    filename = paste0("plots/delineations/VDOS/events/VDOS_wellmix3.pdf"),
+    plot = full_plot,
+    width = 6, height = 11 
+  )
+
