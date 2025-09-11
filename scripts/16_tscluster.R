@@ -436,7 +436,10 @@ well_clusters<-ggplot(cluster_DTW_data_k3_long, aes(x=timestep,y=DTW_m, group=en
   theme_classic()+
   xlab("Time (min)")+ylab("Normalized Depth (m)")+
   facet_wrap(~cluster) +
+  theme(text = element_text(size = 20))+
   scale_color_manual(values=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))
+
+well_clusters
 
 final_cluster <- well_clusters / tableGrob(cluster_by_well) +
   plot_layout(heights = c(4,1))

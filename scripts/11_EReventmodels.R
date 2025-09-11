@@ -247,7 +247,7 @@ ranef(m.2)
 # for all sites
 visreg(m.1,"fdom_event_mean",type="conditional",
        fill=list(col="lightgrey"),
-       points.par=list(cex=2, col=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF")),
+       points.par=list(cex=1.5, col=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF")),
        cex.axis=1.4, line.par=list(col="black"),
        xlab=list("Groundwater Mean Preceding Event (2 days)", cex=1.2),
        ylab=list("fDOM Loss (log QSU)", cex=1.2),
@@ -265,6 +265,28 @@ r.squaredGLMM(m.1)
 r.squaredGLMM(m.2)
 # #Marginal R2:  the proportion of variance explained by the fixed factor(s) alone
 #Conditional R2: he proportion of variance explained by both the fixed and random factors
+
+
+pdf("plots/fdom_mean.pdf", width = 9, height = 8)
+par(mar = c(5, 6, 4, 2))
+fdom_mean <- visreg(m.1, "fdom_event_mean", type = "conditional",
+                   fill = list(col = "lightgrey"),
+                   points.par = list(cex = 2, col = c("#440154FF", "#31688EFF", "#35B779FF", "#FDE725FF")),
+                   cex.axis = 1.4,
+                   line.par = list(col = "black"),
+                   by = "wellID",
+                   xlab ="",
+                   ylab = "",
+                   overlay = TRUE,
+                   legend = FALSE)
+fdom_mean
+title(
+  xlab = "Groundwater Mean Preceding Event (2 days)",
+  ylab = "fDOM loss (log QSU)",
+  cex.lab = 1.4
+)
+dev.off()
+
 
 
 

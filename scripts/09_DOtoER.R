@@ -625,14 +625,16 @@ odumER$D <-c(SLOC_D,SLOW_D,VDOW_D,VDOS_D)
 
 #ER boxplot
 odumER_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
-  theme_grey(base_size = 18) +
-  labs(y = "Ecosystem Respiration (g O2 m-2 event-1)", x = "Well") 
+  theme_grey(base_size = 22) +
+  ylab(bquote("Ecosystem Respiration (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
 print(odumER_bp)
 
 #D boxplot
 odumD_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
-  theme_grey(base_size = 18) +
-  labs(y = "Oxygen Uptake via Diffusion (g O2 m-2 event-1)", x = "Well")
+  theme_grey(base_size = 22) +
+  ylab(bquote("Oxygen Uptake via Diffusion (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
 print(odumD_bp)
 
 #log scale DO event size
@@ -644,8 +646,9 @@ DO_AUC_log <- ggplot(data = DO_AUC, mapping = aes(x = Well, y = log(DO))) +
     breaks = pretty(log(DO_AUC$DO)),
     labels = function(x) round(exp(x), 1)
   ) +
-  theme_grey(base_size = 18) +
-  labs(y = "DO Event Size (g O2 m-3 15 min-1)")
+  theme_grey(base_size = 22) +
+  ylab(bquote("Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
+  xlab("Well")
 
 #layout boxplots of DO event, respiration, diffusion
 boxplots = 

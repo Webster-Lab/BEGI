@@ -38,6 +38,7 @@ library(viridis)
 library(gridExtra)
 library(ggeffects)
 library(broom.mixed)
+library(ggplot2)
 
 # replace NaNs with NA
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
@@ -213,13 +214,13 @@ ggsave("plots/DO_AUC_gwvar_log.png",DO_AUC_gwvar_log, width = 9, height = 8, uni
 #### plot respriation events vs gw mean ####
 
 # NOTE: Eve used the dtw_m with +1 constant added that I made to calcualte cv (see 05_gwmeanvar.R script), so all these gw mean values have +1 added to them, and therefore look deeper than they actually were. I will fix this in the plots, but we should probably fix this in the modeling too. 
-
+#ylab(bquote('Discharge (L'~sec^-1*')'))+#
 DO_AUC_gwmean_log = 
   ggplot(DO_events_all, aes(x = dtw_DO_event_mean-1, y = log(DO_AUC), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  labs(x = "Mean Depth to Groundwater Preceeding Event (2 days)", width =35,
-       y = str_wrap("Dissolved Oxygen Event Size (g O2 m-3 15 min-1)", width=40))+
+  xlab( "Mean Depth to Groundwater Preceeding\n Event (2 days)") +
+  ylab(bquote("Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
   geom_vline(xintercept=0, linetype = 'dashed') +
   theme_bw()+
   scale_y_continuous(
@@ -229,42 +230,42 @@ DO_AUC_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 20))+
+        text = element_text(size = 21))+
   scale_color_viridis(discrete = TRUE, option = "D")
 DO_AUC_gwmean_log
 ggsave("plots/DO_AUC_gwmean_log.png",DO_AUC_gwmean_log, width = 9, height = 8, units = "in")
 
-DO_AUC_gwmean = 
-  ggplot(DO_events_all, aes(x = dtw_DO_event_mean-1, y = (DO_AUC), color=wellID))+
-  geom_point(alpha = 0.7, size=5)+                                      
-  geom_smooth(method = "lm", fill=NA) +
-  labs(x = "Mean Depth to Groundwater Preceeding Event (2 days)", 
-       y = str_wrap("Dissolved Oxygen Event Size (g O2 m-3 15 min-1)", width=25))+
-  geom_vline(xintercept=0, linetype = 'dashed') +
-  theme_bw()+
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.title = element_blank(),
-        text = element_text(size = 20))+
-  scale_color_viridis(discrete = TRUE, option = "D")
-DO_AUC_gwmean
-ggsave("plots/DO_AUC_gwmean.png",DO_AUC_gwmean, width = 9, height = 8, units = "in")
+# DO_AUC_gwmean = 
+#   ggplot(DO_events_all, aes(x = dtw_DO_event_mean-1, y = (DO_AUC), color=wellID))+
+#   geom_point(alpha = 0.7, size=5)+                                      
+#   geom_smooth(method = "lm", fill=NA) +
+#   xlab( "Mean Depth to Groundwater Preceeding Event (2 days)") +
+#        ylab(bquote("Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
+#   geom_vline(xintercept=0, linetype = 'dashed') +
+#   theme_bw()+
+#   theme(panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         legend.title = element_blank(),
+#         text = element_text(size = 21))+
+#   scale_color_viridis(discrete = TRUE, option = "D")
+# DO_AUC_gwmean
+# ggsave("plots/DO_AUC_gwmean.png",DO_AUC_gwmean, width = 9, height = 8, units = "in")
 
-DO_ROC_gwmean_log = 
-  ggplot(DO_events_all, aes(x = dtw_DO_event_mean-1, y = log(DO_ROC*-1), color=wellID))+
-  geom_point(alpha = 0.7, size=5)+                                      
-  geom_smooth(method = "lm", fill=NA) +
-  labs(x = "Mean Depth to Groundwater (m) Preceeding Event (2 days)", 
-       y = str_wrap("Dissolved Oxygen Consumption Rate (log % saturation change per 15 min)", width=36))+
-  geom_vline(xintercept=0, linetype = 'dashed') +
-  theme_bw()+
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        legend.title = element_blank(),
-        text = element_text(size = 20))+
-  scale_color_viridis(discrete = TRUE, option = "D")
-DO_ROC_gwmean_log
-ggsave("plots/DO_ROC_gwmean_log.png",DO_ROC_gwmean_log, width = 9, height = 8, units = "in")
+# DO_ROC_gwmean_log = 
+#   ggplot(DO_events_all, aes(x = dtw_DO_event_mean-1, y = log(DO_ROC*-1), color=wellID))+
+#   geom_point(alpha = 0.7, size=5)+                                      
+#   geom_smooth(method = "lm", fill=NA) +
+#   labs(x = "Mean Depth to Groundwater (m) Preceeding Event (2 days)", 
+#        y = str_wrap("Dissolved Oxygen Consumption Rate (log % saturation change per 15 min)", width=36))+
+#   geom_vline(xintercept=0, linetype = 'dashed') +
+#   theme_bw()+
+#   theme(panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         legend.title = element_blank(),
+#         text = element_text(size = 20))+
+#   scale_color_viridis(discrete = TRUE, option = "D")
+# DO_ROC_gwmean_log
+# ggsave("plots/DO_ROC_gwmean_log.png",DO_ROC_gwmean_log, width = 9, height = 8, units = "in")
 
 # DTW_df = readRDS( "DTW_compiled/BEGI_PT_DTW_all.rds")
 # dtw_events = read.csv("DTW_compiled/DO_mv_2days.csv")
@@ -368,17 +369,33 @@ ranef(m.2)
 ranef(m.5)
 
 ### plot of predicted model
-
-DO_gwvar <- visreg(m.2,"dtw_DO_event_cv",type="conditional",
-       fill=list(col="lightgrey"),
-       points.par=list(cex=2, col=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF")),
-       cex.axis=1.4, line.par=list(col="black"),
-       xlab=list("Depth to Groundwater Coef. of Variation Preceding Event (2 days)", cex=1.2),
-       ylab=list("Dissolved Oxygen Consumption Event Size (g O2 m-3 15 min-1)", cex=1.2),
-       by='wellID',overlay=TRUE, legend=FALSE)
+# 
+# DO_gwvar <- visreg(m.2,"dtw_DO_event_cv",type="conditional",
+#        fill=list(col="lightgrey"),
+#        points.par=list(cex=2, col=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF")),
+#        cex.axis=1.4, line.par=list(col="black"),
+#        xlab=list("Depth to Groundwater Coef. of Variation Preceding Event (2 days)", cex=1.2),
+#        ylab=list("Dissolved Oxygen Consumption Event Size (g O2 m-3 15 min-1)", cex=1.2),
+#        by='wellID',overlay=TRUE, legend=FALSE)
+pdf("plots/DO_gwvar.pdf", width = 9, height = 8)
+par(mar = c(5, 6, 4, 2))
+DO_gwvar <- visreg(m.2, "dtw_DO_event_cv", type = "conditional",
+                   fill = list(col = "lightgrey"),
+                   points.par = list(cex = 2, col = c("#440154FF", "#31688EFF", "#35B779FF", "#FDE725FF")),
+                   cex.axis = 1.4,
+                   line.par = list(col = "black"),
+                   by = "wellID",
+                   xlab ="",
+                   ylab = "",
+                   overlay = TRUE,
+                   legend = FALSE)
 DO_gwvar
-ggsave("plots/DO_gwvar.png",DO_gwvar, width = 9, height = 8, units = "in")
-
+title(
+  xlab = "Depth to Groundwater Coef. of Variation Preceding Event (2 days)",
+  ylab = bquote("Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"),
+  cex.lab = 1.4
+)
+dev.off()
 
 visreg(m.5,"dtw_DO_event_mean",type="conditional",points.par=list(cex=1.2),
        fill=list(col="lightgrey"),
@@ -444,7 +461,7 @@ DTW =
         panel.grid.minor = element_blank(),
         axis.text.x = element_blank(),
         legend.title = element_blank(),
-        legend.position = "none",
+        legend.position = "bottom",
         text = element_text(size = 15))+
   scale_color_viridis(discrete = TRUE, option = "D")
 
@@ -489,6 +506,9 @@ Q_DTW_DOevents =
   plot_layout(ncol = 1, widths = c(1,.84,1,1), heights=c(1,1.5,1.5,1.5))
 ggsave("plots/RGdischarge_allwellsDTW_DOAUC.png", Q_DTW_DOevents, width=11,height=10, units="in")
 
+Q_DTW_ts = Q + DTW +
+  plot_layout(ncol=1, widths = c(1, 0.84), heights=c(1,1.5))
+Q_DTW_ts
 #### load and wrangle updated data ####
 #using compiled dtw dataset with varying time periods and odum's ER
 
@@ -545,8 +565,8 @@ D_gwvar_log =
   ggplot(ER_events, aes(x = dtw_ER_event_cv2, y = log(D), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceding Event (2 days)", width=35),
-       y = str_wrap("Oxygen Uptake via Diffusion (g O2 m-2 event-1)", width=40))+
+  xlab("Depth to Groundwater Coef. of Variation\n Preceding Event (2 days)")+
+       ylab(bquote("Oxygen Uptake via Diffusion (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
   theme_bw()+
   scale_y_continuous(
     breaks = pretty(log(ER_events$D)),
@@ -555,7 +575,7 @@ D_gwvar_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 20),
+        text = element_text(size = 21),
         legend.position = "none")+
   scale_color_viridis(discrete = TRUE, option = "D")
 D_gwvar_log
@@ -566,8 +586,8 @@ D_gwmean_log =
   ggplot(ER_events, aes(x = dtw_ER_event_mean2, y = log(D), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  labs(x = str_wrap("Mean Depth to Groundwater Preceding Event (2 days)", width=35),
-       y = str_wrap("Oxygen Uptake via Diffusion (g O2 m-2 event-1)", width=40))+
+  xlab("Mean Depth to Groundwater Preceding\n Event (2 days)")+
+       ylab(bquote("Oxygen Uptake via Diffusion (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
   theme_bw()+
   scale_y_continuous(
     breaks = pretty(log(ER_events$D)),
@@ -576,7 +596,7 @@ D_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 20),
+        text = element_text(size = 21),
         legend.position = "none")+
   scale_color_viridis(discrete = TRUE, option = "D")
 D_gwmean_log
@@ -586,8 +606,8 @@ ER_gwvar_log =
   ggplot(ER_events, aes(x = dtw_ER_event_cv2, y = log(posER), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  labs(x = str_wrap("Depth to Groundwater Coef. of Variation Preceding Event (2 days)", width=35),
-       y = str_wrap("Ecosystem Respiration (g O2 m-2 event-1)", width=40))+
+  xlab("Depth to Groundwater Coef. of Variation\n Preceding Event (2 days)")+
+       ylab(bquote("Ecosystem Respiration (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
   theme_bw()+
   scale_y_continuous(
     breaks = pretty(log(ER_events$posER)),
@@ -596,7 +616,7 @@ ER_gwvar_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 20),
+        text = element_text(size = 21),
         legend.position = "none")+
   scale_color_viridis(discrete = TRUE, option = "D")
 ER_gwvar_log
@@ -607,17 +627,17 @@ ER_gwmean_log =
   ggplot(ER_events, aes(x = dtw_ER_event_mean2, y = log(posER), color=wellID))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  labs(x = str_wrap("MeanDepth to Groundwater Preceding Event (2 days)", width=35),
-       y = str_wrap("Ecosystem Respiration (g O2 m-2 event-1)", width=40))+
+  xlab("Mean Depth to Groundwater Preceding\n Event (2 days)")+
+       ylab(bquote("Ecosystem Respiration (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
   theme_bw()+
   scale_y_continuous(
     breaks = pretty(log(ER_events$D)),
-    labels = function(x) round(exp(x), 1)
+    labels = function(x) round(exp(x), 1),
   ) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 20),
+        text = element_text(size = 21),
         legend.position = "none")+
   scale_color_viridis(discrete = TRUE, option = "D")
 ER_gwmean_log
@@ -632,7 +652,7 @@ ggsave("plots/pres_results.png", pres_results, width = 16, height = 8, units = "
 
 #non sig results
 nonsig<- grid.arrange(D_gwmean_log, ER_gwmean_log, DO_AUC_gwmean_log, D_gwvar_log, ER_gwvar_log, ncol = 3)
-ggsave("plots/nonsig.png",nonsig,width = 20, height = 12, units = "in")
+ggsave("plots/nonsig.png",nonsig,width = 21, height = 14, units = "in")
 #### DO and FDOM event example ####
 ### Import compiled EXO1 RDS file ###
 BEGI_EXO.or2 = readRDS("EXO_compiled/BEGI_EXO.or2.rds")
