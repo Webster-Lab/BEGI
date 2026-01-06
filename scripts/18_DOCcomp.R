@@ -258,7 +258,8 @@ print(doc_bywell)
 # 
 
 #### Import USGS river data ####
-usgsdoc <- read_csv("/Users/etipps/Downloads/fullphyschem.csv")
+usgsdoc <- read_csv("/Users/etipps/Documents/UNM/Webster Lab/BEGI_data/Data/fullphyschem_VDO.csv")
+
 #### Separate river DOC ####
 #dataframe of river DOC labelled as site = river
 #combine with docdata for df of site/well and NPOC value
