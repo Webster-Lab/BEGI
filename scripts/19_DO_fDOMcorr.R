@@ -15,6 +15,13 @@ library(suncalc)
 library(DescTools)
 library(dplyr)
 library(ggplot2)
+library(lme4)
+library(DHARMa)
+library(MuMIn)
+library(forecast)
+library(nlme)
+library(visreg)
+library(viridis)
 
 #### Import all events ####
 #import BEGI events (with tc data)
@@ -118,57 +125,71 @@ for (w in names(BEGI_events$fDOM_events)) {
   fDOM_event_tables[[sub("_fDOM$", "", w)]] <- do.call(rbind, fDOM_rows)
 }
 
-#### Match fDOM events to DO ####
-match_DO_fDOM_events <- function(DO_events, fDOM_events, lag_hours = 36,
-                                 DO_metric = "DO_AUC", fDOM_metric = "fDOM_magnitude") {
+#### Function to match fDOM events to DO ####
+# Function
+match_DO_fDOM_events <- function(DO_events, fDOM_events, lag_hours = 72,
+                                 DO_metric = "DO_AUC",
+                                 fDOM_metric = "fDOM_magnitude") {
   
-  # Convert lag to seconds
-  lag_secs <- lag_hours * 3600
+  # Safety checks
+  if (!fDOM_metric %in% names(fDOM_events)) {
+    stop(paste("Missing column in fDOM_events:", fDOM_metric))
+  }
+  if (!DO_metric %in% names(DO_events)) {
+    stop(paste("Missing column in DO_events:", DO_metric))
+  }
   
-  # Initialize list for matches
-  matched_list <- list()
+  matched_list <- vector("list", nrow(fDOM_events))
   
-  # Loop over each fDOM event
   for (i in seq_len(nrow(fDOM_events))) {
+    
     fdom_row <- fDOM_events[i, ]
     
-    # Candidate DO events: must end before fDOM start and within lag window
-    candidates <- DO_events[
-      (DO_events$t_end <= fdom_row$t_start) & 
-        (fdom_row$t_start - DO_events$t_end <= lag_secs),
-    ]
+    # Lag relative to DO *start*
+    lag_diff <- as.numeric(
+      difftime(fdom_row$t_start, DO_events$t_start, units = "hours")
+    )
+    
+    # Valid DO candidates
+    candidates <- DO_events[lag_diff >= 0 & lag_diff <= lag_hours, ]
     
     if (nrow(candidates) == 0) {
-      # No match
+      
       matched_list[[i]] <- data.frame(
-        fDOM_event_id = fdom_row$event_id,
-        fDOM_start = fdom_row$t_start,
-        fDOM_end = fdom_row$t_end,
+        fDOM_event_id  = fdom_row$event_id,
+        fDOM_start     = fdom_row$t_start,
+        fDOM_end       = fdom_row$t_end,
         fDOM_magnitude = fdom_row[[fDOM_metric]],
-        DO_event_id = NA,
-        DO_start = as.POSIXct(NA),
-        DO_end = as.POSIXct(NA),
-        DO_AUC = NA
+        DO_event_id    = NA,
+        DO_start       = as.POSIXct(NA),
+        DO_end         = as.POSIXct(NA),
+        DO_AUC         = NA,
+        lag_hours      = NA
       )
+      
     } else {
-      # Match to the **closest previous DO event**
-      closest <- candidates[which.max(candidates$t_end), ]
+      
+      # Closest prior DO event by start time
+      idx <- which.min(lag_diff[lag_diff >= 0 & lag_diff <= lag_hours])
+      closest <- candidates[idx, , drop = FALSE]
+      
       matched_list[[i]] <- data.frame(
-        fDOM_event_id = fdom_row$event_id,
-        fDOM_start = fdom_row$t_start,
-        fDOM_end = fdom_row$t_end,
+        fDOM_event_id  = fdom_row$event_id,
+        fDOM_start     = fdom_row$t_start,
+        fDOM_end       = fdom_row$t_end,
         fDOM_magnitude = fdom_row[[fDOM_metric]],
-        DO_event_id = closest$event_id,
-        DO_start = closest$t_start,
-        DO_end = closest$t_end,
-        DO_AUC = closest[[DO_metric]]
+        DO_event_id    = closest$event_id,
+        DO_start       = closest$t_start,
+        DO_end         = closest$t_end,
+        DO_AUC         = closest[[DO_metric]],
+        lag_hours      = as.numeric(
+          difftime(fdom_row$t_start, closest$t_start, units = "hours")
+        )
       )
     }
   }
   
-  # Combine all matches
-  matched_table <- do.call(rbind, matched_list)
-  matched_table
+  do.call(rbind, matched_list)
 }
 
 #### Match events across wells ####
@@ -180,7 +201,7 @@ for (w in names(DO_event_tables)) {
   matched_tables[[w]] <- match_DO_fDOM_events(
     DO_events   = DO_event_tables[[w]],
     fDOM_events = fDOM_event_tables[[w]],
-    lag_hours   = 36,  
+    lag_hours   = 72,  
     DO_metric   = "DO_AUC",
     fDOM_metric = "fDOM_magnitude"
   )
@@ -196,11 +217,7 @@ ggplot(matched_tables$SLOC, aes(x = DO_AUC, y = fDOM_magnitude)) +
     x = "DO event AUC",
     y = "fDOM event magnitude"
   )
-
-#### To see actual lag of events ####
-# Add a column: lag = as.numeric(fDOM_start - DO_end, units = "hours") to see actual lag
-
-
+##############################################
 #### Test if DO events trigger fDOM events ####
 # Logistic regression
 # Response: whether an fDOM event occurred within lag time L
@@ -209,11 +226,277 @@ ggplot(matched_tables$SLOC, aes(x = DO_AUC, y = fDOM_magnitude)) +
 # Compare to random event timings using permutation to answer if the co-occurrence is greater than expected by chance
 
 
+##############################################
+#### Build DO event table from matched table ####
+build_DO_trigger_table <- function(DO_events, fDOM_events, lag_hours = 36, well_name = NULL) {
+  
+  # DO-centric table
+  out <- vector("list", nrow(DO_events))
+  
+  for (i in seq_len(nrow(DO_events))) {
+    DO_row <- DO_events[i, ]
+    
+    # Compute lag from DO start to fDOM starts
+    lag_diff <- as.numeric(difftime(fDOM_events$t_start, DO_row$t_start, units = "hours"))
+    
+    # fDOM events that start after DO start but within lag_hours
+    hits <- lag_diff >= 0 & lag_diff <= lag_hours
+    
+    out[[i]] <- data.frame(
+      DO_event_id    = DO_row$event_id,
+      DO_start       = DO_row$t_start,
+      DO_AUC         = DO_row$DO_AUC,
+      triggered_fDOM = as.integer(any(hits)),
+      min_lag_hours  = if(any(hits)) min(lag_diff[hits]) else NA,
+      well           = well_name
+    )
+  }
+  do.call(rbind, out)
+}
+
+# Apply across wells
+DO_trigger_all <- lapply(names(DO_event_tables), function(w) {
+  build_DO_trigger_table(
+    DO_events   = DO_event_tables[[w]],
+    fDOM_events = fDOM_event_tables[[w]],
+    lag_hours   = 36,
+    well_name   = w
+  )
+}) %>% bind_rows()
+
+# Inspect
+head(DO_trigger_all)
+
+#### Fit mixed-effects logistic regression ####
+m.null <- glmer(triggered_fDOM ~ 1 + (1 | well),
+                data = DO_trigger_all,
+                family = binomial,
+                control = glmerControl(optimizer = "bobyqa"))
+
+m.1 <- glmer(triggered_fDOM ~ DO_AUC + (1 | well),
+             data = DO_trigger_all,
+             family = binomial,
+             control = glmerControl(optimizer = "bobyqa"))
+
+m.2 <- glmer(triggered_fDOM ~ DO_AUC + (DO_AUC | well),
+             data = DO_trigger_all,
+             family = binomial,
+             control = glmerControl(optimizer = "bobyqa"))
+summary(m.null)
+summary(m.1)
+summary(m.2)
+
+#### Evaluate model assumptions ####
+# Compare AICc
+AICc(m.null, m.1, m.2)
+# null model and m.1 seem to perform best
+
+# Raw residuals (Pearson residuals)
+res <- residuals(m.1, type = "pearson")
+# Homogeneity (residuals vs fitted)
+plot(fitted(m.1), res,
+     xlab = "Fitted values",
+     ylab = "Pearson residuals")
+abline(h = 0, lty = 2)
+# Normality
+qqnorm(res)
+qqline(res)
+hist(res)
+
+sim_res1 <- simulateResiduals(m.1)
+plot(sim_res1)
+
+
+# Raw residuals (Pearson residuals)
+res <- residuals(m.2, type = "pearson")
+# Homogeneity (residuals vs fitted)
+plot(fitted(m.2), res,
+     xlab = "Fitted values",
+     ylab = "Pearson residuals")
+abline(h = 0, lty = 2)
+# Normality
+qqnorm(res)
+qqline(res)
+hist(res)
+
+sim_res2 <- simulateResiduals(m.2)
+plot(sim_res2) 
+
+#### Odds ratios and CI ####
+OR <- exp(fixef(m.1))
+CI <- exp(confint(m.1, parm = "beta_"))
+cat("Odds ratios:\n")
+print(OR)
+# suggests that DO events and fDOM events are independent....
+cat("95% CI:\n")
+print(CI)
+
+OR <- exp(fixef(m.2))
+CI <- exp(confint(m.2, parm = "beta_"))
+cat("Odds ratios:\n")
+print(OR)
+# suggests that DO events and fDOM events are independent....
+cat("95% CI:\n")
+print(CI)
+
+#### Plot ####
+ggplot(DO_trigger_all, aes(x = DO_AUC, y = triggered_fDOM)) +
+  geom_jitter(height = 0.05, width = 0) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE) +
+  theme_bw() +
+  labs(x = "DO event magnitude (AUC)", y = "Probability of fDOM event")
+
+####################################################
 #### Test if DO magnitude drives fDOM magnitude ####
 # core regression
 # log(fDOM_metric) ~ log(DO_metric) + lag
 # Spearman rank correlation or linear regression with bootstrapped CI
 
+####################################################
+#### Build paired table ####
+DO_fDOM_paired <- lapply(names(matched_tables), function(w) {
+  matched_tables[[w]] %>%
+    filter(!is.na(fDOM_event_id)) %>%  # only paired events
+    mutate(well = w) %>%               # add the well name as a column
+    select(
+      DO_event_id, DO_start, DO_AUC,
+      fDOM_event_id, fDOM_start, fDOM_magnitude,
+      well
+    )
+}) %>% bind_rows()
+
+# Remove rows with NA
+DO_fDOM_paired_clean <- DO_fDOM_paired %>%
+  filter(!is.na(fDOM_magnitude) & !is.na(DO_AUC))
+
+#### Fit linear mixed-effects model ####
+m.null <- nlme::lme(fDOM_magnitude ~ 1,
+              random = ~ 1 | well,
+              data = DO_fDOM_paired_clean,
+              method = "REML")
+m.1 <- nlme::lme(fDOM_magnitude ~ DO_AUC,
+                 random = ~ 1 | well,
+                 data = DO_fDOM_paired_clean,
+                 method = "REML")
+
+summary(m.1)
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1)
+# null model is better...
+
+
+#### Evaluate model assumptions ####
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #looks bad-ish - some outliers, but not a consistent pattern
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# not great. Not normal.
+
+# Temporal autocorrelation
+Acf(res)
+
+#### Fit linear mixed-effects model (LOG TRANSFORMED) ####
+DO_fDOM_paired_clean$log_fDOM <- log(DO_fDOM_paired_clean$fDOM_magnitude)
+
+m.null <- nlme::lme(log_fDOM ~ 1,
+              random = ~ 1 | well,
+              data = DO_fDOM_paired_clean,
+              method = "REML")
+m.1 <- nlme::lme(log_fDOM ~ DO_AUC,
+           random = ~ 1 | well,
+           data = DO_fDOM_paired_clean,
+           method = "REML")
+
+summary(m.1)
+
+# Model Selection Procedures
+# compare the  models: lowest AICc wins; difference <2 is a tie
+AICc(m.null, m.1)
+# null model is still better
+
+#### Evaluate model assumptions ####
+## EVALUATE MODEL ASSUMPTIONS
+#1) Homogeneity of Variances (of best model)
+#This assumption is the most important
+#You do not want to see strong decrease or increase of residuals vs. predicteds
+plot(m.1) #looks better
+
+#2) Normality of Residuals (of best model)
+#If these look close, it's probably NOT worth trying data transformation
+#Because you complicate interpretability
+qqnorm(residuals(m.1))
+qqline(residuals(m.1))
+hist(residuals(m.1))
+# Normal
+
+# Temporal autocorrelation
+Acf(residuals(m.1))
+
+#### Confidence intervals and model summaries ####
+# GET P-VALUES AND COEFFICIENT ESTIMATES WITH 95% CONFIDENCE INTERVALS
+#F-tests 
+anova.lme(m.1,type = "marginal", adjustSigma = F)
+
+#95% CI gives you LOWER and UPPER bound around the MEAN ESTIMATE for each parameter
+#linear, quadratic terms with 95% Confidence Intervals
+m.1_conf_int <- intervals(m.1, level = 0.95, which = "fixed") #ns
+
+summary(m.1)
+ranef(m.1)
+
+#### Plot for predicted model ####
+ggplot(DO_fDOM_paired, aes(x = DO_AUC, y = fDOM_magnitude)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) +
+  facet_wrap(~well) +
+  theme_bw() +
+  labs(x = "DO event magnitude (AUC)",
+       y = "fDOM magnitude")
+
+
+DO_fDOM_paired_clean$well <- factor(DO_fDOM_paired_clean$well)
+pred <- predict(m.1, level = 0)  # population-level prediction
+DO_fDOM_paired_clean$pred <- pred
+
+ggplot(DO_fDOM_paired_clean, aes(x = DO_AUC, y = log_fDOM, color = well)) +
+  geom_point(size = 2) +
+  geom_line(aes(y = pred)) +
+  scale_color_manual(values = well_colors) +
+  theme_bw() +
+  labs(x = "DO event magnitude (AUC)",
+       y = "fDOM magnitude")
+
+fdom_corr = 
+  ggplot(DO_fDOM_paired_clean, aes(x = DO_AUC, y = log_fDOM, color = well))+
+  geom_point(alpha = 0.7, size=5)+                                      
+  #geom_smooth(method = "lm", fill=NA) +
+  labs(x = "DO event magnitude (AUC)", 
+       y = str_wrap("fDOM magnitude", width=25))+
+  geom_abline(intercept = 2.3261223-0.2297795, slope = 0.0005883, color="#440154FF", size = 1.5) + 
+  geom_abline(intercept = 2.3261223-0.6132270, slope = 0.0005883, color="#31688EFF", size = 1.5) +
+  geom_abline(intercept = 2.3261223+0.1065753, slope = 0.0005883, color="#35B779FF", size = 1.5) +
+  geom_abline(intercept = 2.3261223+0.7364312, slope = 0.0005883, color="#FDE725FF", size = 1.5) +
+  theme_bw()+
+  scale_y_continuous(
+    breaks = pretty(DO_fDOM_paired_clean$log_fDOM),
+    labels = function(x) round(exp(x), 1)
+  ) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.title = element_blank(),
+        text = element_text(size = 20))+
+  scale_colour_viridis(discrete = TRUE, option = "D")
+fdom_corr
 #### final figures ####
 # Scatter plot
 #   DO magnitude vs fDOM magnitude
