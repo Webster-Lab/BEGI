@@ -52,6 +52,7 @@ summarize_DO_event <- function(df,
 }
 
 # fDOM
+# excludes fDOM events that increase (transport)
 summarize_fDOM_event <- function(df,
                                  time_col = "datetimeMT",
                                  fDOM_col = "fDOM.QSU.mn") {
@@ -61,23 +62,34 @@ summarize_fDOM_event <- function(df,
   
   df <- df[order(df[[time_col]]), ]
   
-  n_valid <- sum(!is.na(df[[fDOM_col]]))
+  valid <- !is.na(df[[fDOM_col]])
+  if (sum(valid) == 0) {
+    return(NULL)  # safer than stop() for batch processing
+  }
   
-  if (n_valid == 0) {
-    stop("No non-missing fDOM values in this event")
+  fDOM_start <- df[[fDOM_col]][which(valid)[1]]
+  fDOM_end   <- df[[fDOM_col]][tail(which(valid), 1)]
+  
+  # ---- EXCLUDE EVENTS WITH NET INCREASE ----
+  if (fDOM_end > fDOM_start) {
+    return(NULL)
   }
   
   fDOM_max <- max(df[[fDOM_col]], na.rm = TRUE)
   fDOM_min <- min(df[[fDOM_col]], na.rm = TRUE)
   
   data.frame(
-    t_start       = min(df[[time_col]]),
-    t_end         = max(df[[time_col]]),
-    fDOM_max      = fDOM_max,
-    fDOM_min      = fDOM_min,
-    fDOM_magnitude = fDOM_max - fDOM_min
+    t_start        = min(df[[time_col]]),
+    t_end          = max(df[[time_col]]),
+    fDOM_start     = fDOM_start,
+    fDOM_end       = fDOM_end,
+    fDOM_max       = fDOM_max,
+    fDOM_min       = fDOM_min,
+    fDOM_magnitude = fDOM_max - fDOM_min,
+    fDOM_net_change = fDOM_end - fDOM_start
   )
 }
+
 
 
 # DO events
@@ -106,24 +118,33 @@ for (w in names(BEGI_events$DO_events)) {
 fDOM_event_tables <- list()
 
 for (w in names(BEGI_events$fDOM_events)) {
+  
   cat("\n=== Processing fDOM events for", w, "===\n")
+  
   fDOM_site_list <- BEGI_events$fDOM_events[[w]]
-  fDOM_rows <- vector("list", length(fDOM_site_list))
+  fDOM_interest  <- vector("list", length(fDOM_site_list))
   
   for (i in seq_along(fDOM_site_list)) {
-    df_event <- fDOM_site_list[[i]]
+    
     s <- summarize_fDOM_event(
-      df_event,
-      fDOM_col = "fDOM.QSU.mn"   # adjust if needed
+      fDOM_site_list[[i]],
+      fDOM_col = "fDOM.QSU.mn"
     )
     
-    s$event_id <- names(fDOM_site_list)[i]
-    s$well     <- sub("_fDOM$", "", w)
-    fDOM_rows[[i]] <- s
+    if (!is.null(s)) {
+      s$event_id <- names(fDOM_site_list)[i]
+      s$well     <- sub("_fDOM$", "", w)
+      fDOM_interest[[i]] <- s
+    }
   }
   
-  fDOM_event_tables[[sub("_fDOM$", "", w)]] <- do.call(rbind, fDOM_rows)
+  # drop NULLs
+  fDOM_interest <- Filter(Negate(is.null), fDOM_interest)
+  
+  fDOM_event_tables[[sub("_fDOM$", "", w)]] <-
+    do.call(rbind, fDOM_interest)
 }
+
 
 #### Function to match fDOM events to DO ####
 # Function
@@ -344,7 +365,7 @@ ggplot(DO_trigger_all, aes(x = DO_AUC, y = triggered_fDOM)) +
   geom_jitter(height = 0.05, width = 0) +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE) +
   theme_bw() +
-  labs(x = "DO event magnitude (AUC)", y = "Probability of fDOM event")
+  labs(x = "Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")", y = "Probability of fDOM event")
 
 ####################################################
 #### Test if DO magnitude drives fDOM magnitude ####
@@ -460,10 +481,10 @@ ggplot(DO_fDOM_paired, aes(x = DO_AUC, y = fDOM_magnitude)) +
   geom_smooth(method = "lm", se = TRUE) +
   facet_wrap(~well) +
   theme_bw() +
-  labs(x = "DO event magnitude (AUC)",
+  labs(x = "Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")",
        y = "fDOM magnitude")
 
-
+well_colors <- c("#440154FF","#31688EFF","#35B779FF","#FDE725FF")
 DO_fDOM_paired_clean$well <- factor(DO_fDOM_paired_clean$well)
 pred <- predict(m.1, level = 0)  # population-level prediction
 DO_fDOM_paired_clean$pred <- pred
@@ -473,14 +494,14 @@ ggplot(DO_fDOM_paired_clean, aes(x = DO_AUC, y = log_fDOM, color = well)) +
   geom_line(aes(y = pred)) +
   scale_color_manual(values = well_colors) +
   theme_bw() +
-  labs(x = "DO event magnitude (AUC)",
+  labs(x = "Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")",
        y = "fDOM magnitude")
 
 fdom_corr = 
   ggplot(DO_fDOM_paired_clean, aes(x = DO_AUC, y = log_fDOM, color = well))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  labs(x = "DO event magnitude (AUC)", 
+  labs(x = "Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")", 
        y = str_wrap("fDOM magnitude", width=25))+
   geom_abline(intercept = 2.3261223-0.2297795, slope = 0.0005883, color="#440154FF", size = 1.5) + 
   geom_abline(intercept = 2.3261223-0.6132270, slope = 0.0005883, color="#31688EFF", size = 1.5) +
@@ -497,14 +518,93 @@ fdom_corr =
         text = element_text(size = 20))+
   scale_colour_viridis(discrete = TRUE, option = "D")
 fdom_corr
+
 #### final figures ####
 # Scatter plot
 #   DO magnitude vs fDOM magnitude
 #   Colored by well, size = lag
-# 
+
+DO_fDOM_paired <- bind_rows(matched_tables, .id = "well") %>%
+  filter(!is.na(fDOM_event_id)) %>%
+  mutate(
+    well = factor(well),
+    log_fDOM = log(fDOM_magnitude)
+  )
+
+ggplot(DO_fDOM_paired,
+       aes(x = DO_AUC,
+           y = log_fDOM,
+           color = well,
+           size = lag_hours)) +
+  geom_point(alpha = 0.8) +
+  scale_size_continuous(name = "Lag (hours)", range = c(2, 6)) +
+  scale_color_manual(values = well_colors) +
+  theme_bw() +
+  labs(
+    x = "Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")",
+    y = "fDOM magnitude (log QSU)",
+    color = "Well"
+   ) #+
+  # geom_abline(intercept = fixef(m.1)[1],
+  #             slope     = fixef(m.1)[2],
+  #             linetype  = "dashed",
+  #             color     = "black")
+
+
+
+
+
+
 # Lag distribution plot
 #   Histogram or density of DO → fDOM lag times
-# 
+ggplot(DO_fDOM_paired, aes(x = lag_hours)) +
+  geom_histogram(aes(y = after_stat(density)),
+                 bins = 20,
+                 fill = "grey80",
+                 color = "black") +
+  geom_density(linewidth = 1) +
+  theme_bw() +
+  labs(
+    x = "Lag between DO start and fDOM start (hours)",
+    y = "Density"
+  )
+
+#per well structure
+ggplot(DO_fDOM_paired, aes(x = lag_hours, fill = well)) +
+  geom_density(alpha = 0.4) +
+  scale_fill_manual(values = well_colors) +
+  theme_bw() +
+  labs(x = "Lag (hours)", y = "Density")
+
+
+
+
+
 # Boxplot
 #   fDOM magnitude: matched vs unmatched events
+fDOM_all <- bind_rows(fDOM_event_tables, .id = "well")
+
+matched_ids <- DO_fDOM_paired$fDOM_event_id
+
+fDOM_compare <- fDOM_all %>%
+  mutate(
+    matched = ifelse(event_id %in% matched_ids,
+                     "Matched to DO",
+                     "Unmatched"),
+    log_fDOM = log(fDOM_magnitude)
+  )
+
+ggplot(fDOM_compare,
+       aes(x = matched,
+           y = log_fDOM,
+           fill = matched)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7) +
+  geom_jitter(width = 0.15, alpha = 0.4, size = 1) +
+  scale_fill_manual(values = c("Matched to DO" = "#31688EFF",
+                               "Unmatched"     = "grey70")) +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "fDOM magnitude (log QSU)"
+  )
 
