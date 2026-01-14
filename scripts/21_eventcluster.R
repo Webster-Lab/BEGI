@@ -453,7 +453,7 @@ match <- cluster_data_k2$event_time - do_lookup$event_time
 cluster_data_k2$event_id <-do_lookup$event_id
 
 # dataframe of just rebounding fdom (cluster 1)
-fdom_rebound <- cluster_data_k2[cluster_data_k2$cluster < 2, ]
+fdom_rebound <- cluster_data_k2[cluster_data_k2$cluster == 1, ]
 
 #### Plot rebounding fDOM with DO ####
 fdom_df = readRDS("EXO_compiled/BEGI_EXOz.ts.tc.rds")
@@ -477,7 +477,7 @@ for (i in c(1:nrow(fdom_rebound))){
   file_name = paste("plots/fdom_rebound/", id, ".pdf", sep="")
   pdf(file_name)
   
-  par(mfrow=c(2,1))
+  par(mfrow=c(3,1))
   
   # Create a sequence of hourly intervals
   hour_intervals <- seq(from = start_time, to = end_time, by = "1 hour")
@@ -502,5 +502,32 @@ for (i in c(1:nrow(fdom_rebound))){
   axis.POSIXct(side = 1, at = hour_intervals, format = "%H:%M", las = 2)
   title(main="fDOM (QSU)")
   
+  plot(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+       pch=20,col="black", xlab="", xaxt = "n", type="n", ylab="n",ylim=c(0,10))
+  #rect(xleft=pm.pts,xright=am.pts,ybottom=-4, ytop=1000, col="lightgrey", lwd = 0)
+  lines(ymd_hms(tempdat$datetimeMT, tz="US/Mountain"),(tempdat$Turbidity.FNU.mn),
+        pch=20,col="black", xlab="", xaxt = "n", type="o")#,ylim=c(22.5,24.5)
+  #abline(v=as.POSIXct(service.SLOC$datetimeMT), col="red")
+  axis.POSIXct(side=1,at=cut(tempdat$datetimeMT, breaks="24 hours"),format="%m-%d", las=2)
+  axis.POSIXct(side = 1, at = hour_intervals, format = "%H:%M", las = 2)
+  title(main="Turbidity (FNU)")
+  
   dev.off()
 }
+
+#### Create data frame of just events where fDOM DOES NOT rebound ####
+cluster2 <- cluster_data_k2[cluster_data_k2$cluster == 2, ]
+cluster2_events <- cluster2$event_id
+
+
+# subset roc_all for 09_DOtoER
+roc_all = readRDS("EXO_compiled/roc_all.rds")
+
+roc_cluster2 <- lapply(
+  roc_all,
+  function(well_list) {
+    well_list[names(well_list) %in% cluster2_events]
+  }
+)
+
+saveRDS(roc_cluster2, "EXO_compiled/roc_cluster2.rds")

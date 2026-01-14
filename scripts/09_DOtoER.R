@@ -732,3 +732,352 @@ SLOW_est <-c(SLOW_Cl,SLOW_C,SLOW_Ch)
 VDOW_est <-c(VDOW_Cl,VDOW_C,VDOW_Ch)
 VDOS_est <-c(VDOS_Cl,VDOS_C,VDOS_Ch)
 carbon_est <-data.frame(SLOC_est,SLOW_est,VDOW_est,VDOS_est)
+
+
+##############################################################
+#### ER and Respiration Quantification with subset events ####
+# This will be repeating the steps above to calculate ER and the amount of carbon
+# respired in each well after eliminating events that may be due to chemical
+# oxidation
+
+##############################################################
+##### read in subset rate of change from 21_eventcluster.R ####
+roc_cluster2 = readRDS("EXO_compiled/roc_cluster2.rds")
+
+#### Convert DO rate of change mg to g ####
+# mg O2/L/15 min -> g O2/m3/15 min
+
+#### Integral of DO rate of change ####
+#SLOC#
+
+SLOC_DO_results <- numeric(length(roc_cluster2[["SLOC_rates"]])) 
+names(SLOC_DO_results) <- names(roc_cluster2[["SLOC_rates"]])
+
+for (i in seq_along(roc_cluster2[["SLOC_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["SLOC_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["SLOC_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  SLOC_DO_results[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+
+#SLOW#
+
+SLOW_DO_results <- numeric(length(roc_cluster2[["SLOW_rates"]])) 
+names(SLOW_DO_results) <- names(roc_cluster2[["SLOW_rates"]])
+
+for (i in seq_along(roc_cluster2[["SLOW_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["SLOW_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["SLOW_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  SLOW_DO_results[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+
+#VDOW#
+
+VDOW_DO_results <- numeric(length(roc_cluster2[["VDOW_rates"]])) 
+names(VDOW_DO_results) <- names(roc_cluster2[["VDOW_rates"]])
+
+for (i in seq_along(roc_cluster2[["VDOW_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["VDOW_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["VDOW_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  VDOW_DO_results[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+
+#VDOS#
+
+VDOS_DO_results <- numeric(length(roc_cluster2[["VDOS_rates"]])) 
+names(VDOS_DO_results) <- names(roc_cluster2[["VDOS_rates"]])
+
+for (i in seq_along(roc_cluster2[["VDOS_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["VDOS_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["VDOS_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  VDOS_DO_results[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+
+
+
+#### POSITIVE of DO rate of change (D) ####
+
+#SLOC#
+SLOC_D <- numeric(length(roc_cluster2[["SLOC_rates"]])) 
+names(SLOC_D) <- names(roc_cluster2[["SLOC_rates"]])
+
+for (i in seq_along(roc_cluster2[["SLOC_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["SLOC_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["SLOC_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  # Set negative values to zero to exclude them from integration
+  y_vals[y_vals < 0] <- 0
+  
+  
+  SLOC_D[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+View(SLOC_D)
+
+#SLOW#
+SLOW_D <- numeric(length(roc_cluster2[["SLOW_rates"]])) 
+names(SLOW_D) <- names(roc_cluster2[["SLOW_rates"]])
+
+for (i in seq_along(roc_cluster2[["SLOW_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["SLOW_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["SLOW_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  # Set negative values to zero to exclude them from integration
+  y_vals[y_vals < 0] <- 0
+  
+  
+  SLOW_D[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+
+#VDOW#
+VDOW_D <- numeric(length(roc_cluster2[["VDOW_rates"]])) 
+names(VDOW_D) <- names(roc_cluster2[["VDOW_rates"]])
+
+for (i in seq_along(roc_cluster2[["VDOW_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["VDOW_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["VDOW_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  # Set negative values to zero to exclude them from integration
+  y_vals[y_vals < 0] <- 0
+  
+  
+  VDOW_D[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+
+#VDOS#
+VDOS_D <- numeric(length(roc_cluster2[["VDOS_rates"]])) 
+names(VDOS_D) <- names(roc_cluster2[["VDOS_rates"]])
+
+for (i in seq_along(roc_cluster2[["VDOS_rates"]])) {
+  x_vals <- as.numeric(roc_cluster2[["VDOS_rates"]][[i]]$datetimeMT)
+  y_vals <- roc_cluster2[["VDOS_rates"]][[i]]$rate_of_change
+  
+  # Remove NA values
+  valid_indices <- !is.na(y_vals)
+  x_vals <- x_vals[valid_indices]
+  y_vals <- y_vals[valid_indices]
+  
+  # Set negative values to zero to exclude them from integration
+  y_vals[y_vals < 0] <- 0
+  
+  
+  VDOS_D[i] <- AUC(
+    x = x_vals,
+    y = y_vals,
+    method = "trapezoid",
+    na.rm = FALSE
+  )
+}
+
+
+#### Q - D = ER ####
+
+#SLOC#
+names(SLOC_DO_results)<-NULL
+names(SLOC_D)<-NULL
+
+SLOC_ER <- SLOC_DO_results - SLOC_D
+names(SLOC_ER) <- names(roc_cluster2[["SLOC_rates"]]) 
+
+
+#SLOW#
+names(SLOW_DO_results)<-NULL
+names(SLOW_D)<-NULL
+
+SLOW_ER <- SLOW_DO_results - SLOW_D
+names(SLOW_ER) <- names(roc_cluster2[["SLOW_rates"]]) 
+
+
+#VDOW#
+names(VDOW_DO_results)<-NULL
+names(VDOW_D)<-NULL
+
+VDOW_ER <- VDOW_DO_results - VDOW_D
+names(VDOW_ER) <- names(roc_cluster2[["VDOW_rates"]]) 
+
+
+#VDOS#
+names(VDOS_DO_results)<-NULL
+names(VDOS_D)<-NULL
+
+VDOS_ER <- VDOS_DO_results - VDOS_D
+names(VDOS_ER) <- names(roc_cluster2[["VDOS_rates"]]) 
+
+#### ER and D boxplots and save data frame ####
+#### ER and D boxplots and save data frame ####
+
+odumER_subset<-data.frame(ER=c(SLOC_ER,SLOW_ER,VDOW_ER,VDOS_ER),
+                   Well=rep(c("SLOC","SLOW","VDOW","VDOS"),
+                            times=c(length(SLOC_ER),length(SLOW_ER),length(VDOW_ER),length(VDOS_ER))))
+odumER_subset$Event<-cluster2_events
+odumER_subset$D <-c(SLOC_D,SLOW_D,VDOW_D,VDOS_D)
+
+#save dataframe
+saveRDS(odumER_subset, "EXO_compiled/odumER_subset.rds")
+
+#ER boxplot
+odumER_bp<-ggplot(data=odumER_subset,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 22) +
+  ylab(bquote("Ecosystem Respiration (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
+print(odumER_bp)
+
+#D boxplot
+odumD_bp<-ggplot(data=odumER_subset,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 22) +
+  ylab(bquote("Oxygen Uptake via Diffusion (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
+print(odumD_bp)
+
+
+#### Converting oxygen to carbon with RQ ####
+# We calculated ER as the integral of the negative rate of change of dissolved oxygen (g O2/m2)
+# I will be summing the year total of ER per each well (g O2/m2/year),
+# then converting to mol O2/m2/year, which when using a respiratory quotient of 1 has a 1:1 ratio with mols C,
+# then converting mol C/m2/year to g C/m2/year
+# RQ = (delta)O2/(detla)CO2
+# ER (moles CO2) = ER (moles O2) * RQ
+
+#summing year total of ER for each well (g O2/m2/year)
+odumER_subset=readRDS("EXO_compiled/odumER_subset.rds")
+
+SLOC_O2 <- sum(odumER_subset[which(odumER_subset$Well=='SLOC'),'ER'])
+SLOW_O2 <- sum(odumER_subset[which(odumER_subset$Well=='SLOW'),'ER'])
+VDOW_O2 <- sum(odumER_subset[which(odumER_subset$Well=='VDOW'),'ER'])
+VDOS_O2 <- sum(odumER_subset[which(odumER_subset$Well=='VDOS'),'ER'])
+
+#converting to mol O2/m2/year (31.9988 g O2 / 1 mol O2)
+SLOC_O2mol <- SLOC_O2/31.9988
+SLOW_O2mol <- SLOW_O2/31.9988
+VDOW_O2mol <- VDOW_O2/31.9988
+VDOS_O2mol <- VDOS_O2/31.9988
+
+#With RQ = 1.2, mol O2 * 1.2 = mol CO2
+SLOC_Cmol <- SLOC_O2mol * 1.2
+SLOW_Cmol <- SLOW_O2mol * 1.2
+VDOW_Cmol <- VDOW_O2mol * 1.2
+VDOS_Cmol <- VDOS_O2mol * 1.2
+
+# 1 mol CO2 = 1 mol C
+
+#converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
+SLOC_C <- SLOC_Cmol * 12.011
+SLOW_C <- SLOW_Cmol * 12.011
+VDOW_C <- VDOW_Cmol * 12.011
+VDOS_C <- VDOS_Cmol * 12.011
+
+# upper CI #
+#With RQ = 4.0, mol O2 * 4.0 = mol CO2
+SLOC_Cmolh <- SLOC_O2mol * 4
+SLOW_Cmolh <- SLOW_O2mol * 4
+VDOW_Cmolh <- VDOW_O2mol * 4
+VDOS_Cmolh <- VDOS_O2mol * 4
+
+# 1 mol CO2 = 1 mol C
+
+#converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
+SLOC_Ch <- SLOC_Cmolh * 12.011
+SLOW_Ch <- SLOW_Cmolh * 12.011
+VDOW_Ch <- VDOW_Cmolh * 12.011
+VDOS_Ch <- VDOS_Cmolh * 12.011
+
+# lower CI #
+#With RQ = 0.5, mol O2 * 0.5 = mol CO2
+SLOC_Cmoll <- SLOC_O2mol * 0.5
+SLOW_Cmoll <- SLOW_O2mol * 0.5
+VDOW_Cmoll <- VDOW_O2mol * 0.5
+VDOS_Cmoll <- VDOS_O2mol * 0.5
+
+# 1 mol CO2 = 1 mol C
+
+#converting mol C/m2/year to gram C/m2/year (12.011 g C / 1 mol C)
+SLOC_Cl <- SLOC_Cmoll * 12.011
+SLOW_Cl <- SLOW_Cmoll * 12.011
+VDOW_Cl <- VDOW_Cmoll * 12.011
+VDOS_Cl <- VDOS_Cmoll * 12.011
+
+#df
+SLOC_est <-c(SLOC_Cl,SLOC_C,SLOC_Ch)
+SLOW_est <-c(SLOW_Cl,SLOW_C,SLOW_Ch)
+VDOW_est <-c(VDOW_Cl,VDOW_C,VDOW_Ch)
+VDOS_est <-c(VDOS_Cl,VDOS_C,VDOS_Ch)
+carbon_est <-data.frame(SLOC_est,SLOW_est,VDOW_est,VDOS_est)
