@@ -267,17 +267,20 @@ summary(m.1.VDOWint)
 
 
 #### group means ER ####
-
+#need to multiply ER by -1 to be able to log transform
+resp_events$posER <- resp_events$ER * -1
+#filter out 0 values
+resp_events_filtered <- resp_events[resp_events$posER > 0, ]
 #+++++++++++++ with nlme::lme and LOG TRANSFORMED DATA #+++++++++++
 
-m.null = nlme::lme(log(ER) ~ 1, data=resp_events, random=~1|siteID, method="ML")
-m.1 = nlme::lme(log(ER) ~ Well, data=resp_events, random=~1|siteID, method="ML")
+m.null = nlme::lme(log(posER) ~ 1, data=resp_events_filtered, random=~1|siteID, method="ML")
+m.1 = nlme::lme(log(posER) ~ Well, data=resp_events_filtered, random=~1|siteID, method="ML")
 
 # Model Selection Procedures
 # compare the  models: lowest AICc wins; difference <2 is a tie
 AICc(m.null, m.1)
 # Results: 
-# m.1 now better!
+# m.null better
 
 Anova(m.1, type=2) #Chi-Square test for influence of wellID on ER fitted with type 2 error
 # strong diffs between wells
@@ -349,17 +352,18 @@ summary(m.1.VDOWint)
 
 
 #### group means D ####
-
+#filter out 0 values
+resp_events_filtered <- resp_events[resp_events$D > 0, ]
 #+++++++++++++ with nlme::lme and LOG TRANSFORMED DATA #+++++++++++
 
-m.null = nlme::lme(log(D) ~ 1, data=resp_events, random=~1|siteID, method="ML")
-m.1 = nlme::lme(log(D) ~ Well, data=resp_events, random=~1|siteID, method="ML")
+m.null = nlme::lme(log(D) ~ 1, data=resp_events_filtered, random=~1|siteID, method="ML")
+m.1 = nlme::lme(log(D) ~ Well, data=resp_events_filtered, random=~1|siteID, method="ML")
 
 # Model Selection Procedures
 # compare the  models: lowest AICc wins; difference <2 is a tie
 AICc(m.null, m.1)
 # Results: 
-# m.1 now better!
+# m.null better
 
 Anova(m.1, type=2) #Chi-Square test for influence of wellID on D fitted with type 2 error
 # strong diffs between wells
@@ -437,7 +441,6 @@ summary(m.1.VDOWint)
 #### Combine datasets for event dtw model ####
 
 ## ER and D ##
-# Apparently I already did this... will have to clean up this workflow
 odumER_subset <- readRDS("EXO_compiled/odumER_subset.rds")
 
 # mean and variance summary of depth to water (DTW) for each event
@@ -459,7 +462,7 @@ resp_events = left_join(resp_events, dtw_events, by=c("Well","eventdate"))
 resp_events[is.nan(resp_events)] <- NA
 
 # clean up environment
-rm(odumER_subset); rm(roc_cluster2); rm(dtw_events); rm(AUC_df)
+rm(odumER_subset); rm(dtw_events); rm(AUC_df); rm(AUC_results_all)
 
 #### explore data for event dtw with AUC, ER, D ####
 
@@ -673,5 +676,4 @@ summary(m.2)
 ranef(m.1)
 ranef(m.2)
 
-#### dtw cluster analysis of gw depth ####
-# is this worth doing?
+
