@@ -9,6 +9,10 @@ library(nlme)
 library(lme4)
 library(lmerTest)
 library(viridis)
+library(patchwork)
+library(cowplot)
+library(grid)
+library(ggplotify)
 
 #### Load data for aerobic respiration events ####
 roc_cluster2 <- readRDS("EXO_compiled/roc_cluster2.rds")
@@ -188,21 +192,21 @@ vcov_mat <- vcov(m.8)
 se_fit <- sqrt(diag(X %*% vcov_mat %*% t(X)))
 
 #95% CI
+# Add se_fit as a column first, then mutate (ungroup to avoid size mismatch)
 new_data_DO <- new_data_DO %>%
+  ungroup() %>%
   mutate(
-    lower = pred - 1.96 * se_fit,
-    upper = pred + 1.96 * se_fit
+    se_fit = sqrt(diag(X %*% vcov_mat %*% t(X))),
+    lower  = pred - 1.96 * se_fit,
+    upper  = pred + 1.96 * se_fit
   )
-
-### FIX HERE: PREDICTED VALUES DON'T LINE UP TO CREATE CONFIDENCE INTERVALS FOR 
-### DO EVENTS AND GW VAR
 
 DO_AUC_gwvar_log = 
   ggplot(DO_events_all, aes(x = dtw_DO_event_cv, y = log(DO_AUC), color=wellID))+
   #geom_point(alpha = 0.7, size=5)+
-  geom_abline(intercept = 4.056911, slope = 0.617108, color="#440154FF", size = 1.5) + 
+  geom_abline(intercept = 4.056911, slope = 0.617108, color="#440154FF", linewidth = 1.5) + 
   geom_point(alpha = 0.7, size=3,aes(colour=factor(wellID)))+
-  geom_ribbon(data = new_data, 
+  geom_ribbon(data = new_data_DO, 
               aes(x = dtw_DO_event_cv, ymin = lower, ymax = upper),
               inherit.aes = FALSE, fill = "#440154FF", alpha = 0.3) +
   #geom_smooth(method=lm, colour="#440154FF", se=T, size=1.5)+
@@ -213,7 +217,7 @@ DO_AUC_gwvar_log =
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 20))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 DO_AUC_gwvar_log
 
@@ -233,7 +237,7 @@ DO_D_gwvar_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 DO_D_gwvar_log
 
@@ -253,7 +257,7 @@ DO_ER_gwvar_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 DO_ER_gwvar_log
 
@@ -273,7 +277,7 @@ DO_AUC_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 DO_AUC_gwmean_log
 
@@ -293,7 +297,7 @@ DO_D_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 DO_D_gwmean_log
 
@@ -303,7 +307,7 @@ DO_ER_gwmean_log =
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
   xlab( "Mean Depth to Groundwater Preceeding\n Event (2 days)") +
-  ylab(bquote("Aerobic Respiration (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
+  ylab(bquote("Aerobic Respiration  (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
   geom_vline(xintercept=0, linetype = 'dashed') +
   theme_bw()+
   scale_y_continuous(
@@ -313,7 +317,7 @@ DO_ER_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 DO_ER_gwmean_log
 
@@ -335,7 +339,7 @@ resp_AUC_gwvar_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 resp_AUC_gwvar_log
 
@@ -355,7 +359,7 @@ resp_D_gwvar_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 resp_D_gwvar_log
 
@@ -375,7 +379,7 @@ resp_ER_gwvar_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 resp_ER_gwvar_log
 
@@ -395,7 +399,7 @@ resp_AUC_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 resp_AUC_gwmean_log
 
@@ -415,7 +419,7 @@ resp_D_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 resp_D_gwmean_log
 
@@ -435,10 +439,109 @@ resp_ER_gwmean_log =
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        text = element_text(size = 21))+
+        text = element_text(size = 12))+
   scale_color_viridis(discrete = TRUE, option = "D")
 resp_ER_gwmean_log
 
+#### All model results layout ####
+# ── Updated helpers: strip axes AND reduce text size ──────────────────────────
+base_text_size <- 11   # adjust this one number to scale all plot text
+
+shrink_text <- function(p) p + theme(
+  text         = element_text(size = base_text_size),
+  axis.title   = element_text(size = base_text_size),
+  axis.text    = element_text(size = base_text_size - 1),
+  legend.text  = element_text(size = base_text_size)
+)
+
+no_x <- function(p) p + theme(axis.title.x = element_blank(),
+                              axis.text.x  = element_blank(),
+                              axis.ticks.x = element_blank())
+
+no_y <- function(p) p + theme(axis.title.y = element_blank(),
+                              axis.text.y  = element_blank(),
+                              axis.ticks.y = element_blank())
+
+no_xy       <- function(p) no_x(no_y(p))
+hide_legend <- function(p) p + theme(legend.position = "none")
+
+# ── Wrap y-axis titles on the col-1 plots (only ones keeping y-axis) ──────────
+# str_wrap() width controls how many characters before a line break
+wrap_y <- function(p, width = 18) {
+  lbl <- p$labels$y
+  # Only wrap if the label is a plain string; skip bquote/expression labels
+  if (is.character(lbl)) {
+    p + ylab(str_wrap(lbl, width = width))
+  } else {
+    p  # return unchanged if it's an expression
+  }
+}
+# ── Build plots: shrink all, wrap y on col-1 only ─────────────────────────────
+
+# Row 1 - DO event size
+r1c1 <- hide_legend(no_x(wrap_y(shrink_text(resp_AUC_gwmean_log))))
+r1c2 <- hide_legend(no_xy(shrink_text(resp_AUC_gwvar_log)))
+r1c3 <- hide_legend(no_xy(shrink_text(DO_AUC_gwmean_log)))
+r1c4 <- hide_legend(no_xy(shrink_text(DO_AUC_gwvar_log)))
+
+# Row 2 - Diffusion
+r2c1 <- hide_legend(no_x(wrap_y(shrink_text(resp_D_gwmean_log))))
+r2c2 <- hide_legend(no_xy(shrink_text(resp_D_gwvar_log)))
+r2c3 <- hide_legend(no_xy(shrink_text(DO_D_gwmean_log)))
+r2c4 <- hide_legend(no_xy(shrink_text(DO_D_gwvar_log)))
+
+# Row 3 - Ecosystem respiration (keep x, col4 keeps legend)
+r3c1 <- hide_legend(wrap_y(shrink_text(resp_ER_gwmean_log)))
+r3c2 <- hide_legend(no_y(shrink_text(resp_ER_gwvar_log)))
+r3c3 <- hide_legend(no_y(shrink_text(DO_ER_gwmean_log)))
+r3c4 <- no_y(shrink_text(DO_ER_gwvar_log)) +
+  theme(legend.position = "bottom",
+        legend.text     = element_text(size = base_text_size))
+
+# ── Assemble ──────────────────────────────────────────────────────────────────
+combined_fig <- (
+  r1c1 | r1c2 | r1c3 | r1c4 |
+    r2c1 | r2c2 | r2c3 | r2c4 |
+    r3c1 | r3c2 | r3c3 | r3c4
+) +
+  plot_layout(ncol = 4, nrow = 3)
+
+combined_with_margins <- combined_fig +
+  plot_annotation(theme = theme(
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 40, unit = "pt")
+  ))
+
+# ── Overlay labels with cowplot ───────────────────────────────────────────────
+final_fig <- ggdraw(combined_with_margins) +
+  
+  draw_label("Aerobic Respiration Events",
+             x = 0.27, y = 0.995, hjust = 0.5, vjust = 1,
+             size = 11, fontface = "bold") +
+  draw_label("All DO Events",
+             x = 0.70, y = 0.995, hjust = 0.5, vjust = 1,
+             size = 11, fontface = "bold") +
+  
+  draw_label("GW Mean",     x = 0.135, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
+  draw_label("GW Variance", x = 0.390, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
+  draw_label("GW Mean",     x = 0.600, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
+  draw_label("GW Variance", x = 0.855, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
+  
+  draw_label("DO Event Size",         x = 0.01, y = 0.80, angle = 90,
+             hjust = 0.5, vjust = 1, size = 9, fontface = "bold") +
+  draw_label("Diffusion",             x = 0.01, y = 0.50, angle = 90,
+             hjust = 0.5, vjust = 1, size = 9, fontface = "bold") +
+  draw_label("Ecosystem Respiration", x = 0.01, y = 0.20, angle = 90,
+             hjust = 0.5, vjust = 1, size = 9, fontface = "bold") +
+  
+  # draw_line(x = c(0.495, 0.495), y = c(0.04, 0.94),
+  #           color = "grey50", linetype = "dashed", size = 0.4)
+
+# ── Save ──────────────────────────────────────────────────────────────────────
+ggsave("manuscript_fig1.pdf", plot = final_fig,
+       width = 24, height = 14, device = "pdf")
+
+ggsave("manuscript_fig1.png", plot = final_fig,
+       width = 24, height = 14, dpi = 300)
 #### Boxplots ####
 
 

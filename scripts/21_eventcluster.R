@@ -409,6 +409,100 @@ meancurvesp = ggplot(mean_k2_cluster, aes(x=timestep,y=fdom_mean))+
   facet_wrap(~cluster)
 meancurvesp
 ggsave("plots/meancurves_fdom.png", meancurvesp, width = 9, height = 8, units = "in")
+
+#### plot cluster with Well ID ####
+#import BEGI events (with tc data)
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
+
+#Match event_time with Eventdate for each well
+#Turns out the events in the csv are in order for each well's Eventdate list :D
+#I NEED TO DOUBLE CHECK THAT THIS IS ACCURATE. IT SHOULD BE CONSIDERING THIS IS THE FDOM 
+# FOLLOWING EACH DO EVENT, SO IT SHOULD BE IN LINE
+cluster_DTW_data_k2$well_id <- rep(c("SLOC","SLOW","VDOW","VDOS"),
+                                   times = c(length(BEGI_events[["Eventdate"]][["SLOC_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["SLOW_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["VDOW_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["VDOS_dates"]])))
+
+# plot with well id
+# plot all curves of each cluster
+cluster_DTW_data_k2_long = cluster_DTW_data_k2 %>% pivot_longer(cols='t12':'t192',
+                                                                names_to = "timestep",
+                                                                values_to = "DTW_m")
+cluster_DTW_data_k2_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k2_long$timestep))
+
+fdom_clusters<-ggplot(cluster_DTW_data_k2_long, aes(x=timestep,y=DTW_m, group=ename, color=well_id))+
+  geom_line(linewidth=1,)+
+  theme_classic()+
+  xlab("Time (min)")+ylab("Normalized fDOM")+
+  facet_wrap(~cluster) +
+  theme(text = element_text(size = 20))+
+  scale_color_manual(values=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))
+fdom_clusters
+
+# manuscript fig
+# Rename clusters for meaningful facet labels
+cluster_DTW_data_k2_long$cluster_label <- factor(
+  cluster_DTW_data_k2_long$cluster,
+  labels = c("Cluster 1", "Cluster 2")
+)
+
+fdom_clusters <- ggplot(
+  cluster_DTW_data_k2_long,
+  aes(x = timestep, y = DTW_m, group = ename, color = well_id)
+) +
+  geom_line(linewidth = 0.6, alpha = 0.75) +
+  facet_wrap(~cluster_label) +
+  scale_color_manual(
+    values = c("#440154FF", "#31688EFF", "#35B779FF", "#FDE725FF"),
+    name = "Well ID"           # cleaner legend title
+  ) +
+  scale_x_continuous(expand = c(0.01, 0)) +
+  scale_y_continuous(expand = c(0.02, 0), limits = c(0, 1)) +
+  labs(
+    x = "Time following DO event (min)",
+    y = "Normalized fDOM"
+  ) +
+  theme_classic(base_size = 11) +
+  theme(
+    # Facet strip
+    strip.background = element_rect(fill = "grey92", color = "black", linewidth = 0.4),
+    strip.text       = element_text(size = 11, face = "bold"),
+    
+    # Axes
+    axis.line        = element_line(linewidth = 0.4, color = "black"),
+    axis.ticks       = element_line(linewidth = 0.3, color = "black"),
+    axis.ticks.length = unit(2, "pt"),
+    axis.title       = element_text(size = 11),
+    axis.text        = element_text(size = 9, color = "black"),
+    
+    # Legend
+    legend.title     = element_text(size = 10, face = "bold"),
+    legend.text      = element_text(size = 9),
+    legend.key.size  = unit(12, "pt"),
+    legend.key       = element_rect(fill = NA),
+    legend.background = element_rect(fill = NA),
+    
+    # Panel spacing
+    panel.spacing    = unit(8, "pt"),
+    plot.margin      = margin(6, 6, 6, 6, "pt")
+  )
+
+# Export at journal-appropriate resolution
+ggsave(
+  "fdom_clusters.pdf",   # PDF for vector-based submission
+  fdom_clusters,
+  width = 6.5, height = 3.5, units = "in"   # fits a 2-column figure
+)
+
+# Also save PNG for preprint/preview
+ggsave(
+  "fdom_clusters.png",
+  fdom_clusters,
+  width = 6.5, height = 3.5, units = "in",
+  dpi = 300
+)
+
 #### save results ####
 
 saveRDS(cluster_DTW_data_k2, "DTW_compiled/fdom_clusters_k2_smoothed_norm.rds")
