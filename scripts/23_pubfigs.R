@@ -13,6 +13,7 @@ library(patchwork)
 library(cowplot)
 library(grid)
 library(ggplotify)
+library(stringr)
 
 #### Load data for aerobic respiration events ####
 roc_cluster2 <- readRDS("EXO_compiled/roc_cluster2.rds")
@@ -448,10 +449,10 @@ resp_ER_gwmean_log
 base_text_size <- 11   # adjust this one number to scale all plot text
 
 shrink_text <- function(p) p + theme(
-  text         = element_text(size = base_text_size),
-  axis.title   = element_text(size = base_text_size),
-  axis.text    = element_text(size = base_text_size - 1),
-  legend.text  = element_text(size = base_text_size)
+  text        = element_text(size = base_text_size, family = "sans"),
+  axis.title  = element_text(size = base_text_size),
+  axis.text   = element_text(size = base_text_size - 1, color = "black"),
+  legend.text = element_text(size = base_text_size)
 )
 
 no_x <- function(p) p + theme(axis.title.x = element_blank(),
@@ -476,22 +477,37 @@ wrap_y <- function(p, width = 18) {
     p  # return unchanged if it's an expression
   }
 }
+
+# ── Clean theme ────────────────────────────────────────────────────────────────
+clean_theme <- theme_bw() +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border     = element_rect(color = "black", linewidth = 0.5),
+    axis.ticks       = element_line(color = "black", linewidth = 0.3),
+    axis.title       = element_blank(),
+    axis.text        = element_text(size = base_text_size - 1, color = "black"),
+    legend.title     = element_blank(),
+    text             = element_text(size = base_text_size)
+  )
+
+apply_clean <- function(p) p + clean_theme
 # ── Build plots: shrink all, wrap y on col-1 only ─────────────────────────────
 
 # Row 1 - DO event size
-r1c1 <- hide_legend(no_x(wrap_y(shrink_text(resp_AUC_gwmean_log))))
+r1c1 <- hide_legend(no_x(apply_clean(resp_AUC_gwmean_log)))
 r1c2 <- hide_legend(no_xy(shrink_text(resp_AUC_gwvar_log)))
 r1c3 <- hide_legend(no_xy(shrink_text(DO_AUC_gwmean_log)))
 r1c4 <- hide_legend(no_xy(shrink_text(DO_AUC_gwvar_log)))
 
 # Row 2 - Diffusion
-r2c1 <- hide_legend(no_x(wrap_y(shrink_text(resp_D_gwmean_log))))
+r2c1 <- hide_legend(no_x(apply_clean(resp_D_gwmean_log)))
 r2c2 <- hide_legend(no_xy(shrink_text(resp_D_gwvar_log)))
 r2c3 <- hide_legend(no_xy(shrink_text(DO_D_gwmean_log)))
 r2c4 <- hide_legend(no_xy(shrink_text(DO_D_gwvar_log)))
 
 # Row 3 - Ecosystem respiration (keep x, col4 keeps legend)
-r3c1 <- hide_legend(wrap_y(shrink_text(resp_ER_gwmean_log)))
+r3c1 <- hide_legend(apply_clean(resp_ER_gwmean_log))
 r3c2 <- hide_legend(no_y(shrink_text(resp_ER_gwvar_log)))
 r3c3 <- hide_legend(no_y(shrink_text(DO_ER_gwmean_log)))
 r3c4 <- no_y(shrink_text(DO_ER_gwvar_log)) +
@@ -526,24 +542,192 @@ final_fig <- ggdraw(combined_with_margins) +
   draw_label("GW Mean",     x = 0.600, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
   draw_label("GW Variance", x = 0.855, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
   
-  draw_label("DO Event Size",         x = 0.01, y = 0.80, angle = 90,
-             hjust = 0.5, vjust = 1, size = 9, fontface = "bold") +
-  draw_label("Diffusion",             x = 0.01, y = 0.50, angle = 90,
-             hjust = 0.5, vjust = 1, size = 9, fontface = "bold") +
-  draw_label("Ecosystem Respiration", x = 0.01, y = 0.20, angle = 90,
-             hjust = 0.5, vjust = 1, size = 9, fontface = "bold") +
+  # Row labels (rotated, in left margin)
+  draw_label(expression("DO Event Size (g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.012, y = 0.79, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
+  draw_label(expression("Diffusion (g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.012, y = 0.50, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
+  draw_label(expression("Ecosystem Respiration (g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.012, y = 0.21, angle = 90, hjust = 0.5, vjust = 1, size = 9)
   
   # draw_line(x = c(0.495, 0.495), y = c(0.04, 0.94),
   #           color = "grey50", linetype = "dashed", size = 0.4)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
-ggsave("manuscript_fig1.pdf", plot = final_fig,
+ggsave("manuscript_modelfig.pdf", plot = final_fig,
        width = 24, height = 14, device = "pdf")
 
-ggsave("manuscript_fig1.png", plot = final_fig,
+ggsave("manuscript_modelfig.png", plot = final_fig,
        width = 24, height = 14, dpi = 300)
 #### Boxplots ####
+### All DO events ###
+# Load data for boxplots
+DO_AUC<-readRDS("EXO_compiled/DO_AUC.rds")  
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
+odumER<- readRDS("EXO_compiled/odumER.rds")
+
+# DO event size log scale
+DO_AUC_log <- ggplot(data = DO_AUC, mapping = aes(x = Well, y = log(DO))) +
+  geom_boxplot(fill = c("#440154FF", "#31688EFF", "#35B779FF", "#FDE725FF")) +
+  scale_y_continuous(
+    breaks = pretty(log(DO_AUC$DO)),
+    labels = function(x) round(exp(x), 1)
+  ) +
+  theme_grey(base_size = 18) +
+  labs(y = "DO Event Size (g O2 m-3 15 min-1)")
+DO_AUC_log
+
+# ER log scale
+odumER_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=ER))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 18) +
+  ylab(bquote("Ecosystem Respiration (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
+print(odumER_bp)
+
+# D log scale 
+odumD_bp<-ggplot(data=odumER,mapping=aes(x=Well, y=D))+geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 18) +
+  ylab(bquote("Oxygen Uptake via Diffusion (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
+print(odumD_bp)
 
 
+### Aerobic respiration events ###
+# DO event size #
+resp_DO_AUC_log <- ggplot(data = resp_events, mapping = aes(x = Well, y = log(AUC))) +
+  geom_boxplot(fill = c("#440154FF", "#31688EFF", "#35B779FF", "#FDE725FF")) +
+  scale_y_continuous(
+    breaks = pretty(log(resp_events$AUC)),
+    labels = function(x) round(exp(x), 1)
+  ) +
+  theme_grey(base_size = 18) +
+  labs(y = "DO Event Size (g O2 m-3 15 min-1)")
+resp_DO_AUC_log
+
+# ER #
+resp_odumER_bp<-ggplot(data=resp_events,mapping=aes(x=Well, y=ER))+
+  geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 18) +
+  ylab(bquote("Ecosystem Respiration (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
+print(resp_odumER_bp)
+
+# D #
+resp_odumD_bp<-ggplot(data=resp_events,mapping=aes(x=Well, y=D))+
+  geom_boxplot(fill=c("#440154FF","#31688EFF","#35B779FF","#FDE725FF"))+
+  theme_grey(base_size = 18) +
+  ylab(bquote("Oxygen Uptake via Diffusion (g" ~ O[2] ~ m^-2 ~ "event"^-1 * ")"))+
+  xlab("Well")
+print(resp_odumD_bp)
+
+
+
+#### Plot all boxplots together ####
+base_text_size <- 11   # adjust this one number to scale all plot text
+
+shrink_text <- function(p) p + theme(
+  text        = element_text(size = base_text_size, family = "sans"),
+  axis.title  = element_text(size = base_text_size),
+  axis.text   = element_text(size = base_text_size - 1, color = "black"),
+  legend.text = element_text(size = base_text_size)
+)
+
+no_x <- function(p) p + theme(axis.title.x = element_blank(),
+                              axis.text.x  = element_blank(),
+                              axis.ticks.x = element_blank())
+
+no_y <- function(p) p + theme(axis.title.y = element_blank(),
+                              axis.text.y  = element_blank(),
+                              axis.ticks.y = element_blank())
+
+no_xy       <- function(p) no_x(no_y(p))
+hide_legend <- function(p) p + theme(legend.position = "none")
+
+# ── Wrap y-axis titles on the col-1 plots (only ones keeping y-axis) ──────────
+# str_wrap() width controls how many characters before a line break
+wrap_y <- function(p, width = 18) {
+  lbl <- p$labels$y
+  # Only wrap if the label is a plain string; skip bquote/expression labels
+  if (is.character(lbl)) {
+    p + ylab(str_wrap(lbl, width = width))
+  } else {
+    p  # return unchanged if it's an expression
+  }
+}
+
+# ── Clean theme ────────────────────────────────────────────────────────────────
+clean_theme <- theme_bw() +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border     = element_rect(color = "black", linewidth = 0.5),
+    axis.ticks       = element_line(color = "black", linewidth = 0.3),
+    axis.title       = element_blank(),
+    axis.text        = element_text(size = base_text_size - 1, color = "black"),
+    legend.title     = element_blank(),
+    text             = element_text(size = base_text_size)
+  )
+
+apply_clean <- function(p) p + clean_theme
+
+# ── Build plots: shrink all, wrap y on col-1 only ─────────────────────────────
+
+# Row 1 - DO event size
+r1c1 <- hide_legend(no_x(apply_clean(resp_DO_AUC_log)))
+r1c2 <- hide_legend(no_xy(apply_clean(DO_AUC_log)))
+
+# Row 2 - Diffusion
+r2c1 <- hide_legend(no_x(apply_clean(resp_odumD_bp)))
+r2c2 <- hide_legend(no_xy(apply_clean(odumD_bp)))
+
+# Row 3 - Ecosystem respiration (keep x, col4 keeps legend)
+r3c1 <- hide_legend(apply_clean(resp_odumER_bp))
+r3c2 <- hide_legend(no_y(apply_clean(odumER_bp))) +
+  theme(legend.position = "bottom",
+        legend.text     = element_text(size = base_text_size))
+
+# ── Assemble ──────────────────────────────────────────────────────────────────
+combined_fig <- (
+  r1c1 | r1c2 |
+    r2c1 | r2c2 |
+    r3c1 | r3c2
+) +
+  plot_layout(ncol = 2, nrow = 3)
+
+combined_with_margins <- combined_fig +
+  plot_annotation(theme = theme(
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 40, unit = "pt")
+  ))
+
+# ── Overlay labels with cowplot ───────────────────────────────────────────────
+final_fig <- ggdraw(combined_with_margins) +
+  
+  draw_label("Aerobic Respiration Events",
+             x = 0.3, y = 0.995, hjust = 0.5, vjust = 1,
+             size = 11, fontface = "bold") +
+  draw_label("All DO Events",
+             x = 0.75, y = 0.995, hjust = 0.5, vjust = 1,
+             size = 11, fontface = "bold") +
+  draw_label("Well",
+             x = 0.55, y = 0.005, hjust = 0.5, vjust = 0,
+             size = 10) +
+
+  # Row labels (rotated, in left margin)
+  draw_label(expression("DO Event Size (g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.012, y = 0.79, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
+  draw_label(expression("Diffusion (g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.012, y = 0.50, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
+  draw_label(expression("Ecosystem Respiration (g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.012, y = 0.21, angle = 90, hjust = 0.5, vjust = 1, size = 9)
+
+# draw_line(x = c(0.495, 0.495), y = c(0.04, 0.94),
+#           color = "grey50", linetype = "dashed", size = 0.4)
+
+# ── Save ──────────────────────────────────────────────────────────────────────
+ggsave("manuscript_bpfig.pdf", plot = final_fig,
+       width = 24, height = 14, device = "pdf")
+
+ggsave("manuscript_bpfig.png", plot = final_fig,
+       width = 24, height = 14, dpi = 300)
 
 #### Plot DO time series ####
