@@ -14,6 +14,12 @@ library(cowplot)
 library(grid)
 library(ggplotify)
 library(stringr)
+library(dtwclust)
+library(reshape2)
+library(zoo)
+library(xts)
+library(gridExtra)
+
 
 #### Load data for aerobic respiration events ####
 roc_cluster2 <- readRDS("EXO_compiled/roc_cluster2.rds")
@@ -729,5 +735,81 @@ ggsave("manuscript_bpfig.pdf", plot = final_fig,
 
 ggsave("manuscript_bpfig.png", plot = final_fig,
        width = 24, height = 14, dpi = 300)
+#### groundwater depth cluster plot ####
+cluster_DTW_data_k3 <- read_csv("DTW_compiled/DTW_clusters_k3_smoothed_norm.csv")
 
+#import BEGI events (with tc data)
+BEGI_events = readRDS("EXO_compiled/BEGI_events.rds")
+
+#Match event_time with Eventdate for each well
+#Turns out the events in the csv are in order for each well's Eventdate list :D
+cluster_DTW_data_k3$well_id <- rep(c("SLOC","SLOW","VDOW","VDOS"),
+                                   times = c(length(BEGI_events[["Eventdate"]][["SLOC_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["SLOW_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["VDOW_dates"]]),
+                                             length(BEGI_events[["Eventdate"]][["VDOS_dates"]])))
+
+#count of what clusters occurred in each well
+cluster_by_well <- data.frame(SLOC = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'SLOC'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'SLOC'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'SLOC')),
+                              SLOW = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'SLOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'SLOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'SLOW')),
+                              VDOW = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'VDOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'VDOW'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'VDOW')),
+                              VDOS = c(sum(cluster_DTW_data_k3$cluster == 1 & cluster_DTW_data_k3$well_id == 'VDOS'),
+                                       sum(cluster_DTW_data_k3$cluster == 2 & cluster_DTW_data_k3$well_id == 'VDOS'),
+                                       sum(cluster_DTW_data_k3$cluster == 3 & cluster_DTW_data_k3$well_id == 'VDOS')))
+
+# plot all curves of each cluster
+cluster_DTW_data_k3_long = cluster_DTW_data_k3 %>% pivot_longer(cols='t12':'t192',
+                                                                names_to = "timestep",
+                                                                values_to = "DTW_m")
+cluster_DTW_data_k3_long$timestep = as.numeric(gsub('t', '', cluster_DTW_data_k3_long$timestep))
+
+
+# Rename clusters for meaningful facet labels
+cluster_DTW_data_k3_long$cluster_label <- factor(
+  cluster_DTW_data_k3_long$cluster,
+  labels = c("Cluster 1", "Cluster 2", "Cluster 3")
+)
+
+well_clusters <- ggplot(
+  cluster_DTW_data_k3_long,
+  aes(x = timestep, y = DTW_m, group = ename, color = well_id)
+) +
+  geom_line(linewidth = 0.6, alpha = 0.75) +
+  facet_wrap(~cluster_label) +
+  scale_color_manual(
+    values = c("#440154FF", "#31688EFF", "#35B779FF", "#FDE725FF"),
+    name = "Well ID"
+  ) +
+  scale_x_continuous(expand = c(0.01, 0)) +
+  scale_y_continuous(expand = c(0.02, 0), limits = c(0, 1)) +
+  labs(
+    x = "Time (min)",
+    y = "Normalized Depth (m)"
+  ) +
+  theme_classic(base_size = 11) +
+  theme(
+    strip.background  = element_rect(fill = "grey92", color = "black", linewidth = 0.4),
+    strip.text        = element_text(size = 11, face = "bold"),
+    axis.line         = element_line(linewidth = 0.4, color = "black"),
+    axis.ticks        = element_line(linewidth = 0.3, color = "black"),
+    axis.ticks.length = unit(2, "pt"),
+    axis.title        = element_text(size = 11),
+    axis.text         = element_text(size = 9, color = "black"),
+    legend.title      = element_text(size = 10, face = "bold"),
+    legend.text       = element_text(size = 9),
+    legend.key.size   = unit(12, "pt"),
+    legend.key        = element_rect(fill = NA),
+    legend.background = element_rect(fill = NA),
+    panel.spacing     = unit(8, "pt"),
+    plot.margin       = margin(6, 6, 6, 6, "pt")
+  )
+
+ggsave("well_clusters.pdf",  well_clusters, width = 6.5, height = 3.5, units = "in")
+ggsave("well_clusters.png",  well_clusters, width = 6.5, height = 3.5, units = "in", dpi = 300)
 #### Plot DO time series ####
