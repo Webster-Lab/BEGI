@@ -395,7 +395,7 @@ resp_AUC_gwmean_log =
   ggplot(resp_events, aes(x = DO_event_mean-1, y = log(AUC), color=Well))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  xlab( "Mean Depth to Groundwater Preceeding\n Event (2 days)") +
+  xlab( "Mean Depth to Groundwater Preceding\n Event (2 days)") +
   ylab(bquote("Dissolved Oxygen Event Size (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
   geom_vline(xintercept=0, linetype = 'dashed') +
   theme_bw()+
@@ -415,7 +415,7 @@ resp_D_gwmean_log =
   ggplot(resp_events_filtered, aes(x = DO_event_mean-1, y = log(D), color=Well))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  xlab( "Mean Depth to Groundwater Preceeding\n Event (2 days)") +
+  xlab( "Mean Depth to Groundwater Preceding\n Event (2 days)") +
   ylab(bquote("Diffusion (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
   geom_vline(xintercept=0, linetype = 'dashed') +
   theme_bw()+
@@ -435,7 +435,7 @@ resp_ER_gwmean_log =
   ggplot(resp_events_filtered, aes(x = DO_event_mean-1, y = log(posER), color=Well))+
   geom_point(alpha = 0.7, size=5)+                                      
   #geom_smooth(method = "lm", fill=NA) +
-  xlab( "Mean Depth to Groundwater Preceeding\n Event (2 days)") +
+  xlab( "Mean Depth to Groundwater Preceding\n Event (2 days)") +
   ylab(bquote("Aerobic Respiration (g" ~ O[2] ~ m^-3 ~ "15 min"^-1 * ")"))+
   geom_vline(xintercept=0, linetype = 'dashed') +
   theme_bw()+
@@ -452,7 +452,7 @@ resp_ER_gwmean_log
 
 #### All model results layout ####
 # ── Updated helpers: strip axes AND reduce text size ──────────────────────────
-base_text_size <- 11   # adjust this one number to scale all plot text
+base_text_size <- 19   # adjust this one number to scale all plot text
 
 shrink_text <- function(p) p + theme(
   text        = element_text(size = base_text_size, family = "sans"),
@@ -501,24 +501,25 @@ apply_clean <- function(p) p + clean_theme
 # ── Build plots: shrink all, wrap y on col-1 only ─────────────────────────────
 
 # Row 1 - DO event size
-r1c1 <- hide_legend(no_x(apply_clean(resp_AUC_gwmean_log)))
-r1c2 <- hide_legend(no_xy(shrink_text(resp_AUC_gwvar_log)))
-r1c3 <- hide_legend(no_xy(shrink_text(DO_AUC_gwmean_log)))
-r1c4 <- hide_legend(no_xy(shrink_text(DO_AUC_gwvar_log)))
+r1c1 <- hide_legend(no_x(apply_clean(DO_AUC_gwmean_log)))
+r1c2 <- hide_legend(no_xy(apply_clean(DO_AUC_gwvar_log)))
+r1c3 <- hide_legend(no_xy(apply_clean(resp_AUC_gwmean_log)))
+r1c4 <- hide_legend(no_xy(apply_clean(resp_AUC_gwvar_log)))
 
 # Row 2 - Diffusion
-r2c1 <- hide_legend(no_x(apply_clean(resp_D_gwmean_log)))
-r2c2 <- hide_legend(no_xy(shrink_text(resp_D_gwvar_log)))
-r2c3 <- hide_legend(no_xy(shrink_text(DO_D_gwmean_log)))
-r2c4 <- hide_legend(no_xy(shrink_text(DO_D_gwvar_log)))
+r2c1 <- hide_legend(no_x(apply_clean(DO_D_gwmean_log)))
+r2c2 <- hide_legend(no_xy(apply_clean(DO_D_gwvar_log)))
+r2c3 <- hide_legend(no_xy(apply_clean(resp_D_gwmean_log)))
+r2c4 <- hide_legend(no_xy(apply_clean(resp_D_gwvar_log)))
 
 # Row 3 - Ecosystem respiration (keep x, col4 keeps legend)
-r3c1 <- hide_legend(apply_clean(resp_ER_gwmean_log))
-r3c2 <- hide_legend(no_y(shrink_text(resp_ER_gwvar_log)))
-r3c3 <- hide_legend(no_y(shrink_text(DO_ER_gwmean_log)))
-r3c4 <- no_y(shrink_text(DO_ER_gwvar_log)) +
-  theme(legend.position = "bottom",
-        legend.text     = element_text(size = base_text_size))
+r3c1 <- hide_legend(apply_clean(DO_ER_gwmean_log))
+r3c2 <- hide_legend(no_y(apply_clean(DO_ER_gwvar_log)))
+r3c3 <- hide_legend(no_y(apply_clean(resp_ER_gwmean_log)))
+r3c4 <- hide_legend(no_y(apply_clean(resp_ER_gwvar_log))) 
+  # + theme(legend.position  = "bottome",
+  #       legend.text      = element_text(size = base_text_size),
+  #       legend.margin    = margin(t = 20, unit = "pt"))  # increase t to push legend down
 
 # ── Assemble ──────────────────────────────────────────────────────────────────
 combined_fig <- (
@@ -530,41 +531,64 @@ combined_fig <- (
 
 combined_with_margins <- combined_fig +
   plot_annotation(theme = theme(
-    plot.margin = margin(t = 40, r = 10, b = 10, l = 40, unit = "pt")
+    plot.margin = margin(t = 50, r = 10, b = 90, l = 80, unit = "pt")
   ))
 
 # ── Overlay labels with cowplot ───────────────────────────────────────────────
 final_fig <- ggdraw(combined_with_margins) +
   
-  draw_label("Aerobic Respiration Events",
-             x = 0.27, y = 0.995, hjust = 0.5, vjust = 1,
-             size = 11, fontface = "bold") +
   draw_label("All DO Events",
-             x = 0.70, y = 0.995, hjust = 0.5, vjust = 1,
-             size = 11, fontface = "bold") +
+             x = 0.29, y = 0.99, hjust = 0.5, vjust = 1,
+             size = 31, fontface = "bold") +
+  draw_label("Aerobic Respiration Events",
+             x = 0.78, y = 0.99, hjust = 0.5, vjust = 1,
+             size = 31, fontface = "bold") +
   
-  draw_label("GW Mean",     x = 0.135, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
-  draw_label("GW Variance", x = 0.390, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
-  draw_label("GW Mean",     x = 0.600, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
-  draw_label("GW Variance", x = 0.855, y = 0.965, hjust = 0.5, vjust = 1, size = 9) +
+  # column labels
+  draw_label("Mean Depth to Groundwater\nPreceding Event (2 days)",
+             x = 0.2, y = 0.023, hjust = 0.5, vjust = 0, size = 27.5) +
+  draw_label("Depth to Groundwater Coef. of Var.\nPreceding Event (2 days)",
+             x = 0.415, y = 0.023, hjust = 0.5, vjust = 0, size = 27.5) +
+  draw_label("Mean Depth to Groundwater\nPreceding Event (2 days)",
+             x = 0.64, y = 0.023, hjust = 0.5, vjust = 0, size = 27.5) +
+  draw_label("Depth to Groundwater Coef. of Var.\nPreceding Event (2 days)",
+             x = 0.883, y = 0.023, hjust = 0.5, vjust = 0, size = 27.5) +
   
-  # Row labels (rotated, in left margin)
-  draw_label(expression("DO Event Size (g O"[2]~"m"^-3~"15 min"^-1*")"),
-             x = 0.012, y = 0.79, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
-  draw_label(expression("Diffusion (g O"[2]~"m"^-3~"15 min"^-1*")"),
-             x = 0.012, y = 0.50, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
-  draw_label(expression("Ecosystem Respiration (g O"[2]~"m"^-3~"15 min"^-1*")"),
-             x = 0.012, y = 0.21, angle = 90, hjust = 0.5, vjust = 1, size = 9)
+  # Row 1 label — two lines via two draw_label calls
+  draw_label("DO Event Size",
+             x = 0.008, y = 0.81, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  draw_label(expression("(g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.019, y = 0.805, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
   
+  # Row 2 label
+  draw_label("Diffusion",
+             x = 0.008, y = 0.52, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  draw_label(expression("(g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.019, y = 0.515, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  
+  # Row 3 label
+  draw_label("Ecosystem Respiration",
+             x = 0.008, y = 0.23, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  draw_label(expression("(g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.019, y = 0.235, angle = 90, hjust = 0.5, vjust = 1, size = 27.5)
+  
+  # # Row labels (rotated, in left margin)
+  # draw_label(expression("DO Event Size \n(g O"[2]~"m"^-3~"15 min"^-1*")"),
+  #            x = 0.012, y = 0.79, angle = 90, hjust = 0.5, vjust = 1, size = 27) +
+  # draw_label(expression("Diffusion \n(g O"[2]~"m"^-3~"15 min"^-1*")"),
+  #            x = 0.012, y = 0.50, angle = 90, hjust = 0.5, vjust = 1, size = 27) +
+  # draw_label(expression("Ecosystem Respiration \n(g O"[2]~"m"^-3~"15 min"^-1*")"),
+  #            x = 0.012, y = 0.21, angle = 90, hjust = 0.5, vjust = 1, size = 27)
+  # 
   # draw_line(x = c(0.495, 0.495), y = c(0.04, 0.94),
   #           color = "grey50", linetype = "dashed", size = 0.4)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
-ggsave("manuscript_modelfig.pdf", plot = final_fig,
-       width = 24, height = 14, device = "pdf")
+ggsave("biggermanuscript_modelfig.pdf", plot = final_fig,
+       width = 28, height = 17, device = "pdf")
 
-ggsave("manuscript_modelfig.png", plot = final_fig,
-       width = 24, height = 14, dpi = 300)
+ggsave("biggermanuscript_modelfig.png", plot = final_fig,
+       width = 28, height = 17, dpi = 300)
 #### Boxplots ####
 ### All DO events ###
 # Load data for boxplots
@@ -629,7 +653,7 @@ print(resp_odumD_bp)
 
 
 #### Plot all boxplots together ####
-base_text_size <- 11   # adjust this one number to scale all plot text
+base_text_size <- 19   # adjust this one number to scale all plot text
 
 shrink_text <- function(p) p + theme(
   text        = element_text(size = base_text_size, family = "sans"),
@@ -679,18 +703,18 @@ apply_clean <- function(p) p + clean_theme
 # ── Build plots: shrink all, wrap y on col-1 only ─────────────────────────────
 
 # Row 1 - DO event size
-r1c1 <- hide_legend(no_x(apply_clean(resp_DO_AUC_log)))
-r1c2 <- hide_legend(no_xy(apply_clean(DO_AUC_log)))
+r1c1 <- hide_legend(no_x(apply_clean(DO_AUC_log)))
+r1c2 <- hide_legend(no_xy(apply_clean(resp_DO_AUC_log)))
 
 # Row 2 - Diffusion
-r2c1 <- hide_legend(no_x(apply_clean(resp_odumD_bp)))
-r2c2 <- hide_legend(no_xy(apply_clean(odumD_bp)))
+r2c1 <- hide_legend(no_x(apply_clean(odumD_bp)))
+r2c2 <- hide_legend(no_xy(apply_clean(resp_odumD_bp)))
 
 # Row 3 - Ecosystem respiration (keep x, col4 keeps legend)
-r3c1 <- hide_legend(apply_clean(resp_odumER_bp))
-r3c2 <- hide_legend(no_y(apply_clean(odumER_bp))) +
-  theme(legend.position = "bottom",
-        legend.text     = element_text(size = base_text_size))
+r3c1 <- hide_legend(apply_clean(odumER_bp))
+r3c2 <- hide_legend(no_y(apply_clean(resp_odumER_bp))) 
+  # +theme(legend.position = "bottom",
+  #       legend.text     = element_text(size = base_text_size))
 
 # ── Assemble ──────────────────────────────────────────────────────────────────
 combined_fig <- (
@@ -702,29 +726,37 @@ combined_fig <- (
 
 combined_with_margins <- combined_fig +
   plot_annotation(theme = theme(
-    plot.margin = margin(t = 40, r = 10, b = 10, l = 40, unit = "pt")
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 55, unit = "pt")
   ))
 
 # ── Overlay labels with cowplot ───────────────────────────────────────────────
 final_fig <- ggdraw(combined_with_margins) +
   
-  draw_label("Aerobic Respiration Events",
-             x = 0.3, y = 0.995, hjust = 0.5, vjust = 1,
-             size = 11, fontface = "bold") +
   draw_label("All DO Events",
+             x = 0.3, y = 0.995, hjust = 0.5, vjust = 1,
+             size = 31, fontface = "bold") +
+  draw_label("Aerobic Respiration Events",
              x = 0.75, y = 0.995, hjust = 0.5, vjust = 1,
-             size = 11, fontface = "bold") +
-  draw_label("Well",
-             x = 0.55, y = 0.005, hjust = 0.5, vjust = 0,
-             size = 10) +
+             size = 31, fontface = "bold") +
 
-  # Row labels (rotated, in left margin)
-  draw_label(expression("DO Event Size (g O"[2]~"m"^-3~"15 min"^-1*")"),
-             x = 0.012, y = 0.79, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
-  draw_label(expression("Diffusion (g O"[2]~"m"^-3~"15 min"^-1*")"),
-             x = 0.012, y = 0.50, angle = 90, hjust = 0.5, vjust = 1, size = 9) +
-  draw_label(expression("Ecosystem Respiration (g O"[2]~"m"^-3~"15 min"^-1*")"),
-             x = 0.012, y = 0.21, angle = 90, hjust = 0.5, vjust = 1, size = 9)
+
+  # Row 1 label — two lines via two draw_label calls
+  draw_label("DO Event Size",
+             x = 0.007, y = 0.81, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  draw_label(expression("(g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.02, y = 0.805, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  
+  # Row 2 label
+  draw_label("Diffusion",
+             x = 0.007, y = 0.52, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  draw_label(expression("(g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.02, y = 0.515, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  
+  # Row 3 label
+  draw_label("Ecosystem Respiration",
+             x = 0.007, y = 0.23, angle = 90, hjust = 0.5, vjust = 1, size = 27.5) +
+  draw_label(expression("(g O"[2]~"m"^-3~"15 min"^-1*")"),
+             x = 0.02, y = 0.235, angle = 90, hjust = 0.5, vjust = 1, size = 27.5)
 
 # draw_line(x = c(0.495, 0.495), y = c(0.04, 0.94),
 #           color = "grey50", linetype = "dashed", size = 0.4)
