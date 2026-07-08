@@ -89,44 +89,85 @@ cat("ER: event total =", ER_total_areal, "g O2/m2\n")
 # RQ_range (0.5-4.0) is the full theoretical range reported in Berggren et al. (2012), This range includes more plausible CO2 total/rate given uncertainty in substrate
 MW_O2 <- 32    # g/mol
 MW_CO2 <- 44   # g/mol
+MW_C <- 12     # g/mol -mass of C is the same whether expressed as CO2 or as elemental C, since 1 mol CO2 contains exactly 1 mol C.
 RQ_default <- 1.2
 RQ_range <- c(min = 0.5, max = 4.0)
 
-# Converts an O2 quantity (any of mg/L, mg/L/hr, g/m2, g/m2/hr -- units carry through unchanged) to the corresponding CO2 quantity at a given RQ. Sign is flipped so CO2 PRODUCTION is reported as positive (ER_* values above are negative, representing O2 loss).
+# Converts an O2 quantity (any of mg/L, mg/L/hr, g/m2, g/m2/hr -units carry through unchanged) to the corresponding CO2 mass at a given RQ. Sign is flipped so CO2 PRODUCTION is reported as positive
 O2_to_CO2 <- function(O2_value, RQ) {
   -O2_value * RQ * (MW_CO2 / MW_O2)
 }
 
-#### Point estimate (RQ = 1.2)
+# Converts an O2 quantity directly to elemental CARBON mass (g C, not g CO2) at a given RQ  
+O2_to_C <- function(O2_value, RQ) {
+  -O2_value * RQ * (MW_C / MW_O2)
+}
+
+#### Point estimate (RQ = 1.2) ####
 ER_rate_hourly_CO2 <- O2_to_CO2(ER_rate_hourly, RQ_default)
 ER_total_CO2 <- O2_to_CO2(ER_total, RQ_default)
 ER_rate_hourly_areal_CO2 <- O2_to_CO2(ER_rate_hourly_areal, RQ_default)
 ER_total_areal_CO2 <- O2_to_CO2(ER_total_areal, RQ_default)
 
-#### Full literature RQ range 
+ER_rate_hourly_C <- O2_to_C(ER_rate_hourly, RQ_default)
+ER_total_C <- O2_to_C(ER_total, RQ_default)
+ER_rate_hourly_areal_C <- O2_to_C(ER_rate_hourly_areal, RQ_default)
+ER_total_areal_C <- O2_to_C(ER_total_areal, RQ_default)
+
+#### Full literature RQ range (0.5-4.0)
 ER_rate_hourly_CO2_range <- O2_to_CO2(ER_rate_hourly, RQ_range)
 ER_total_CO2_range <- O2_to_CO2(ER_total, RQ_range)
 ER_rate_hourly_areal_CO2_range <- O2_to_CO2(ER_rate_hourly_areal, RQ_range)
 ER_total_areal_CO2_range <- O2_to_CO2(ER_total_areal, RQ_range)
 
-# Print out summary as table:
+ER_rate_hourly_C_range <- O2_to_C(ER_rate_hourly, RQ_range)
+ER_total_C_range <- O2_to_C(ER_total, RQ_range)
+ER_rate_hourly_areal_C_range <- O2_to_C(ER_rate_hourly_areal, RQ_range)
+ER_total_areal_C_range <- O2_to_C(ER_total_areal, RQ_range)
+
+#### Summary tables: 
 RQ_CO2_table <- data.frame(
-  Quantity = c("ER average hourly rate (areal)",
+  Quantity = c("ER average hourly rate",
+               "ER event total",
+               "ER average hourly rate (areal)",
                "ER event total (areal)"),
-  Units = c("g CO2/m2/hr",
+  Units = c("mg CO2/L/hr",
+            "mg CO2/L (= g CO2/m3)",
+            "g CO2/m2/hr",
             "g CO2/m2"),
-  RQ_0.5_min = c(ER_rate_hourly_areal_CO2_range["min"],
+  RQ_0.5_min = c(ER_rate_hourly_CO2_range["min"],
+                 ER_total_CO2_range["min"],
+                 ER_rate_hourly_areal_CO2_range["min"],
                  ER_total_areal_CO2_range["min"]),
-  RQ_1.2_point = c(ER_rate_hourly_areal_CO2,
+  RQ_1.2_point = c(ER_rate_hourly_CO2,
+                   ER_total_CO2,
+                   ER_rate_hourly_areal_CO2,
                    ER_total_areal_CO2),
-  RQ_4.0_max = c(ER_rate_hourly_areal_CO2_range["max"],
+  RQ_4.0_max = c(ER_rate_hourly_CO2_range["max"],
+                 ER_total_CO2_range["max"],
+                 ER_rate_hourly_areal_CO2_range["max"],
                  ER_total_areal_CO2_range["max"])
 )
 RQ_CO2_table[ , 3:5] <- round(RQ_CO2_table[ , 3:5], 3)
 row.names(RQ_CO2_table) <- NULL
 
-print(RQ_CO2_table)
-View(RQ_CO2_table)
+RQ_C_table <- data.frame(
+  Quantity = c("ER average hourly rate (areal)",
+               "ER event total (areal)"),
+  Units = c("g C/m2/hr",
+            "g C/m2"),
+  RQ_0.5_min = c(ER_rate_hourly_areal_C_range["min"],
+                 ER_total_areal_C_range["min"]),
+  RQ_1.2_point = c(ER_rate_hourly_areal_C,
+                   ER_total_areal_C),
+  RQ_4.0_max = c(ER_rate_hourly_areal_C_range["max"],
+                 ER_total_areal_C_range["max"])
+)
+RQ_C_table[ , 3:5] <- round(RQ_C_table[ , 3:5], 3)
+row.names(RQ_C_table) <- NULL
+
+print(RQ_C_table)
+View(RQ_C_table)
 
 
 #### Conceptual figure: DO curve + rate-of-change + cumulative total curves ####
